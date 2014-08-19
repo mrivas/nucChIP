@@ -1,93 +1,92 @@
-import argparse
-import sys
-import HTSeq
-import numpy
+import argparse, sys, HTSeq, numpy, pylab, pybedtools 
 from scipy import sparse
-import pylab
-import pybedtools
 from matplotlib import pyplot
 
 ############################################################
-## Get command line arguments
-#
-#parser = argparse.ArgumentParser(description='Generate coverage over nucleosomes.')
-#parser.add_argument('-b',type=str,dest="bFile",help="BAM file.")
-#parser.add_argument('-n',type=str,dest="nFile",help="BED file with enriched nucleosomes.")
-#parser.add_argument('-f',type=int,dest="fSize",help="INT. Fragment size of the reads.")
-#parser.add_argument('-w',type=int,dest="wWidth",help="INT. Half width of plotting window.")
-#parser.add_argument('-o',type=str,dest="oFile",help="Prefix of output files.")
-#
-#if len(sys.argv) == 1:
-#	print >> sys.stderr,parser.print_help()
-#	exit(0)
-#
-#args = parser.parse_args()
-#bamName = args.bFile
-#nucName = args.nFile
-#fragmentsize = args.fSize
-#halfwinwidth = args.wWidth
-#oFile = args.oFile
+def getParser():
+	parser = argparse.ArgumentParser(description='Generate coverage over nucleosomes.')
+	parser.add_argument('-b',type=str,dest="bFile",help="BAM file.")
+	parser.add_argument('-n',type=str,dest="nFile",help="BED file with enriched nucleosomes.")
+	parser.add_argument('-f',type=int,dest="fSize",help="INT. Fragment size of the reads.")
+	parser.add_argument('-w',type=int,dest="wWidth",help="INT. Half width of plotting window.")
+	parser.add_argument('-o',type=str,dest="oFile",help="Prefix of output files.")
 
-bam2bed="H3K27Ac.bam2bed.sorted.bed.gz"
-nucName="../secondBatch/pooled/H3K27Ac_enriched.bed"
-fragmentsize=150
-halfwinwidth=1000
-oFile="testCovHM.txt"
-#######################################################3
-# Execution
-nNucls=0
-nucls = {}
-for line in open(nucName,'r'):
-	line=line.strip("\n")
-	fields = line.split("\t")
-	chrom = fields[0]
-	start = int(fields[1])
-	end   = int(fields[2])
-	
-	midpoint = int(round((start+end)/2.0))
-	start = midpoint-halfwinwidth
-	if start<0: continue
-	end   = midpoint+halfwinwidth
-	window = HTSeq.GenomicInterval(chrom,start,end,".")
-	key = str(start)+"_"+str(nNucls)
-	nucls[ window ] = key
-	nNucls += 1
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+##############################################################	
+def main():
+	args = getParser().parse_args()
+	bamName = args.bFile
+	nucName = args.nFile
+	fragmentsize = args.fSize
+	halfwinwidth = args.wWidth
+	oFile = args.oFile
 
-print "Preparing data"
-coveMat = sparse.lil_matrix( (nNucls, 2*halfwinwidth) )
-avrCove = numpy.zeros( 2*halfwinwidth, dtype="d" )
+	#bam2bed="H3K27Ac.bam2bed.sorted.bed.gz"
+	#nucName="../secondBatch/pooled/H3K27Ac_enriched.bed"
+	#fragmentsize=150
+	#halfwinwidth=1000
+	#oFile="testCovHM.txt"
+	#######################################################3
+	# Execution
+	nNucls=0
+	nucls = {}
+	for line in open(nucName,'r'):
+		line=line.strip("\n")
+		fields = line.split("\t")
+		chrom = fields[0]
+		start = int(fields[1])
+		end   = int(fields[2])
+		
+		midpoint = int(round((start+end)/2.0))
+		start = midpoint-halfwinwidth
+		if start<0: continue
+		end   = midpoint+halfwinwidth
+		window = HTSeq.GenomicInterval(chrom,start,end,".")
+		key = str(start)+"_"+str(nNucls)
+		nucls[ window ] = key
+		nNucls += 1
 
-itera=0
-reads=pybedtools.BedTool(bam2bed)
-for window in nucls:
-	if itera%100==0: print itera
-	itera+=1
-	
-	for read in reads.tabix_intervals(str(window.chrom)+":"+str(window.start)+"-"+str(window.end) ):
+	print "Preparing data"
+	coveMat = sparse.lil_matrix( (nNucls, 2*halfwinwidth) )
+	avrCove = numpy.zeros( 2*halfwinwidth, dtype="d" )
 
-		start=int( nucls[window].split("_")[0] )
-		idx  =int( nucls[window].split("_")[1] )
-		start_in_window = int(read[1]) - start
-		end_in_window   = int(read[2]  ) - start
-		start_in_window = max( start_in_window, 0 )
-		end_in_window = min( end_in_window, 2*halfwinwidth )
-		tmp=numpy.array(coveMat[idx,:].todense())[0]
-		tmp[ start_in_window:end_in_window] += 1
-		coveMat[ idx, : ] = tmp
-		avrCove[ start_in_window : end_in_window ] += 1
+	itera=0
+	reads=pybedtools.BedTool(bam2bed)
+	for window in nucls:
+		if itera%100==0: print itera
+		itera+=1
+		
+		for read in reads.tabix_intervals(str(window.chrom)+":"+str(window.start)+"-"+str(window.end) ):
 
-avrCove = avrCove / nNucls
+			start=int( nucls[window].split("_")[0] )
+			idx  =int( nucls[window].split("_")[1] )
+			start_in_window = int(read[1]) - start
+			end_in_window   = int(read[2]  ) - start
+			start_in_window = max( start_in_window, 0 )
+			end_in_window = min( end_in_window, 2*halfwinwidth )
+			tmp=numpy.array(coveMat[idx,:].todense())[0]
+			tmp[ start_in_window:end_in_window] += 1
+			coveMat[ idx, : ] = tmp
+			avrCove[ start_in_window : end_in_window ] += 1
 
-print "Preparing heatmap"
-pylab.imshow(coveMat.todense(), cmap=pylab.cm.get_cmap("Reds"), interpolation="nearest")
-pylab.colorbar()
-pylab.xticks([0,249,499,749,999], [-1000,-500,0,500,1000])
-pylab.yticks(range(0,nNucls,nNucls/5), range(0,nNucls,nNucls/5))
-pylab.show()
+	avrCove = avrCove / nNucls
 
-# Save plot
-#pyplot.plot( numpy.arange( -halfwinwidth, halfwinwidth ), profile )  
-#pyplot.savefig(oFile+".pdf")
-#pyplot.close()
-# Save numeric results
-#numpy.savez(oFile,profile=profile)
+	print "Preparing heatmap"
+	pylab.imshow(coveMat.todense(), cmap=pylab.cm.get_cmap("Reds"), interpolation="nearest")
+	pylab.colorbar()
+	pylab.xticks([0,249,499,749,999], [-1000,-500,0,500,1000])
+	pylab.yticks(range(0,nNucls,nNucls/5), range(0,nNucls,nNucls/5))
+	pylab.show()
+
+	# Save plot
+	#pyplot.plot( numpy.arange( -halfwinwidth, halfwinwidth ), profile )  
+	#pyplot.savefig(oFile+".pdf")
+	#pyplot.close()
+	# Save numeric results
+	#numpy.savez(oFile,profile=profile)
+##############################################################	
+if __name__ == "__main__":
+	main()

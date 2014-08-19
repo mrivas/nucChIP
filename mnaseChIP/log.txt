@@ -1,0 +1,20 @@
+bam2bed.py
+==========
+1 getAvrLength
+printBED
+
+getCounts.py
+============
+getNucl
+1 getAvrLength -> deleted
+getmaxRegion
+getCounts
+
+getFigures.py
+=============
+getLibSize
+getNucIV
+1 getAvrLength -> deleted
+getFullCoverage
+getProfiles
+
