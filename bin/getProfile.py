@@ -1,0 +1,73 @@
+import argparse
+import sys
+import HTSeq
+import numpy
+from matplotlib import pyplot
+
+###########################################################
+# Get command line arguments
+
+parser = argparse.ArgumentParser(description='Generate coverage over nucleosomes.')
+parser.add_argument('-b',type=str,dest="bFile",help="BAM file.")
+parser.add_argument('-n',type=str,dest="nFile",help="BED file with enriched nucleosomes.")
+parser.add_argument('-f',type=int,dest="fSize",help="INT. Fragment size of the reads.")
+parser.add_argument('-w',type=int,dest="wWidth",help="INT. Half width of plotting window.")
+parser.add_argument('-o',type=str,dest="oFile",help="Prefix of output files.")
+
+if len(sys.argv) == 1:
+	print >> sys.stderr,parser.print_help()
+	exit(0)
+
+args = parser.parse_args()
+bamName = args.bFile
+nucName = args.nFile
+fragmentsize = args.fSize
+halfwinwidth = args.wWidth
+oFile = args.oFile
+
+#######################################################3
+# Execution
+nNucls=0
+nucls = HTSeq.GenomicArrayOfSets( "auto", stranded=False )
+for line in open(nucName,'r'):
+	fields = line.split("\t")
+	chrom = fields[0]
+	start = int(fields[1])
+	end   = int(fields[2])
+	
+	midpoint = round((start+end)/2.0)
+	start = max( midpoint-halfwinwidth, 0)
+	end   = midpoint+halfwinwidth
+	window = HTSeq.GenomicInterval(chrom,start,end,".")
+	nucls[ window ] += midpoint
+	nNucls += 1
+
+
+profile = numpy.zeros( 2*halfwinwidth, dtype="d" )
+bamfile = HTSeq.BAM_Reader( bamName )
+for almnt in bamfile:
+	if almnt.aligned:
+		almnt.iv.length = fragmentsize
+		if almnt.iv.start <0: continue
+		midpoint = round( (almnt.iv.start+almnt.iv.end) / 2.0 )
+		almnt.iv.start = max(midpoint - 74 , 0)
+		almnt.iv.end = midpoint + 74
+		s = set()
+		for step_iv, step_set in nucls[ almnt.iv ].steps():
+			s |= step_set
+		for p in s:
+#			print p
+			start_in_window = almnt.iv.start - ( p - halfwinwidth )
+			end_in_window   = almnt.iv.end   - ( p - halfwinwidth )
+			start_in_window = max( start_in_window, 0 )
+			end_in_window = min( end_in_window, 2*halfwinwidth )
+			profile[ start_in_window : end_in_window ] += 1
+
+profile = profile / nNucls
+
+# Save plot
+#pyplot.plot( numpy.arange( -halfwinwidth, halfwinwidth ), profile )  
+#pyplot.savefig(oFile+".pdf")
+#pyplot.close()
+# Save numeric results
+numpy.savez(oFile,profile=profile)
