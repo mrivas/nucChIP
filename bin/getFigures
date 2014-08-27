@@ -1,5 +1,6 @@
+#!/usr/bin/env python
 import argparse, sys, pysam, HTSeq, numpy, cPickle
-import mnaseChIP
+import nucChIP
 
 ############################################################
 def getParser():
@@ -35,22 +36,22 @@ def main():
 	bamFile = HTSeq.BAM_Reader(bamName)
 
 	print "Getting library size"
-	#libSize=mnaseChIP.getLibSize(bamName)
+	#libSize=nucChIP.getLibSize(bamName)
 	libSize=20000000
 	print "Getting nucleosomes"
-	nucl_ivs = mnaseChIP.getNuclIV(nuclFile,halfwin)
+	nucl_ivs = nucChIP.getNuclIV(nuclFile,halfwin)
 	print "Getting average read length"
 	if fragLength!=0: # if single-end
 		avrLength = fragLength
 	else:
-		avrLength =  mnaseChIP.getAvrLength(bamFile)
+		avrLength =  nucChIP.getAvrLength(bamFile)
 	print avrLength
 	print "Producing coverage"
-	coverage = mnaseChIP.getFullCoverage(avrLength,bamFile,halfRead)
+	coverage = nucChIP.getFullCoverage(avrLength,bamFile,halfRead)
 	print "Producing average and matrix profiles"
-	average,matrix = mnaseChIP.getProfiles(coverage,halfwin,nucl_ivs,libSize)
+	average,matrix = nucChIP.getProfiles(coverage,halfwin,nucl_ivs,libSize)
 	print "Plotting results"
-	#mnaseChIP.getPlots(out,average,matrix,halfwin)
+	#nucChIP.getPlots(out,average,matrix,halfwin)
 	print "Saving results to output file"
 	outFile=open(out+".cpickle",'wb')
 	cPickle.dump(obj,outFile)

@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+import argparse, sys, HTSeq, numpy
+import nucChIP
+
+###################################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Extract TSS from a GTF file, and outputs them in BED format. Redundant TSS are printed only once')
+	parser.add_argument('-gtf',type=str,dest="gtfFile",help="GTF file.")
+	parser.add_argument('-trans',type=str,dest="transSet",help="TXT file. List of transcripts to be output")
+	parser.add_argument('-o',type=str,dest="oFile",help="Output file.")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+#####################################################################
+def main():	
+	args = getParser().parse_args()
+	gtfFile=args.gtfFile
+	transSet=args.transSet
+	oFile  =args.oFile
+#	gtfFile="/home/rivasas2/tools/genomes/mouse/mm9/Mus_musculus.NCBIM37.67_chr.gtf"
+#	transSet="/data2/rivasas2/singleNucleosome/secondBatch/transcript_expression/on_trans.txt"
+#	oFile="test.bed"
+
+	gtffile = HTSeq.GFF_Reader( gtfFile )
+
+	transList={}
+	for trans in open(transSet,'r'):
+		trans=trans.strip()
+		transList[trans]=1
+
+	tss = {}
+	for feature in gtffile:
+		if feature.type == "exon" and feature.attr["exon_number"] == "1" and feature.attr['transcript_id'] in transList:
+			pos = feature.iv.start_d_as_pos
+			trans = feature.attr['transcript_id']
+			tss[trans] = [ pos, feature.attr['gene_id'] ]
+
+	out=open(oFile,'w')
+	for trans in open(transSet,'r'):
+		trans = trans.strip()
+		if not( trans in tss): continue 
+		pos  = tss[trans][0]
+		gene = tss[trans][1]
+		output = [ pos.chrom, pos.start, pos.end, gene, trans, pos.strand ] 
+		print >>out, '\t'.join(map(str,output))
+	out.close()
+#####################################################################
+if __name__ == '__main__':
+	main()

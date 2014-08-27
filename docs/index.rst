@@ -11,7 +11,15 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   commandLineTools
+   overview
+
+   mnasedChIP
+
+   installation
+  
+   walkThrough
+
+.. commandLineTools
 
 .. automodule:: _mnaseChIP
    :members:
