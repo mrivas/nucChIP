@@ -1,13 +1,15 @@
 #!/usr/bin/env python
-import argparse, sys, HTSeq, numpy
+import argparse, sys, HTSeq, numpy, pickle
 import nucChIP
 
 ###################################################################
 def getParser():
-	parser = argparse.ArgumentParser(description='Extract TSS from a GTF file, and outputs them in BED format. Redundant TSS are printed only once')
-	parser.add_argument('-gtf',type=str,dest="gtfFile",help="GTF file.")
-	parser.add_argument('-trans',type=str,dest="transSet",help="TXT file. List of transcripts to be output")
-	parser.add_argument('-o',type=str,dest="oFile",help="Output file.")
+	parser = argparse.ArgumentParser(description='Extract TSS from a GTF file, and outputs them in BED format. Only the dominant transcript per gene is used to output the TSS coordinates, understanding as dominant the one with the highest expression among peers.')
+	parser.add_argument('-gtf',type=str,dest="gtfFile",help="GTF annotation file. If used option -expr also needs to be provided")
+	parser.add_argument('-genes',type=str,dest="geneListFile",help="TXT file. List of genes to be output. Gene's TSS will be listed in the same order as this list.")
+	parser.add_argument('-expr',type=str,dest="transExprFile",help="TXT file. Transcript's expression file. It's used to determine the dominant transcript per gene. If used, option -gtf also needs to be provided.")
+	parser.add_argument('-knownTSS',type=str,dest="knownTSS",help="BED file. Known TSS, one TSS per gene. If present, it invalidates options -gtf, -genes, -gtf and -expr.",default="None")
+	parser.add_argument('-o',type=str,dest="oFile",help="Prefix of output files.")
 
 	if len(sys.argv) == 1:
 		print >> sys.stderr,parser.print_help()
@@ -17,35 +19,122 @@ def getParser():
 def main():	
 	args = getParser().parse_args()
 	gtfFile=args.gtfFile
-	transSet=args.transSet
+	geneListFile=args.geneListFile
+	transExprFile=args.transExprFile
+	knownTSS=args.knownTSS
 	oFile  =args.oFile
-#	gtfFile="/home/rivasas2/tools/genomes/mouse/mm9/Mus_musculus.NCBIM37.67_chr.gtf"
-#	transSet="/data2/rivasas2/singleNucleosome/secondBatch/transcript_expression/on_trans.txt"
+#	gtfFile="/home/rivasas2/tools/genomes/mouse/mm9/tss_ensembl_mm9.ucsc.bed"
+#	geneListFile="/data2/rivasas2/singleNucleosome/secondBatch/gene_expresion/on_genes.txt"
+#   transExprFile="/home/yu68/mouse_time_course_ChIP/RNA_seq/cufflink_output_mouse_d0_new/transcripts.expr"
 #	oFile="test.bed"
+	
 
-	gtffile = HTSeq.GFF_Reader( gtfFile )
+	if knownTSS == "None":
+		geneList=[]
+		genePresent = {}
+		for line in open(geneListFile,'r'):
+			gene_id = line.strip()
+			geneList.append(gene_id)
+			genePresent[ gene_id ] = 1
 
-	transList={}
-	for trans in open(transSet,'r'):
-		trans=trans.strip()
-		transList[trans]=1
-
+		transGene = {}
+		gtffile=HTSeq.GFF_Reader(gtfFile)
+		for feature in gtffile:
+			gene_id = feature.attr["gene_id"]
+			trans_id = feature.attr["transcript_id"]
+			transGene[trans_id] = gene_id
+		dominantTrans = {}
+		for line in open(transExprFile,'r'):
+			line = line.strip().split('\t')
+			trans_id = line[0]
+			fpkm  = line[5]
+			if not trans_id in transGene: continue # skip header line
+			gene_id = transGene[trans_id]
+			if not(gene_id in dominantTrans):
+				dominantTrans[ gene_id ] = [trans_id, fpkm]
+			else:
+				if fpkm > dominantTrans[gene_id][1]:
+					dominantTrans[ gene_id ] = [trans_id, fpkm]
+	
 	tss = {}
-	for feature in gtffile:
-		if feature.type == "exon" and feature.attr["exon_number"] == "1" and feature.attr['transcript_id'] in transList:
-			pos = feature.iv.start_d_as_pos
-			trans = feature.attr['transcript_id']
-			tss[trans] = [ pos, feature.attr['gene_id'] ]
+	if knownTSS == "None":
+		gtffile=HTSeq.GFF_Reader(gtfFile)
+		for feature in gtffile:
+			if feature.type == "exon" and feature.attr["exon_number"] == "1":
+				trans_id = feature.attr['transcript_id']
+				gene_id = feature.attr['gene_id']
+				if not gene_id in dominantTrans: continue
+				if not(gene_id in genePresent) or trans_id != dominantTrans[gene_id][0] : continue
+				pos = feature.iv.start_d_as_pos
+				biotype = feature.attr['gene_biotype']
+				tss[gene_id] = [ pos, trans_id, biotype ]
 
-	out=open(oFile,'w')
-	for trans in open(transSet,'r'):
-		trans = trans.strip()
-		if not( trans in tss): continue 
-		pos  = tss[trans][0]
-		gene = tss[trans][1]
-		output = [ pos.chrom, pos.start, pos.end, gene, trans, pos.strand ] 
-		print >>out, '\t'.join(map(str,output))
-	out.close()
+	else:	
+		for line in open(knownTSS,'r'):
+			line = line.strip().split('\t')
+			strand = line[5]
+			if strand=="+":
+				pos = HTSeq.GenomicInterval(line[0],int(line[1])-1,int(line[1]),strand)
+			else:	
+				pos = HTSeq.GenomicInterval(line[0],int(line[2])-1,int(line[2]),strand)
+			biotype = line[7]
+			gene_id = line[3]
+			gene_name = line[6]
+			tss[gene_id] = [pos, gene_name,biotype]
+
+	if knownTSS == "None":
+	# Print to file non-redundant set of TSS
+		outPC=open(oFile+"_proteinCoding.bed",'w')
+		outLR=open(oFile+"_lincRNA.bed",'w')
+		outMR=open(oFile+"_miRNA.bed",'w')
+		outSNO=open(oFile+"_snoRNA.bed",'w')
+		outSN=open(oFile+"_snRNA.bed",'w')
+
+		for gene_id in geneList:
+			if not gene_id in tss: continue  # For genes present on non-canonical chromosomes
+			pos = tss[gene_id][0]
+			trans_id  = tss[gene_id][1]
+			output = [ pos.chrom, pos.start, pos.end, gene_id, trans_id, pos.strand ] 
+			biotype  = tss[gene_id][2]
+			if "protein_coding" == biotype:
+				print >>outPC, '\t'.join(map(str,output))
+			if "lincRNA" == biotype:
+				print >>outLR, '\t'.join(map(str,output))
+			if "miRNA" == biotype:
+				print >>outMR, '\t'.join(map(str,output))
+			if "snoRNA" == biotype:
+				print >>outSNO, '\t'.join(map(str,output))
+			if "snRNA" == biotype:
+				print >>outSN, '\t'.join(map(str,output))
+		outPC.close()
+		outLR.close()
+		outMR.close()
+		outSNO.close()
+		outSN.close()
+	else:
+	# Save TSS as pickle files
+		proteinCoding, lincRNA, miRNA, snoRNA, snRNA = {},{},{},{},{}
+		for gene_id in tss:
+			pos = tss[gene_id][0]
+			trans_id  = tss[gene_id][1]
+			output = [ pos.chrom, pos.start, pos.end, gene_id, trans_id, pos.strand ] 
+			biotype  = tss[gene_id][2]
+			if "protein_coding" == biotype:
+				proteinCoding[gene_id] = output
+			if "lincRNA" == biotype:
+				lincRNA[gene_id] = output
+			if "miRNA" == biotype:
+				miRNA[gene_id] = output
+			if "snoRNA" == biotype:
+				snoRNA[gene_id] = output
+			if "snRNA" == biotype:
+				snRNA[gene_id] = output
+
+		pickle.dump(proteinCoding,open(oFile+'.proteinCoding.pickle','wb'))
+		pickle.dump(lincRNA,      open(oFile+'.lincRNA.pickle','wb'))
+		pickle.dump(miRNA,        open(oFile+'.miRNA.pickle'  ,'wb'))
+		pickle.dump(snoRNA,       open(oFile+'.snoRNA.pickle' ,'wb'))
+		pickle.dump(snRNA,        open(oFile+'.snRNA.pickle'  ,'wb'))
 #####################################################################
 if __name__ == '__main__':
 	main()

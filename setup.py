@@ -7,6 +7,6 @@ setup(name='nucChIP',
 	author='Marcelo Rivas-Astroza',
 	license='GPL',
 	packages=['nucChIP'],
-	scripts=['bin/bam2bed','bin/checkMatches','bin/getAvrCov','bin/getCounts','bin/getFigures','bin/getProfile','bin/merged','bin/getBedTSS'],
+	scripts=['bin/bam2bed','bin/checkMatches','bin/getAvrCov','bin/getCounts','bin/getFigures','bin/getProfile','bin/merged','bin/getBedTSS','bin/exprHistCorr','bin/getPromoterCoverage'],
 	install_requires=['numpy','sys','argparse','HTSeq','scipy','pybedtools','scipy','pysam',],
 	zip_safe=False)
