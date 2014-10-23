@@ -1,0 +1,36 @@
+#!/usr/bin/env python
+
+import argparse,sys,nucChIP
+
+###################################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Use MNase digested data to simulate sonicated data. The new read will be assigned a random fragment length normally distributed (see below mu, and sd) and strand assigned using a Bernoulli distribution.')
+	parser.add_argument('-bamIn',type=str,dest="bamIn",help="BAM file. File with the MNase digested reads that have been regularized (output of bam2bed).")
+	parser.add_argument('-bamOut',type=str,dest="bamOut",help="BAM file. File where the simulated sonicated reads will be saved.")
+	parser.add_argument('-mu',type=int,dest="mu",help="INT. Average fragment length the simulated reads (default 200).",default=200)
+	parser.add_argument('-sd',type=int,dest="sd",help="INT. Standard deviation of the average fragment length of the simulated reads (default 25).",default=25)
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+#####################################################################
+def main():
+	args = getParser().parse_args()
+	bamInName = args.bamIn
+	bamOutName = args.bamOut
+	mu		 = args.mu
+	sd		 = args.sd
+
+#	bamIn=pysam.Samfile("/data2/rivasas2/singleNucleosome/secondBatch/rmdup/byReplicates/coverage_plot/9_H3K9me3.sorted.bam",'rb')
+#	bamOut = pysam.Samfile("/data2/rivasas2/singleNucleosome/secondBatch/rmdup/byReplicates/coverage_plot/9_H3K9me3.sorted_sonicChIP.bam",'wbu',header=bamIn.header)
+#	readLength = 100
+#	mu = 200
+#	sd = 25
+
+	nucChIP.printNewAlmnt(bamInName,bamOutName,mu,sd)
+#####################################################################
+if __name__ == "__main__":
+	main()
+
+

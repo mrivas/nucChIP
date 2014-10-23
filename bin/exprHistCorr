@@ -4,57 +4,57 @@ import nucChIP
 
 ############################################################
 def getParser():
-    parser = argparse.ArgumentParser(description='Parse the -1, +1, +2, +3, and +4 nucleosomes and counts per gene.')
-    parser.add_argument('-g',type=str,dest="geneList",help="Gene list file.")
-    parser.add_argument('-c',type=str,dest="count",help="Counts file.")
-    parser.add_argument('-e',type=str,dest="expression",help="Expression file.")
-    parser.add_argument('-t',type=str,dest="tss",help="TSS file.")
-    parser.add_argument('-o',type=str,dest="out",help="Output file.")
+	parser = argparse.ArgumentParser(description='Parse the -1, +1, +2, +3, and +4 nucleosomes and counts per gene.')
+	parser.add_argument('-g',type=str,dest="geneList",help="Gene list file.")
+	parser.add_argument('-c',type=str,dest="count",help="Counts file.")
+	parser.add_argument('-e',type=str,dest="expression",help="Expression file.")
+	parser.add_argument('-t',type=str,dest="tss",help="TSS file.")
+	parser.add_argument('-o',type=str,dest="out",help="Output file.")
 
-    if len(sys.argv) == 1:
-        print >> sys.stderr,parser.print_help()
-        exit(0)
-    return parser
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
 ############################################################
 def main():
-    args = getParser().parse_args()
-    geneListData   = args.geneList
-    countsData     = args.count
-    expressionData = args.expression
-    tssData        = args.tss
-    outFile        = args.out
-    # Execution
-    print "generating gene list"
-    geneList   = nucChIP.getGeneList( geneListData )
-    print "generation expression database"
-    expression = nucChIP.getExpression( expressionData )
-    print "generation nucleosome and count's databases"
-    nucleosomes, counts = nucChIP.getNucsCounts( countsData )
+	args = getParser().parse_args()
+	geneListData   = args.geneList
+	countsData	 = args.count
+	expressionData = args.expression
+	tssData		= args.tss
+	outFile		= args.out
+	# Execution
+	print "generating gene list"
+	geneList   = nucChIP.getGeneList( geneListData )
+	print "generation expression database"
+	expression = nucChIP.getExpression( expressionData )
+	print "generation nucleosome and count's databases"
+	nucleosomes, counts = nucChIP.getNucsCounts( countsData )
 
 
-    print "generating TSS database"
-    tssNucs    = nucChIP.getTssNucs( geneList, tssData, nucleosomes)
-    out = open( outFile, 'w')
-    print "printing output"
-    print >>out, 'gene_id\tneg1pos\tpos1pos\tpos2pos\tpos3pos\tpos4pos\tneg1count\tpos1count\tpos2count\tpos3count\tpos4count\tfpkm'
-    for gene_id in geneList:
-        if not gene_id in tssNucs: continue
-        neg1count, pos1count, pos2count, pos3count, pos4count = 0,0,0,0,0
-        if 'neg1' in tssNucs[gene_id]: neg1count = counts[ tssNucs[gene_id]['neg1'] ]
-        if 'pos1' in tssNucs[gene_id]: pos1count = counts[ tssNucs[gene_id]['pos1'] ]
-        if 'pos2' in tssNucs[gene_id]: pos2count = counts[ tssNucs[gene_id]['pos2'] ]
-        if 'pos3' in tssNucs[gene_id]: pos3count = counts[ tssNucs[gene_id]['pos3'] ]
-        if 'pos4' in tssNucs[gene_id]: pos4count = counts[ tssNucs[gene_id]['pos4'] ]
-        neg1pos, pos1pos, pos2pos, pos3pos, pos4pos = 'nan','nan','nan','nan','nan'
-        if 'neg1' in tssNucs[gene_id]: neg1pos = tssNucs[gene_id]['neg1']
-        if 'pos1' in tssNucs[gene_id]: pos1pos = tssNucs[gene_id]['pos1']
-        if 'pos2' in tssNucs[gene_id]: pos2pos = tssNucs[gene_id]['pos2']
-        if 'pos3' in tssNucs[gene_id]: pos3pos = tssNucs[gene_id]['pos3']
-        if 'pos4' in tssNucs[gene_id]: pos4pos = tssNucs[gene_id]['pos4']
-        output = [ gene_id, neg1pos, pos1pos, pos2pos, pos3pos, pos4pos ]
-        output += [ neg1count , pos1count, pos2count, pos3count, pos4count, expression[gene_id] ]
-        print >>out, '\t'.join( map(str,output) )
-    out.close()
+	print "generating TSS database"
+	tssNucs	= nucChIP.getTssNucs( geneList, tssData, nucleosomes)
+	out = open( outFile, 'w')
+	print "printing output"
+	print >>out, 'gene_id\tneg1pos\tpos1pos\tpos2pos\tpos3pos\tpos4pos\tneg1count\tpos1count\tpos2count\tpos3count\tpos4count\tfpkm'
+	for gene_id in geneList:
+		if not gene_id in tssNucs: continue
+		neg1count, pos1count, pos2count, pos3count, pos4count = 0,0,0,0,0
+		if 'neg1' in tssNucs[gene_id]: neg1count = counts[ tssNucs[gene_id]['neg1'] ]
+		if 'pos1' in tssNucs[gene_id]: pos1count = counts[ tssNucs[gene_id]['pos1'] ]
+		if 'pos2' in tssNucs[gene_id]: pos2count = counts[ tssNucs[gene_id]['pos2'] ]
+		if 'pos3' in tssNucs[gene_id]: pos3count = counts[ tssNucs[gene_id]['pos3'] ]
+		if 'pos4' in tssNucs[gene_id]: pos4count = counts[ tssNucs[gene_id]['pos4'] ]
+		neg1pos, pos1pos, pos2pos, pos3pos, pos4pos = 'nan','nan','nan','nan','nan'
+		if 'neg1' in tssNucs[gene_id]: neg1pos = tssNucs[gene_id]['neg1']
+		if 'pos1' in tssNucs[gene_id]: pos1pos = tssNucs[gene_id]['pos1']
+		if 'pos2' in tssNucs[gene_id]: pos2pos = tssNucs[gene_id]['pos2']
+		if 'pos3' in tssNucs[gene_id]: pos3pos = tssNucs[gene_id]['pos3']
+		if 'pos4' in tssNucs[gene_id]: pos4pos = tssNucs[gene_id]['pos4']
+		output = [ gene_id, neg1pos, pos1pos, pos2pos, pos3pos, pos4pos ]
+		output += [ neg1count , pos1count, pos2count, pos3count, pos4count, expression[gene_id] ]
+		print >>out, '\t'.join( map(str,output) )
+	out.close()
 ############################################################
 if __name__ == '__main__':
-    main()
+	main()

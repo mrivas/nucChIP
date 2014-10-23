@@ -1,0 +1,193 @@
+#!/usr/bin/env python
+import pybedtools, itertools, numpy, pickle, pp, argparse, sys, zipfile, glob, os, nucChIP
+from matplotlib import pyplot
+import matplotlib.cm as cm
+from scipy import stats
+
+###################################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Computes correlation between in-vivo and in-vitro nucleosome locations and outputs it as an svg figure.')
+	parser.add_argument('-chroms',type=str,dest="chroms",help="TXT file. Chromosome sizes: chrom_id TAB chrom_size")
+	parser.add_argument('-geneList',type=str,dest="geneList",help="TXT file. List of gene IDs around whom the correlations will be computed")
+	parser.add_argument('-tss',type=str,dest="tss",help="Python pickle file. Database of TSS. The format is a dictionary where keys are the gene_ids, and values the array: [ chrom, start, end, gene_id, trans_id, strand ].")
+	parser.add_argument('-halfWin',type=int,dest="halfWin",help="INT. Half window size around TSS of selected genes. A region of 2*halfWind around TSS will be used to compute the correlation.")
+	parser.add_argument('-inVitro',type=str,dest="inVitro",help="BED file. In-vitro per base probability of being covered by a nucleosome.")
+	parser.add_argument('-inVivo',type=str,dest="inVivo",help="BED file. In-vivo per base coverage values.")
+	parser.add_argument('-nproc',type=int,dest="nproc",help="INT. Number of processor to be used in parallel.", default=1)
+	parser.add_argument('-prefix',type=str,dest="prefix",help="STR. Prefix of output figure. Output name will be: <prefix>.scatterPlot.svg", default='output')
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+#####################################################################
+def main():
+#	chromsFile   = '/data2/rivasas2/singleNucleosome/nucPosPrediction/mm9.chromSizes'
+#	geneListFile = '/data2/rivasas2/singleNucleosome/secondBatch/gene_expresion/on_genes.txt'
+#	tss	 = pickle.load(open('/data2/rivasas2/singleNucleosome/secondBatch/gene_expresion/coverage_plots_noSmoothed/mm9_TSS.proteinCoding.pickle','r'))
+#	halfWin = 1000
+#	invivo  = pybedtools.BedTool('/data2/rivasas2/singleNucleosome/secondBatch/rmdup/byReplicates/coverage/all_nuc.sorted_coverage.bed.gz')
+#	invitro = pybedtools.BedTool('/data2/rivasas2/singleNucleosome/nucPosPrediction/mm9_avg_occ_byPos.bed.gz')
+#	nproc   = 10
+#	prefix  = 'test'
+
+	args = getParser().parse_args()
+	chromsFile   = args.chroms
+	geneListFile = args.geneList
+	tss		     = pickle.load(open(args.tss,'r'))
+	halfWin	     = args.halfWin
+	invivo	     = pybedtools.BedTool(args.inVivo)
+	invitro	     = pybedtools.BedTool(args.inVitro)
+	nproc		 = args.nproc
+	prefix	     = args.prefix
+	geneList = {}
+	for line in open(geneListFile,'r'):
+		line=line.strip()
+		geneList[line]=1
+	chroms = {}
+	for line in open(chromsFile,'r'):
+		line=line.strip().split('\t')
+		chroms[line[0]] = line[1]	   
+#	#################################################
+#	ppservers = ()
+#	job_server=pp.Server(10,ppservers=ppservers)
+#	#################################################
+#	print "Computing inVitro params"
+#	# Submitting
+#	jobs=[]
+#	for chrom in chroms:
+#		end = int( chroms[chrom] )
+#		chrom = chrom[3:]
+#		jobs.append( job_server.submit( nucChIP.getSumLines, (invitro,chrom,end,0), (), ("pybedtools",) ))
+#	# Retrieving	
+#	sumTotalVitro,nLinesVitro = 0.0,0.0
+#	for job in jobs:
+#		x,y = job()
+#		sumTotalVitro += x
+#		nLinesVitro	   += y
+#	muVitro = float(sumTotalVitro)/nLinesVitro
+#	print "muVitro = ",muVitro
+#	# Submitting
+#	jobs=[]
+#	for chrom in chroms:
+#		end = int( chroms[chrom] ) 
+#		chrom = chrom[3:]
+#		jobs.append( job_server.submit( nucChIP.getSumLog, (invitro,chrom,end,muVitro,0), (), ("pybedtools","numpy") ))	
+#	# Retrieving
+#	sumTotalLogVitro = 0.0
+#	for job in jobs:
+#		x = job()
+#		sumTotalLogVitro += x	
+#	muRatioVitro = float(sumTotalLogVitro)/nLinesVitro
+#	print "muRatioVitro = ",muRatioVitro
+#	#################################################
+#	print "Computing inVivo params"
+#	# Submitting
+#	jobs=[]
+#	for chrom in chroms:
+#		end = int( chroms[chrom] )
+#		jobs.append( job_server.submit( nucChIP.getSumLines, (invivo,chrom,end,1), (), ("pybedtools",) ))
+#	# Retrieving	
+#	sumTotalVivo,nLinesVivo = 0.0,0.0
+#	for job in jobs:
+#		x,y = job()
+#		sumTotalVivo += x
+#		nLinesVivo   += y
+#	muVivo = float(sumTotalVivo)/nLinesVivo
+#	print "muVivo = ",muVivo
+#	# Submitting
+#	jobs=[]
+#	for chrom in chroms:
+#		end = int( chroms[chrom] )	
+#		jobs.append( job_server.submit( nucChIP.getSumLog,  (invivo,chrom,end,muVivo,1), (), ("pybedtools","numpy",) ))	
+#	# Retrieving
+#	sumTotalLogVivo = 0.0
+#	for job in jobs:
+#		x = job()
+#		sumTotalLogVivo += x	
+#	muRatioVivo = float(sumTotalLogVivo)/nLinesVivo 
+#	print "muRatioVivo = ",muRatioVivo
+	muVitro =  0.531157777702
+	muRatioVitro =  -0.124985213652
+	muVivo =  7.93306457396
+	muRatioVivo =  -0.473789612436
+	###############################################
+	print "Build x and y vectors for linear regression"
+	x = []
+	y = []
+	# Iterate over promoter regions
+	nNoPresent, nStartTooLow, nNoChrom = 0,0,0
+	for gene_id in geneList:
+		if not gene_id in tss:
+			nNoPresent += 1
+			#print gene_id+' not present on database'
+			continue
+		chrom  = tss[gene_id][0]
+		# Check if promoter is on in-vitro chromosome
+		if not chrom in chroms: 
+			nNoChrom +=1
+			continue
+		pos	= int( tss[gene_id][2] )
+		start = pos - halfWin 
+		end   = pos + halfWin
+		if start <= 3000000:
+			nStartTooLow += 1
+			continue
+			
+		# Write mean-centered normalized values
+		xi,yi= [],[]
+		for line in invitro.tabix_intervals(pybedtools.Interval(chrom[3:], start, end)):
+			xi.append( numpy.log( float(line[3])/muVitro ) - muRatioVitro )
+		for line in  invivo.tabix_intervals(pybedtools.Interval(chrom	, start, end)):
+			yi.append( numpy.log( (float(line[3])+1)/muVivo )  - muRatioVivo )		
+		if len(xi)==len(yi):
+			x += xi
+			y += yi
+		else:
+			print "xi,yi of different lengths ",gene_id,chrom,start,end,len(xi),len(yi)
+	
+	print nNoPresent,' not present on TSS database'
+	print nStartTooLow,' with start too low (below 3M)'
+	print nNoChrom,' without chromosome on in-vivo file'
+	#############################################################
+	# Save variables as pickle files
+	pickle.dump(x,open(prefix+'.xVitro.pickle'  ,'wb'))
+	pickle.dump(y,open(prefix+'.xVivo.pickle'  ,'wb'))
+	pickle.dump(muVivo,open(prefix+'.muVivo.pickle'  ,'wb'))
+	pickle.dump(muRatioVivo,open(prefix+'.muRatioVivo.pickle'  ,'wb'))
+	pickle.dump(muVitro,open(prefix+'.muVitro.pickle'  ,'wb'))
+	pickle.dump(muRatioVitro,open(prefix+'.muRatioVitro.pickle'  ,'wb'))
+	# Save all pickle files into a zip file
+	File = zipfile.ZipFile(prefix+".zip","w")
+	for name in glob.glob(os.getcwd()+"/*.pickle"):
+		File.write(name, os.path.basename(name), zipfile.ZIP_DEFLATED)
+	File.close()
+	#with zipfile.ZipFile('test.zip', "r") as z:
+	#    z.extractall(os.getcwd()+"/tmp")
+	#########################################################
+	print "Computing and plotting linear regression"
+	#x = numpy.random.normal(size=10000)
+	#y = x*3 + numpy.random.normal(size=10000)
+	slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+	#print 'r value', r_value
+	#print  'p_value', p_value
+	#print 'standard deviation', std_err
+
+	line = slope*x + intercept
+	pyplot.hist2d(x,y, (150, 150), cmap=cm.jet )
+	cbar=pyplot.colorbar()
+	cbar.set_label('Number of base-pairs', rotation=270,labelpad=10)
+	pyplot.axvline(0,color='white',linestyle='--')
+	pyplot.axhline(0,color='white',linestyle='--')
+	pyplot.annotate('R = '+str(round(r_value,ndigits=4)),xy=(0.05, 0.9), xycoords='axes fraction',color='white',size=14)
+	pyplot.xlabel('Normalized nucleosome ocuppancy in vitro')
+	pyplot.ylabel('Normalized nucleosome ocuppancy in vivo')
+	#plot(x,line,'w--')
+	#show()
+	pyplot.savefig(prefix+".scatterPlot.svg")
+	pyplot.close()
+#####################################################################
+if __name__ == "__main__":
+	main()
+
+

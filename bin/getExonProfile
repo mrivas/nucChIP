@@ -3,30 +3,21 @@ import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, nucChIP
 matplotlib.use('Agg')
 from matplotlib import pyplot
 from scipy import stats
-from scipy.cluster.vq import kmeans2
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib import gridspec
-#from scipy.interpolate import interp1d
-from scipy import signal
-from scipy.signal import argrelmax
 
 ###########################################################
 def getParser():
-	parser = argparse.ArgumentParser(description='Generate coverage plots.')
+	parser = argparse.ArgumentParser(description='Generate coverage plots for alternatively spliced exons. It scales the dimensions, such that exons/introns of different lengths can be plotted together.')
 	parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
 	parser.add_argument('-d'   , type=str,   dest="database",help="STR. Name of database with TSS info.")
 	parser.add_argument('-w'   , type=int,   dest="wWidth",help="INT. Half width of plotting window.")
+	parser.add_argument('-ns'   , type=int,   dest="numSamples",help="INT. Number of samples points for each exon/intron.")
 	parser.add_argument('-lower'   , type=int,   dest="lower",help="INT. Lower insert size to be considered. Default: 0",default=0)
 	parser.add_argument('-upper'   , type=int,   dest="upper",help="INT. Upper insert size to be considered. Deafult: 200", default=200)
 	parser.add_argument('-perc', type=float, dest="perc",help="FLOAT. Percentile of top extreme values to be discarded.",default=0)
-	parser.add_argument('-plotNucs', type=str, dest="plotNucs",help="STR. Plot nucleosome positions: 'true' or 'false'. Default = 'false'.",default="false")
-	parser.add_argument('-localMaxFile', type=str, dest="localMaxFile",help="STR. File containing positions of nucleosomes relative to TSS. Default = 'none'.",default="none")
-	parser.add_argument('-clustering', type=str, dest="clustering",help="STR. Either kmeans or none.",default="none")
 	parser.add_argument('-t'   , type=str,   dest="title",help="STR. Title of output figure.")
 	parser.add_argument('-fs'  , type=int,   dest="fSize",help="INT. Font size.",default=12)
-	parser.add_argument('-kc'  , type=int,   dest="kclusters",help="INT. Number of clusters for heatmap's k-means clustering.",default=8)
-	parser.add_argument('-kp'  , type=int,   dest="kpoints",help="INT. Number of points to be used on heatmap's during k-means clustering.",default=100)
-	parser.add_argument('-cols'  , type=int,   dest="cols",help="INT. Number of columns for the heatmap.",default=2)
 	parser.add_argument('-o'   , type=str,   dest="prefix",help="Prefix of output files.")
 
 	if len(sys.argv) == 1:
@@ -43,16 +34,12 @@ def main():
 	upperSize		= args.upper
 	fs		   = args.fSize
 	perc		 = args.perc
-	plotNucs     = args.plotNucs
-	localMaxFile = args.localMaxFile
-	clustering   = args.clustering
-	kclusters	= args.kclusters
-	kpoints	  = args.kpoints
-	ncols		= args.cols
 	halfwinwidth = args.wWidth
 	prefix	   = args.prefix
-
-	window = numpy.arange( -halfwinwidth, halfwinwidth ) 
+	numSamples = args.numSamples
+	
+	winwidth = 7*numSamples
+	window = numpy.arange( winwidth ) 
 	nfiles = 0
 	for line in open(confFile,'r'): nfiles += 1
 	color  = iter( matplotlib.cm.rainbow( numpy.linspace(0,1,nfiles) ) )	
@@ -69,15 +56,15 @@ def main():
 	for idx,line in enumerate(open(confFile,'r')):
 		line	 = line.strip().split('\t')
 		bamFile  = line[0]
-		geneList = line[1]
+		exonList = line[1]
 		label	= line[2]
 		if len(line)>3: # if single-end, fragLength >0
 			fragLength = int(line[3])
 		else: # if paired-end, fragLength=0
 			fragLength = 0
 		# Regions on where to produce coverage plots
-		regions	   = nucChIP.getRegions(geneList,database,halfwinwidth)
-		profileMatrix = nucChIP.getProfile(halfwinwidth,regions,bamFile,fragLength,lowerSize,upperSize)
+		regions, exons   = nucChIP.getExons(exonList, database, halfwinwidth )
+		profileMatrix = nucChIP.getExonProfile(halfwinwidth,regions,exons,bamFile,fragLength,lowerSize,upperSize)
 		# Cap extreme cases
 		upp_percen		= numpy.percentile( profileMatrix, (100.00-float(perc)/2), axis=0 )
 		low_percen		= numpy.percentile( profileMatrix, (float(perc)/2)       , axis=0 )
@@ -95,57 +82,12 @@ def main():
 		#pyplot.figure(1) # Average coverage plot
 		avAx.plot(window, profile, lw=0.9, label=label, color=c)
 		avAx.fill_between(window, profile+sem,profile-sem,facecolor=c,alpha=0.5)
-		if idx == 0 and plotNucs=="true" and localMaxFile=="none":
-			#splineFunc = interp1d(window,profile, kind='cubic')
-			#xnew = numpy.linspace(min(window),max(window), len(window)/30)
-			#smooth = splineFunc(xnew)
-			#avAx.plot(xnew,smooth,color='r',label="smoothed")
-			smooth=signal.savgol_filter(profile, 147, 3)
-			avAx.plot(window,smooth,color='r',label="smoothed")
-			maxIdxs = argrelmax(smooth,order=50)[0]
-			#localMax = xnew[maxIdxs]
-			localMax = window[maxIdxs]
-			out=open(prefix+'.localMax.txt','w')
-			for val in localMax:
-				#avAx.axvline(x=val,linewidth=2, color='r')
-				lower=max(min(window),val-74)
-				upper=min(max(window),val+74)
-				avAx.axvspan(lower,upper,alpha=0.2,color=c)
-				print >>out, val
-			out.close()
-		elif idx==0 and plotNucs=="true" and localMaxFile!="none":
-			for line in open(localMaxFile,'r'):
-				val=float(line.strip())
-				lower=max(min(window),val-74)
-				upper=min(max(window),val+74)
-				avAx.axvspan(lower,upper,alpha=0.2,color=c)
-		# Heatmap
-#		cols = range(0,nCols,nCols/kpoints)
-#		if clustering == "kmeans": # Cluster rows
-#			centroids, clusters = kmeans2(profileMatrixConf[:,cols],kclusters,iter=30,thresh=1e-06)
-#			clustersSorted = numpy.argsort(clusters)
-#			im = htAx[idxs[idx]].imshow(profileMatrixConf[clustersSorted,:], cmap=cmap, vmax=1.5*numpy.max(profile), extent=[-halfwinwidth,halfwinwidth,nRows,0], aspect='equal' )
-#		elif clustering == "none": # No cluster
-#			im = htAx[idxs[idx]].imshow(profileMatrixConf, cmap=cmap, vmax=percentile, extent=[-halfwinwidth,halfwinwidth,nRows,0],aspect='equal' )
-#		if (idx+1) <= ncols: # Print title only on first row
-#			htAx[idxs[idx]].set_title(title,fontsize=fs)
-#		if (idx+1) > (nfiles-ncols): # Print xlabel only on bottom row
-#			htAx[idxs[idx]].set_xlabel('Distance (nt) to TSS',fontsize=fs)
-#		htAx[idxs[idx]].set_ylabel(label,fontsize=fs)
-#		#htAx[idxs[idx]].locator_params(axis = 'x', nbins = 3)
-#		divider = make_axes_locatable(htAx[idxs[idx]])
-#		cax = divider.append_axes("right", size="5%", pad=0.05)
-#		cbar = pyplot.colorbar(im, cax=cax)
-
-#	htFig.savefig(prefix+".heatmap.svg")
-	#pyplot.figure(1)  # Back to average coverage plot
 	avAx.set_title(title,fontsize=fs)
 	avAx.legend(loc='upper left',fontsize=fs)
 	avAx.set_xlabel('Genomic region (5\' $\mapsto$ 3\')',fontsize=fs)
 	avAx.set_ylabel('Read count Per Million mapped reads',fontsize=fs)
 	avAx.grid()
 	avFig.savefig(prefix+".avrcov.svg")
-	#pyplot.close()
 ################################################################
 if __name__ == '__main__':
 	main()

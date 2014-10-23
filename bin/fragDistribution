@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+import argparse, sys, nucChIP, numpy
+from matplotlib import pyplot
+
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Generate histogram of fragment lengthss.')
+	parser.add_argument('-b'   , type=str,   dest="bamName",help="STR. Sorted paired-end BAM file.")
+	parser.add_argument('-t'   , type=str,   dest="title",help="STR. Title of histogram. Default: 'none'.",default="none")
+	parser.add_argument('-bins'   , type=int,   dest="bins",help="INT. Number of bins for the histogram. Default: 200.",default=200)
+
+	parser.add_argument('-o'   , type=str,   dest="prefix",help="Prefix of output figure. Default: 'output'.", default="output")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args	= getParser().parse_args()
+	bamName = args.bamName
+	title   = args.title
+	bins    = args.bins
+	prefix	= args.prefix
+
+	lengths = nucChIP.getFragDistribution(bamName)
+	sd = numpy.std(lengths)
+	mu = numpy.mean(lengths)
+	upper = mu + 3*sd 
+	lower = mu - 3*sd
+	pyplot.hist(lengths,normed=True,bins=bins,range=(lower,upper))
+	if title!="none": pyplot.title(title)
+	pyplot.xlabel("Fragment size (nt)")
+	pyplot.ylabel("Fraction of Library")
+	pyplot.savefig(prefix+".fragDist.svg")
+	pyplot.close()
+
+################################################################
+if __name__ == '__main__':
+	main()

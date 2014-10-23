@@ -5,7 +5,8 @@ import nucChIP
 def getParser():
 	parser = argparse.ArgumentParser(description='Count reads per nucleosome.')
 	parser.add_argument('-b',type=str,dest="bFile",help="BAM file. ChIP-seq reads.")
-	parser.add_argument('-n',type=str,dest="nFile",help="BED file. Nucleosome data, output of Danpos. Only nucleosomes with p-values < 1e-5 are used")
+	parser.add_argument('-n',type=str,dest="nFile",help="BED file. Nucleosome data, output of Danpos.")
+	parser.add_argument('-pValue',type=float,dest="pValue",help="FLOAT file. pValue cut-off of nucleosomes on BED file.")
 	parser.add_argument('-l',type=int,dest="lType",help="INT. Library type: if equal to 0, data is assumed to be paired-end and read lengths are estimated from data itself; if different from 0, data is assumed to be single-end and read lengths use this value extend every read.")
 	parser.add_argument('-e',type=int,dest="exten",help="INT. Half length of reads extended at their midpoint.")
 	parser.add_argument('-o',type=str,dest="oFile",help="STR. Name of output file.")
@@ -19,6 +20,7 @@ def main():
 	args = getParser().parse_args()
 	bamName = args.bFile
 	nuclFile = args.nFile
+	pValue   = args.pValue
 	libType  = args.lType
 	extension  = args.exten
 	oFile = args.oFile
@@ -47,7 +49,8 @@ def main():
 			print >>out, "Avr length = "+str(avrLength)
 			continue
 		fields=line.split("\t")
-		if float(fields[5])>0.00005: continue
+		#if float(fields[5])>0.00005: continue
+		if float(fields[5])>pValue: continue
 		nucID=fields[0]+"_"+str(fields[1])+"_"+str(fields[2])
 		if nucID in counts:
 			print >>out, nucID,"\t",counts[nucID]

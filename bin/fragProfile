@@ -6,18 +6,16 @@ from scipy import stats
 from scipy.cluster.vq import kmeans2
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib import gridspec
-#from scipy.interpolate import interp1d
 from scipy import signal
 from scipy.signal import argrelmax
+import pandas
 
 ###########################################################
 def getParser():
-	parser = argparse.ArgumentParser(description='Generate coverage plots.')
+	parser = argparse.ArgumentParser(description='Generate plots of mean fragment length per base.')
 	parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
 	parser.add_argument('-d'   , type=str,   dest="database",help="STR. Name of database with TSS info.")
 	parser.add_argument('-w'   , type=int,   dest="wWidth",help="INT. Half width of plotting window.")
-	parser.add_argument('-lower'   , type=int,   dest="lower",help="INT. Lower insert size to be considered. Default: 0",default=0)
-	parser.add_argument('-upper'   , type=int,   dest="upper",help="INT. Upper insert size to be considered. Deafult: 200", default=200)
 	parser.add_argument('-perc', type=float, dest="perc",help="FLOAT. Percentile of top extreme values to be discarded.",default=0)
 	parser.add_argument('-plotNucs', type=str, dest="plotNucs",help="STR. Plot nucleosome positions: 'true' or 'false'. Default = 'false'.",default="false")
 	parser.add_argument('-localMaxFile', type=str, dest="localMaxFile",help="STR. File containing positions of nucleosomes relative to TSS. Default = 'none'.",default="none")
@@ -39,8 +37,6 @@ def main():
 	confFile	 = args.confFile
 	database	 = args.database
 	title		= args.title
-	lowerSize		= args.lower
-	upperSize		= args.upper
 	fs		   = args.fSize
 	perc		 = args.perc
 	plotNucs     = args.plotNucs
@@ -71,35 +67,28 @@ def main():
 		bamFile  = line[0]
 		geneList = line[1]
 		label	= line[2]
-		if len(line)>3: # if single-end, fragLength >0
-			fragLength = int(line[3])
-		else: # if paired-end, fragLength=0
-			fragLength = 0
 		# Regions on where to produce coverage plots
 		regions	   = nucChIP.getRegions(geneList,database,halfwinwidth)
-		profileMatrix = nucChIP.getProfile(halfwinwidth,regions,bamFile,fragLength,lowerSize,upperSize)
-		# Cap extreme cases
-		upp_percen		= numpy.percentile( profileMatrix, (100.00-float(perc)/2), axis=0 )
-		low_percen		= numpy.percentile( profileMatrix, (float(perc)/2)       , axis=0 )
-		profileMatrixConf = profileMatrix
-		for row in range( profileMatrix.shape[0] ):
-			cols_upp = (profileMatrix[row,:] > upp_percen )
-			profileMatrixConf[ row, cols_upp ] = upp_percen[cols_upp]
-			cols_low = (profileMatrix[row,:] < low_percen )
-			profileMatrixConf[ row, cols_low ] = low_percen[cols_low]
+		profileMatrix = nucChIP.getFragProfile(halfwinwidth,regions,bamFile)
+		# Filter out top frac of extreme cases
+		profileMax		= numpy.nansum(profileMatrix,axis=1)
+		profileMaxS		= pandas.Series( profileMax )
+		upp_percen		= profileMaxS.quantile( (100.00-float(perc)/2)/100 )
+		low_percen		= profileMaxS.quantile( (float(perc)/2)/100.0 )
+		print "percentile = ",low_percen,upp_percen
+		indices1		   = ( profileMax < upp_percen )
+		indices2		   = ( profileMax > low_percen )
+		profileMatrixConf = profileMatrix[ indices1*indices2 , : ]
 		nRows, nCols	  = numpy.shape(profileMatrixConf)
 		# Average coverage
-		profile = numpy.mean( profileMatrixConf, axis=0)
-		sem	 = stats.sem(  profileMatrixConf, axis=0)
+		profileMatrixConfDF = pandas.DataFrame( profileMatrixConf )
+		profile = numpy.nanmean( profileMatrixConf, axis=0)
+		sem	    = profileMatrixConfDF.sem(axis=0)
 		c	   = next(color)
 		#pyplot.figure(1) # Average coverage plot
-		avAx.plot(window, profile, lw=0.9, label=label, color=c)
+		avAx.plot(window, profile, lw=2, label=label, color=c)
 		avAx.fill_between(window, profile+sem,profile-sem,facecolor=c,alpha=0.5)
 		if idx == 0 and plotNucs=="true" and localMaxFile=="none":
-			#splineFunc = interp1d(window,profile, kind='cubic')
-			#xnew = numpy.linspace(min(window),max(window), len(window)/30)
-			#smooth = splineFunc(xnew)
-			#avAx.plot(xnew,smooth,color='r',label="smoothed")
 			smooth=signal.savgol_filter(profile, 147, 3)
 			avAx.plot(window,smooth,color='r',label="smoothed")
 			maxIdxs = argrelmax(smooth,order=50)[0]
@@ -142,9 +131,9 @@ def main():
 	avAx.set_title(title,fontsize=fs)
 	avAx.legend(loc='upper left',fontsize=fs)
 	avAx.set_xlabel('Genomic region (5\' $\mapsto$ 3\')',fontsize=fs)
-	avAx.set_ylabel('Read count Per Million mapped reads',fontsize=fs)
+	avAx.set_ylabel('Average fragment size (nt)',fontsize=fs)
 	avAx.grid()
-	avFig.savefig(prefix+".avrcov.svg")
+	avFig.savefig(prefix+".avrfrag.svg")
 	#pyplot.close()
 ################################################################
 if __name__ == '__main__':

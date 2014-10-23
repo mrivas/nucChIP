@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+import argparse, sys, HTSeq, numpy, pickle
+import nucChIP
+
+###################################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Extract exon positions from MISO summary file, and outputs them as python database (pickle).')
+	parser.add_argument('-miso',type=str,dest="miso",help="MISO summary file")
+	parser.add_argument('-exons',type=str,dest="exonListFile",help="TXT file. List of exons to be output. Default: none (all exons are output)",default="none")
+	parser.add_argument('-o',type=str,dest="oFile",help="Prefix of output files.")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+#####################################################################
+def main():	
+	args = getParser().parse_args()
+	misoFile=args.miso
+	exonListFile=args.exonListFile
+	oFile  =args.oFile
+	
+	if exonListFile!="none":
+		exonPresent = {}
+		for line in open(exonListFile,'r'):
+			exon_id = line.strip()
+			exonPresent[ exon_id ] = 1
+
+	miso = {}
+	nLine=0
+	for line in open(misoFile,'r'):
+		if nLine==0: # skips header line 
+			nLine += 1
+			continue
+		line = line.strip().split('\t')
+		exon_id = line[0]
+		if exonListFile!="none":
+			if not(exon_id in exonPresent): continue 
+		coords = exon_id.split('@')
+		miso[ exon_id ] = []
+		for coord in coords:
+			chrom,start,end,strand=coord.split(':')
+			if strand=="+":
+				miso[exon_id] += [int(start),int(end)]
+			else:
+				miso[exon_id] = [int(start),int(end)] + miso[exon_id]
+		miso[exon_id] += [chrom,strand]
+
+	# Save miso as pickle files
+	pickle.dump(miso,open(oFile+'.pickle','wb'))
+#####################################################################
+if __name__ == '__main__':
+	main()

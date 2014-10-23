@@ -4,11 +4,11 @@ import nucChIP
 
 ###################################################################
 def getParser():
-	parser = argparse.ArgumentParser(description='Extract TSS from a GTF file, and outputs them in BED format. Only the dominant transcript per gene is used to output the TSS coordinates, understanding as dominant the one with the highest expression among peers.')
+	parser = argparse.ArgumentParser(description='Extract TSS from a GTF file, and outputs them as python database (pickle or BED files). If a GTF and expression files are provided, only the dominant (highest expression) transcript per gene are output as TSS coordinates.')
 	parser.add_argument('-gtf',type=str,dest="gtfFile",help="GTF annotation file. If used option -expr also needs to be provided")
 	parser.add_argument('-genes',type=str,dest="geneListFile",help="TXT file. List of genes to be output. Gene's TSS will be listed in the same order as this list.")
 	parser.add_argument('-expr',type=str,dest="transExprFile",help="TXT file. Transcript's expression file. It's used to determine the dominant transcript per gene. If used, option -gtf also needs to be provided.")
-	parser.add_argument('-knownTSS',type=str,dest="knownTSS",help="BED file. Known TSS, one TSS per gene. If present, it invalidates options -gtf, -genes, -gtf and -expr.",default="None")
+	parser.add_argument('-knownTSS',type=str,dest="knownTSS",help="BED file. Known TSS, one TSS per gene. If present, it invalidates options -gtf, -genes, -gtf and -expr. If use, all TSS are saved as pickle files.",default="None")
 	parser.add_argument('-o',type=str,dest="oFile",help="Prefix of output files.")
 
 	if len(sys.argv) == 1:
@@ -131,10 +131,10 @@ def main():
 				snRNA[gene_id] = output
 
 		pickle.dump(proteinCoding,open(oFile+'.proteinCoding.pickle','wb'))
-		pickle.dump(lincRNA,      open(oFile+'.lincRNA.pickle','wb'))
-		pickle.dump(miRNA,        open(oFile+'.miRNA.pickle'  ,'wb'))
-		pickle.dump(snoRNA,       open(oFile+'.snoRNA.pickle' ,'wb'))
-		pickle.dump(snRNA,        open(oFile+'.snRNA.pickle'  ,'wb'))
+		pickle.dump(lincRNA,	  open(oFile+'.lincRNA.pickle','wb'))
+		pickle.dump(miRNA,		open(oFile+'.miRNA.pickle'  ,'wb'))
+		pickle.dump(snoRNA,	   open(oFile+'.snoRNA.pickle' ,'wb'))
+		pickle.dump(snRNA,		open(oFile+'.snRNA.pickle'  ,'wb'))
 #####################################################################
 if __name__ == '__main__':
 	main()

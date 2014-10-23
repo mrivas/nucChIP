@@ -3,48 +3,49 @@ import argparse, sys
 import nucChIP
 ###########################################################
 def getParser():
-    parser = argparse.ArgumentParser(description='Computes average coverage on the array of nucleosomes surrounding TSS.')
-    parser.add_argument('-tss',type=str,dest="tssData",help="Python pickle file. Database of TSS positions.")
-    parser.add_argument('-nuc',type=str,dest="nucRelPos",help="TXT file. Nucleosomes positions relative to TSS.")
-    parser.add_argument('-bam',type=str,dest="bamFile",help="BAM file. ChIP-seq reads.")
-    parser.add_argument('-expr',type=str,dest="expr",help="TXT file. Expression (fpkm) per gene.")
-    parser.add_argument('-o',type=str,dest="oFile",help="STR. Name of output file.")
+	parser = argparse.ArgumentParser(description='Computes average coverage on the array of nucleosomes surrounding TSS.')
+	parser.add_argument('-tss',type=str,dest="tssData",help="Python pickle file. Database of TSS positions.")
+	parser.add_argument('-nuc',type=str,dest="nucRelPos",help="TAB file. Nucleosomes positions relative to TSS, where columns are: region_ID_name TAB distance_relative_to_TSS")
+	parser.add_argument('-bam',type=str,dest="bamFile",help="BAM file. ChIP-seq reads.")
+	parser.add_argument('-expr',type=str,dest="expr",help="TXT file. Expression (fpkm) per gene.")
+	parser.add_argument('-o',type=str,dest="oFile",help="STR. Name of output file.")
 
-    if len(sys.argv) == 1:
-    	print >> sys.stderr,parser.print_help()
-    	exit(0)
-    return parser
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
 ###########################################################
 def main():
-    args = getParser().parse_args()
-    tssData    = args.tssData
-    nucRelPos = args.nucRelPos
-    bamFile = args.bamFile
-    expr    = args.expr
-    oFile   = args.oFile
+	args = getParser().parse_args()
+	tssData	= args.tssData
+	nucRelPos = args.nucRelPos
+	bamFile = args.bamFile
+	expr	= args.expr
+	oFile   = args.oFile
 
-    ####################################################
-    # Excecution
-    print "Getting expression data per gene"
-    geneExpr = {}
-    for line in open(expr,'r'):
-        line = line.strip().split('\t')
-        gene_id = line[0]
-        fpkm    = line[5]
-        geneExpr[ gene_id ] = fpkm
-    print "Getting nucleosomes array per gene"
-    nucArray = nucChIP.getNuclPerPromoter(tssData,nucRelPos)
-    print "Counting reads per gene's nucleosome array"
-    nucArrayCoverage = nucChIP.getProfile(74,nucArray,bamFile)
-    print "Saving results to output file"
-    out = open(oFile,'w')
-    print >>out, 'gene_id\t-3_nuc\t-2_nuc\t-1_nuc\t+1_nuc\t+2_nuc\t+3_nuc\t+4_nuc\t+5_nuc\tfpkm'
-    for gene_id in nucArrayCoverage:
-        if gene_id in geneExpr: fpkm = geneExpr[ gene_id ]
-        else:                   fpkm = 'nan'
-        output =[ gene_id ] + nucArrayCoverage[gene_id] + [ fpkm ]
-        print >>out, '\t'.join(map(str,output))
-    out.close()
+	####################################################
+	# Excecution
+	print "Getting expression data per gene"
+	geneExpr = {}
+	for line in open(expr,'r'):
+		line = line.strip().split('\t')
+		gene_id = line[0]
+		fpkm	= line[5]
+		geneExpr[ gene_id ] = fpkm
+	print "Getting nucleosomes array per gene"
+	headerNames,nucArray = nucChIP.getNuclPerPromoter(tssData,nucRelPos)
+	print "Counting reads per gene's nucleosome array"
+	nucArrayCoverage = nucChIP.getProfile(74,nucArray,bamFile,0,135,165)
+	print "Saving results to output file"
+	out = open(oFile,'w')
+	header = ['gene_id']+headerNames+['fpkm']
+	print >>out, '\t'.join(map(str,header))
+	for gene_id in nucArrayCoverage:
+		if gene_id in geneExpr: fpkm = geneExpr[ gene_id ]
+		else:				   fpkm = 'nan'
+		output =[ gene_id ] + nucArrayCoverage[gene_id] + [ fpkm ]
+		print >>out, '\t'.join(map(str,output))
+	out.close()
 ################################################################
 if __name__ == '__main__':
-    main()
+	main()
