@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pysam, HTSeq, numpy, pickle
+import pysam, HTSeq, numpy, pickle, itertools, operator, pybedtools, wLib
 from numpy import inf
 from numpy import nan
 from scipy import signal
@@ -7,99 +7,85 @@ numpy.random.seed(seed=10)
 #########################################################################
 # bam2bed.py
 #########################################################################
-def getAvrLength(bamFile):
-	# If BAM file is paired-end, outputs the average fragment length
-	# This value is then used to extend orphans reads
-
-	
-	totalLength,nReads = 0,0
-	first,second = None,None
-
-	for almnt in bamFile:
-		if not( almnt.aligned and almnt.paired_end and almnt.proper_pair and almnt.mate_aligned):
-			continue
-		if first == None:
-			first = almnt
-		else:
-			second = almnt
-			# Check that first and second have same read name
-			if first.read.name != second.read.name:
-#				print "Pair names are different"
-#				print first.read.name, second.read.name
-				continue
-
-			start = min(first.iv.start,second.iv.start)
-			end = max(first.iv.end,second.iv.end)
-			length = end-start
-			# Check length size
-			if length<=0:
-				print "negative length"
-				print first.read.name
-				print second.rad.name
-				first = None
-				second = None
-				continue
-
-			totalLength += length
-			nReads +=1
-
-			first = None
-			second = None
-	
-	return round(float(totalLength)/float(nReads))
+# Deprecated. Schedule for DELETION
+##def getAvrLength(bamFile):
+##	# If BAM file is paired-end, outputs the average fragment length
+##	# This value is then used to extend orphans reads
+##
+##	
+##	totalLength,nReads = 0,0
+##	first,second = None,None
+##
+##	for almnt in bamFile:
+##		if not( almnt.aligned and almnt.paired_end and almnt.proper_pair and almnt.mate_aligned):
+##			continue
+##		if first == None:
+##			first = almnt
+##		else:
+##			second = almnt
+##			# Check that first and second have same read name
+##			if first.read.name != second.read.name:
+###				print "Pair names are different"
+###				print first.read.name, second.read.name
+##				continue
+##
+##			start = min(first.iv.start,second.iv.start)
+##			end = max(first.iv.end,second.iv.end)
+##			length = end-start
+##			# Check length size
+##			if length<=0:
+##				print "negative length"
+##				print first.read.name
+##				print second.rad.name
+##				first = None
+##				second = None
+##				continue
+##
+##			totalLength += length
+##			nReads +=1
+##
+##			first = None
+##			second = None
+##	
+##	return round(float(totalLength)/float(nReads))
 
 #########################################################################
-def printBED(avrLength,bamName,extension,oFile):
+def printBED(avrLength,bamName,extension,oFile,lower,upper):
 	# Take reads in BAM format and print them in BED format: chrom start end 
 
-	bamFile = HTSeq.BAM_Reader(bamName)
-	first,second = None,None
+	bamFile = pysam.Samfile(bamName,'rb')
 	out = open(oFile,'w')
-
 	for almnt in bamFile:
-		# Discard not aligned reads
-		if not almnt.aligned: continue
-		# Pair end reads
-		if almnt.paired_end and almnt.proper_pair and almnt.mate_aligned:
-			if first == None:	
-				first = almnt
-			else: 
-				second = almnt
-				# Check that first and second have same read name
-				if first.read.name != second.read.name:
-					print "Pair names are different"
-					print first.read.name, second.read.name
-					first, second = None, None
-					continue
-				# Define coordenates of new interval
-				start = min(first.iv.start,second.iv.start)
-				end = max(first.iv.end,second.iv.end)
-				midpoint = round((end+start)/2.0)
-				start = midpoint -  extension
-				end = midpoint + extension
-				if start < 0: start = 0
-				iv = HTSeq.GenomicInterval(first.iv.chrom,start,end,'.')
-				print >>out, iv.chrom+"\t"+str(iv.start)+"\t"+str(iv.end)+"\t"+almnt.read.name
+		# Red filter
+		if avrLength==0: # Paired-end
+			if almnt.is_unmapped or not(almnt.is_read1) or not(almnt.is_proper_pair) or abs(almnt.isize)>upper or abs(almnt.isize)<lower or almnt.mapq<20: continue
+		else: # single-end
+			if almnt.is_unmapped or almnt.mapq<20: continue
 
-				# Reset first and second as None
-				first = None
-				second = None
-		# Orphan reads (only one read in a pair is aligned), or single-end reads
-		elif not almnt.mate_aligned:
-			# Define coordenates of new interval
-			iv = almnt.iv
-			if iv.strand == "+":
-				start = iv.start
-				end   = iv.start + avrLength
-			elif iv.strand == "-":
-				end = iv.end
-				start = iv.end - avrLength
-			midpoint=round((end+start)/2.0)
-			start = midpoint - extension
-			end   = midpoint + extension
-			if start < 0: start=0
-			iv=HTSeq.GenomicInterval(iv.chrom,start,end,'.')
-			print >>out, iv.chrom+"\t"+str(iv.start)+"\t"+str(iv.end)+"\t"+almnt.read.name
+		chrom=bamFile.getrname(almnt.rname)
+		if not(almnt.is_reverse):
+			strand="+"
+		else:
+			strand="-"
+		
+		if avrLength==0: # Paired-end
+			fragLength = abs(almnt.isize)
+		else:           # if Single-end
+			fragLength = avrLength
+		if not(almnt.is_reverse):
+			almntStart = almnt.pos
+			almntEnd   = almnt.pos + fragLength
+		else:
+			almntStart = almnt.aend - fragLength
+			almntEnd   = almnt.aend
+		
+		midpoint=numpy.mean([almntStart,almntEnd])
+		start = int( max(midpoint - extension,0) )
+		end   = int( midpoint  + extension       )
+		
+		output=[ chrom, start,end, almnt.qname, almnt.mapq, strand ]
+		print >>out, "\t".join(map(str,output))
+
 	out.close()
 	return 1
 #########################################################################
@@ -182,29 +168,29 @@ def printBAM(avrLength,bamName,extension,oFile):
 #########################################################################
 # getCounts.py
 #########################################################################
-def getNucl(nuclFile):
+def getNucl(nuclFile,pValue):
 	#Assigns an ID to each nucleosome
 
 	nucl = HTSeq.GenomicArrayOfSets('auto',stranded=False)
 	nLine=1
 	for line in open(nuclFile,'r'):
-		if nLine==1: # skip header line 
-			nLine=2
-			continue
-		line = line.strip('\n')
-		fields = line.split('\t')
-		# Skip nucleosomes with P-values greater than 5e-5
-		if float(fields[5])>0.00005: continue
+		fields = line.strip().split('\t')
+		if len(fields)==1 or not( fields[1].isdigit()): continue # skip header lines
+#		# Skip nucleosomes with P-values greater than 5e-5
+		if float(fields[8])<pValue: continue
 		chrom = fields[0]
 		start = int(fields[1])
 		end = int(fields[2])
+		midpoint = numpy.mean([start,end])
+		start = int(max(midpoint -  75,0))
+		end   = int(midpoint + 75)
 		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
 		nucl[iv] += str(chrom)+"_"+str(start)+"_"+str(end)
 	return nucl
 
 #########################################################################
 def getMaxRegion(nucl,iv):
-	# Gets the nucleosome ID with the largest overlap with iv
+	# Gets the nucleosome ID with the largest iv overlap
 
 	# Dictionary, keys: nucleosome iv; values: length of nucleosome iv
 	regionLength={}
@@ -224,68 +210,158 @@ def getMaxRegion(nucl,iv):
 			maxLength=regionLength[nucl_id]
 			maxRegion=nucl_id
 	return maxRegion
-
 #########################################################################
-def getCounts(avrLength,nucl,bamFile,extension):
+def getCounts(avrLength,nucl,bamName,extension,lower,upper):
 	# Counts the number of reads overlapping each nucleosome 
-
-	first,second = None,None
+	bamFile = pysam.Samfile( bamName, 'rb')
 	counts = {}
 
 	for almnt in bamFile:
-		# Discard not aligned reads
-		if not almnt.aligned: continue
-		# Pair end reads
-		if almnt.paired_end and almnt.proper_pair and almnt.mate_aligned:
-			if first == None:	
-				first = almnt
-			else: 
-				second = almnt
-				# Check that first and second reads have same read name
-				if first.read.name != second.read.name:
-					print "Pair names are different"
-					print first.read.name, second.read.name
-					first, second = None, None
-					continue
-				# Define coordenates of new interval
-				start = min(first.iv.start,second.iv.start)
-				end = max(first.iv.end,second.iv.end)
-				midpoint = round((end+start)/2.0)
-				start = max(midpoint -  extension,0)
-				end = midpoint + extension
-				iv = HTSeq.GenomicInterval(first.iv.chrom,start,end,'.')
-				# Get ID of the largest region overlapping iv	
-				maxRegion=getMaxRegion(nucl,iv)
-				# Count the read only in the nucleosome with the largest overlap
-				if maxRegion!=None and maxRegion in counts:
-					counts[maxRegion] += 1
-				elif maxRegion!=None:
-					counts[maxRegion] = 1
-				# Reset first and second as None
-				first = None
-				second = None
-		# Orphan reads (only one read in a pair is aligned), or single-end reads
-		elif not almnt.mate_aligned:
-			# Define coordenates of new interval
-			iv = almnt.iv
-			if iv.strand == "+":
-				start = iv.start
-				end   = iv.start + avrLength
-			elif iv.strand == "-":
-				end = iv.end
-				start = iv.end - avrLength
-			midpoint=round((end+start)/2.0)
-			start = max(midpoint - extension,0)
-			end   = midpoint + extension
-			iv=HTSeq.GenomicInterval(iv.chrom,start,end,'.')
-			# Get the ID of the largest region overlapping iv	
-			maxRegion=getMaxRegion(nucl,iv)
-			# Count the read only on the nucleosome with the largest overlap
-			if maxRegion!=None and maxRegion in counts:
-				counts[maxRegion] += 1
-			elif maxRegion!=None:
-				counts[maxRegion] = 1
+		if avrLength==0: # library is paired-end
+			if almnt.is_unmapped or almnt.mapq<20 or not(almnt.is_read1) or not(almnt.is_proper_pair) or abs(almnt.isize)>upper or abs(almnt.isize)<lower: continue
+			fragLength=abs(almnt.isize)
+		else: # library is single-end
+			if almnt.is_unmapped or almnt.mapq<20: continue
+			fragLength = avrLength
+
+		if not almnt.is_reverse: # If read is on '+' strand
+			almntStart = almnt.pos 
+			almntEnd  = almnt.pos + fragLength
+		else:                    # If read is on '-' strand
+			almntStart = almnt.aend - fragLength 
+			almntEnd  = almnt.aend
+
+		# Define coordenates of new interval
+		chrom=bamFile.getrname(almnt.rname)
+		midpoint = numpy.mean([almntEnd,almntStart])
+		start = max(midpoint -  extension,0)
+		end = midpoint + extension
+		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
+		# Get ID of the largest region overlapping iv	
+		maxRegion=getMaxRegion(nucl,iv)
+		# Count the read only in the nucleosome with the largest overlap
+		if maxRegion!=None and maxRegion in counts:
+			counts[maxRegion] += 1
+		elif maxRegion!=None:
+			counts[maxRegion] = 1
 	return counts
+
+#########################################################################
+def lineToIv(line):
+	fields = line.split('\t')
+	chrom = fields[0]
+	start = int(fields[1])
+	end = int(fields[2])
+	midpoint = numpy.mean([start,end])
+	start = max(midpoint -  75,0)
+	end = midpoint + 75
+	iv = HTSeq.GenomicInterval(chrom,start,end,'.')
+	return iv
+
+#########################################################################
+def maxOverlap(almnt_iv,regions_dic):
+    
+	regionsSet = HTSeq.GenomicArrayOfSets("auto",stranded=False)
+	for key in regions_dic:
+		chrom=regions_dic[key].chrom
+		start=regions_dic[key].start
+		end  =regions_dic[key].end
+		region_iv=HTSeq.GenomicInterval( chrom, start, end)
+		regionsSet[ region_iv ] += key
+
+	keyLength = {}
+	for iv, key_set in regionsSet[ almnt_iv ].steps():
+		if len(key_set)==0: continue
+		for key in key_set:
+			if key in keyLength:
+				keyLength[key] += iv.end-iv.start
+			else:
+				keyLength[key] = iv.end-iv.start
+	
+	if len(keyLength)==0:
+		maxKey="none"
+	else:
+		maxKey=max(keyLength.iteritems(), key=operator.itemgetter(1))[0]				
+	if maxKey=='curr':
+		return True
+	else:
+		return False				
+
+#########################################################################
+def getCounts2(avrLength,nucName,bamName,extension,lower,upper,oFile,headerLine):
+	# Counts the number of reads overlapping each nucleosome 
+	
+	# Determine number of lines on nucFile
+	nucFile=open(nucName,'r')
+	nLines=0
+	for line in nucFile: nLines += 1
+	nucFile.seek(0)
+
+	bamFile = pysam.Samfile( bamName, 'rb')
+	out=open(oFile,'w')
+	# Count reads per nucleosome
+	for idx in range(nLines):
+		# Print header line
+		if (idx+1)<headerLine:
+			line=nucFile.readline().strip()
+			continue
+		elif (idx+1)==headerLine:
+			line=nucFile.readline().strip()
+			fields = line.strip().split('\t')
+			output = fields + [ "count"  ]
+			print >>out, "\t".join(map(str,output))
+			continue		
+		# Print counts
+		regions={}
+		if idx==(headerLine):
+			lineCurr = nucFile.readline().strip()
+			lineDown = nucFile.readline().strip()
+			regions['curr']	= lineToIv( lineCurr )
+			regions['down'] = lineToIv( lineDown )
+		elif idx==(nLines-1):
+			lineUpst = lineCurr
+			lineCurr = lineDown
+			regions['upst'] = lineToIv( lineUpst )
+			regions['curr'] = lineToIv( lineCurr )
+		else:
+			lineUpst = lineCurr
+			lineCurr = lineDown
+			lineDown = nucFile.readline().strip()
+			regions['upst'] = lineToIv( lineUpst )
+			regions['curr']	= lineToIv( lineCurr )
+			regions['down'] = lineToIv( lineDown )
+
+		counts = 0
+		for almnt in bamFile.fetch( regions['curr'].chrom,max(regions['curr'].start-200,0),regions['curr'].end+200 ):
+
+			if avrLength==0: # library is paired-end
+				if almnt.is_unmapped or almnt.mapq<20 or not(almnt.is_read1) or not(almnt.is_proper_pair) or abs(almnt.isize)>upper or abs(almnt.isize)<lower: continue
+				fragLength=abs(almnt.isize)
+			else: # library is single-end
+				if almnt.is_unmapped or almnt.mapq<20: continue
+				fragLength = avrLength
+
+			if not almnt.is_reverse: # If read is on '+' strand
+				almntStart = almnt.pos 
+				almntEnd  = almnt.pos + fragLength
+			else:                    # If read is on '-' strand
+				almntStart = almnt.aend - fragLength 
+				almntEnd  = almnt.aend
+
+			# Define coordenates of new interval
+			chrom=bamFile.getrname(almnt.rname)
+			midpoint = numpy.mean([almntEnd,almntStart])
+			start = max(midpoint -  extension,0)
+			end = midpoint + extension
+			almnt_iv = HTSeq.GenomicInterval(chrom,start,end,'.')
+			# Get ID of the largest region overlapping iv
+			if not( maxOverlap(almnt_iv,regions) ): continue
+			# Count the read only in the nucleosome with the largest overlap
+			counts += 1
+		output = lineCurr.split('\t') + [counts]
+		print >>out, "\t".join(map(str,output))
+	out.close()
+	nucFile.close()
 
 #########################################################################
 # getFigures.py 
@@ -466,12 +542,6 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper):
 					else:
 						start_in_window = -almntEnd   + region.end
 						end_in_window   = -almntStart + region.end 
-#					if region.strand == "+":
-#						start_in_window = almnt.pos  - region.start
-#						end_in_window   = almnt.aend - region.start
-#					else:
-#						start_in_window = -almnt.aend + region.end
-#						end_in_window   = -almnt.pos  + region.end 
 					start_in_window = max( start_in_window, 0 )
 					end_in_window = min( end_in_window, 2*halfwinwidth )
 					profileMatrix[ row, start_in_window : end_in_window ] += 1
@@ -482,6 +552,7 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper):
 			nucArrayCoverage[ gene_id ] = list(meanCoverage)
 		bamFile.close()
 		return nucArrayCoverage
+
 	elif type(regions)==list:
 		nRegions = len( regions )
 		profileMatrix = numpy.zeros( ( nRegions, 2*halfwinwidth ), dtype="d" )
@@ -497,7 +568,7 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper):
 						almntEnd  = almnt.pos + abs(almnt.isize)
 					else:                    # If read is on '-' strand
 						almntStart = almnt.aend - abs(almnt.isize) 
-					almntEnd  = almnt.aend
+						almntEnd  = almnt.aend
 				# If library is SINGLE-END
 				else:
 					if almnt.is_unmapped or almnt.pos < 0 or  bamFile.gettid(region.chrom)==-1 or almnt.mapq<20: continue
@@ -515,12 +586,6 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper):
 				else:
 					start_in_window = -almntEnd   + region.end
 					end_in_window   = -almntStart + region.end 
-#				if region.strand == "+":
-#					start_in_window = almnt.pos  - region.start
-#					end_in_window   = almnt.aend - region.start
-#				else:
-#					start_in_window = -almnt.aend + region.end
-#					end_in_window   = -almnt.pos  + region.end 
 				start_in_window = max( start_in_window, 0 )
 				end_in_window = min( end_in_window, 2*halfwinwidth )
 				profileMatrix[ row, start_in_window : end_in_window ] += 1
@@ -653,6 +718,50 @@ def getNuclPerPromoter(tssData, nucRelPosFile ):
 			nuclArray[gene_id].append( HTSeq.GenomicInterval( chrom, start, end, '+' ) )
 
 	return [names,nuclArray]
+####################################################################################3
+def getNuclPerPromoter2(tssData, nucPosFileName ):
+	
+	#nucPosFile=pybedtools.BedTool(nucPosFileName)
+	nucPosFile=wLib.BigWigFile(nucPosFileName)
+	tss=pickle.load( open(tssData, 'r') )
+	nuclArray, nuclArrayDists = {},{}
+	for gene_id in tss:
+		chrom  = tss[gene_id][0]
+		tssPos	= int( tss[gene_id][2] )
+		strand = tss[gene_id][5]
+		
+		halfwin=2000
+		nuclArray[ gene_id ] = numpy.array([])
+		nuclArrayDists[ gene_id ] = numpy.array([])
+		while len(nuclArray[gene_id])<5 and halfwin<=5000:
+			#iv = pybedtools.Interval( chrom, max(tssPos-halfwin,0), tssPos+halfwin )
+			#for nucRegion in nucPosFile.tabix_intervals( iv ):
+			for nucRegion in nucPosFile.fetch( chrom, max(tssPos-halfwin,0), tssPos+halfwin ):
+				#nucPos = round(float(numpy.mean([nucregion.start,nucregion.end]))) 
+				nucPos = round(nucRegion.score) 
+				start = nucPos - 74
+				end   = nucPos + 74
+				nuclArray[gene_id]=numpy.append( nuclArray[gene_id], HTSeq.GenomicInterval( chrom, start, end, '+' ) )
+				nuclArrayDists[gene_id]=numpy.append( nuclArrayDists[gene_id], nucPos-tssPos )
+			if strand == "-":
+				nuclArray[gene_id] = nuclArray[gene_id][::-1]
+				nuclArrayDists[gene_id]   = -nuclArrayDists[gene_id][::-1]
+			if sum((nuclArrayDists[gene_id]>=0))<3 or sum((nuclArrayDists[gene_id]<0))<2:
+				nuclArray[ gene_id ] = numpy.array([])
+				nuclArrayDists[ gene_id ] = numpy.array([])
+				halfwin += 1000
+				continue
+			posNuc = nuclArray[gene_id][ (nuclArrayDists[gene_id]>=0) ][:3]
+			negNuc = nuclArray[gene_id][ (nuclArrayDists[gene_id]< 0) ][-2::]
+			posDists = nuclArrayDists[gene_id][ (nuclArrayDists[gene_id]>=0) ][:3]
+			negDists = nuclArrayDists[gene_id][ (nuclArrayDists[gene_id]< 0) ][-2::]
+			nuclArray[ gene_id ] = list(numpy.append(negNuc,posNuc)) 
+			nuclArrayDists[ gene_id ] = list(numpy.append(negDists, posDists))
+		if halfwin>5000: # discard genes with non-well stablished promoter nucleosomes
+			nuclArray.pop(gene_id,None)
+			nuclArrayDists.pop(gene_id,None)
+			
+	return [ nuclArray, nuclArrayDists ]
 ####################################################################################	
 # nucLocPrediction
 ####################################################################################	
@@ -789,10 +898,12 @@ def getSizeProfile(halfwinwidth,regions,bamName,lower,upper):
 #######################################################################################	
 # exonProfile
 #######################################################################################	
-def getExons( exonList, miso, halfwinwidth ):
+def getExons( exonList, misoSummary, halfwinwidth ):
 	miso = pickle.load(open(misoSummary,'rb') )
-	exonMatrix = numpy.zero( (len(exonList),6), dtype='int' )
-	regions = {}
+	nRows=0
+	for line in open(exonList,'r'): nRows+=1
+	exonMatrix = numpy.zeros( (nRows,6), dtype='int' )
+	regions = []
 	for row,line in enumerate( open(exonList,'r') ):
 		exon_id = line.strip()
 		if not(exon_id in miso): continue
@@ -817,7 +928,7 @@ def getSamplePoints( exons, halfwinwidth, numSamples ):
         samplePoints = numpy.append(samplePoints, points)
     start = exons[n-1] -                 exons[0] + halfwinwidth
     end   = exons[n-1] + halfwinwidth  - exons[0] + halfwinwidth
-    points = numpy.linspace( start, end, numSamples,endpoint=True ).astype('int')
+    points = numpy.linspace( start, end, numSamples,endpoint=False ).astype('int')
     samplePoints = numpy.append(samplePoints, points )
 
     return samplePoints
@@ -850,13 +961,13 @@ def getExonProfile(halfwinwidth,regions,exons,bamName,fragLength,lower,upper,num
 		for almnt in bamFile.fetch( region.chrom,max(region.start-200,0),region.end+200 ):
 			# If library is PAIRED-END
 			if fragLength==0:
-				if almnt.is_unmapped or almnt.pos < 0  or not(almnt.is_read1) or not(almnt.is_proper_pair) or abs(almnt.isize)>upper or abs(almnt.isize)<lower or bamFile.gettid(region.chrom)==-1 or almnt.mapq<20: continue
+				if almnt.is_unmapped or almnt.pos < 0  or not(almnt.is_read1) or not(almnt.is_proper_pair) or abs(almnt.isize)>upper or abs(almnt.isize)<lower or almnt.mapq<20: continue
 				if not almnt.is_reverse: # If read is on '+' strand
 					almntStart = almnt.pos 
 					almntEnd  = almnt.pos + abs(almnt.isize)
 				else:                    # If read is on '-' strand
 					almntStart = almnt.aend - abs(almnt.isize) 
-				almntEnd  = almnt.aend
+					almntEnd  = almnt.aend
 			# If library is SINGLE-END
 			else:
 				if almnt.is_unmapped or almnt.pos < 0 or  bamFile.gettid(region.chrom)==-1 or almnt.mapq<20: continue
@@ -875,7 +986,7 @@ def getExonProfile(halfwinwidth,regions,exons,bamName,fragLength,lower,upper,num
 				start_in_window = -almntEnd   + region.end
 				end_in_window   = -almntStart + region.end 
 			start_in_window = max( start_in_window, 0 )
-			end_in_window = min( end_in_window, 2*halfwinwidth )
+			end_in_window = min( end_in_window, (region.end-region.start) )
 			profile[ start_in_window : end_in_window ] += 1
 		
 		profileScaled = scaleProfile( profile, exons[row,:], halfwinwidth, numSamples )

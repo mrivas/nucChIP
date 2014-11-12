@@ -5,8 +5,10 @@ import nucChIP
 def getParser():
 	parser = argparse.ArgumentParser(description='Count reads per nucleosome.')
 	parser.add_argument('-b',type=str,dest="bFile",help="BAM file. ChIP-seq reads.")
-	parser.add_argument('-n',type=str,dest="nFile",help="BED file. Nucleosome data, output of Danpos.")
+	parser.add_argument('-n',type=str,dest="nFile",help="BED file. Nucleosome position data, output of Danpos or iNPS.")
 	parser.add_argument('-pValue',type=float,dest="pValue",help="FLOAT file. pValue cut-off of nucleosomes on BED file.")
+	parser.add_argument('-upper',type=int,dest="upper",help="INT. Upper threshold for insert size. Default: 200", default=200)
+	parser.add_argument('-lower',type=int,dest="lower",help="INT. Lower threshold for insert size. Default: 0", default=0)
 	parser.add_argument('-l',type=int,dest="lType",help="INT. Library type: if equal to 0, data is assumed to be paired-end and read lengths are estimated from data itself; if different from 0, data is assumed to be single-end and read lengths use this value extend every read.")
 	parser.add_argument('-e',type=int,dest="exten",help="INT. Half length of reads extended at their midpoint.")
 	parser.add_argument('-o',type=str,dest="oFile",help="STR. Name of output file.")
@@ -19,8 +21,10 @@ def getParser():
 def main():
 	args = getParser().parse_args()
 	bamName = args.bFile
-	nuclFile = args.nFile
+	nucFile = args.nFile
 	pValue   = args.pValue
+	upper    = args.upper
+	lower    = args.lower
 	libType  = args.lType
 	extension  = args.exten
 	oFile = args.oFile
@@ -28,34 +32,27 @@ def main():
 	####################################################
 	# Excecution
 
-	bamFile = HTSeq.BAM_Reader(bamName)
-
 	print "Getting nucleosomes"
-	nucl = nucChIP.getNucl(nuclFile)
-	print "Getting average read length"
-	if libType==0: # for paired-end libraries computes fragment length form data itself
-		avrLength =  nucChIP.getAvrLength(bamFile)
-	else:
-		avrLength = libType
-	print avrLength
+	nucl = nucChIP.getNucl(nucFile,pValue)
+	avrLength = libType
 	print "Counting reads per nucleosome"
-	counts = nucChIP.getCounts(avrLength,nucl,bamFile,extension)
+	counts = nucChIP.getCounts(avrLength,nucl,bamName,extension,lower,upper)
 	print "Saving results to output file"
 	out = open(oFile,'w')
-	nLine=1
-	for line in open(nuclFile,'r'):
-		if nLine==1: #skip header line
-			nLine=2
-			print >>out, "Avr length = "+str(avrLength)
+	for line in open(nucFile,'r'):
+		fields=line.strip().split("\t")
+		if len(fields)==1:
 			continue
-		fields=line.split("\t")
-		#if float(fields[5])>0.00005: continue
-		if float(fields[5])>pValue: continue
+		elif not( fields[1].isdigit() ): # print header
+			output = fields + [ "count" ]
+			print >> out, "\t".join(map(str,output))
+			continue 
+		if float(fields[8])<pValue: continue
 		nucID=fields[0]+"_"+str(fields[1])+"_"+str(fields[2])
-		if nucID in counts:
-			print >>out, nucID,"\t",counts[nucID]
-		else:
-			print >>out, nucID,"\t0"
+		if nucID in counts: count = counts[nucID]
+		else:               count = 0
+		output = fields + [ str(count) ]
+		print >> out, "\t".join(map(str,output))
 	out.close()
 ################################################################
 if __name__ == '__main__':

@@ -7,6 +7,8 @@ def getParser():
 	parser = argparse.ArgumentParser(description='Transform BAM reads to resemble the true position of a ChIP seq fragment.')
 	parser.add_argument('-b',type=str,dest="bFile",help="BAM file. Aligned single or paried-end ChIP-seq reads")
 	parser.add_argument('-l',type=int,dest="lType",help="INT. Library type: 0 if library is paired-end, fragment length is estimated from data; different from 0 if library is single-end, the value assigned here is used as fragment length.",default=200)
+	parser.add_argument('-lower',type=int,dest="lower",help="INT. Lower isize of paired-end read. Default: 0",default=0)
+	parser.add_argument('-upper',type=int,dest="upper",help="INT. Upper isize of paired-end read. Default: 200",default=200)
 	parser.add_argument('-e',type=int,dest="exten",help="INT. Half length of each read around their fragment midpoing.",default=74)
 	parser.add_argument('-t',type=str,dest="fileType",help="STR. Type of output file: 'bam' or 'bed'. If chosen 'bam', and optional field, 'AL:i', is added containg the average length of the fragments.",default='bam')
 	parser.add_argument('-o',type=str,dest="oFile",help="Output file.")
@@ -23,20 +25,19 @@ def main():
 	extension  = args.exten
 	fileType = args.fileType
 	oFile = args.oFile
+	lower = args.lower
+	upper = args.upper
 
-
-	print "Getting average read length"
 	if libType==0: # if paried-end
-		avrLength =  nucChIP.getAvrLength(bamName)
+		avrLength = 0
 	else:
 		avrLength = libType
-	print avrLength
 	if fileType=="bed":
 		print "Printing BED"
-		nucChIP.printBED(avrLength,bamName,extension,oFile)
+		nucChIP.printBED(avrLength,bamName,extension,oFile,lower,upper)
 	elif fileType=="bam":
 		print "Printing BAM"
-		nucChIP.printBAM(avrLength,bamName,extension,oFile)
+		nucChIP.printBAM(avrLength,bamName,extension,oFile,lower,upper)
 #####################################################################
 if __name__ == "__main__":
 	main()

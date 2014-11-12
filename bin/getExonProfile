@@ -46,12 +46,6 @@ def main():
 	cmap   = matplotlib.colors.LinearSegmentedColormap.from_list('my_colormap',['white','red'],256)
 	# Set avrcov subplots
 	avFig,avAx = pyplot.subplots(1)
-	# Set heatmap subplots
-	htFig,htAx = pyplot.subplots(nfiles/ncols,ncols,sharex=True)
-	if ncols == 1:
-		idxs = range(nfiles)
-	else:
-		idxs = list(itertools.product(range(nfiles/ncols),range(ncols)))
 	# Create profiles for each BAM file
 	for idx,line in enumerate(open(confFile,'r')):
 		line	 = line.strip().split('\t')
@@ -64,7 +58,7 @@ def main():
 			fragLength = 0
 		# Regions on where to produce coverage plots
 		regions, exons   = nucChIP.getExons(exonList, database, halfwinwidth )
-		profileMatrix = nucChIP.getExonProfile(halfwinwidth,regions,exons,bamFile,fragLength,lowerSize,upperSize)
+		profileMatrix = nucChIP.getExonProfile(halfwinwidth,regions,exons,bamFile,fragLength,lowerSize,upperSize,numSamples)
 		# Cap extreme cases
 		upp_percen		= numpy.percentile( profileMatrix, (100.00-float(perc)/2), axis=0 )
 		low_percen		= numpy.percentile( profileMatrix, (float(perc)/2)       , axis=0 )
@@ -82,6 +76,9 @@ def main():
 		#pyplot.figure(1) # Average coverage plot
 		avAx.plot(window, profile, lw=0.9, label=label, color=c)
 		avAx.fill_between(window, profile+sem,profile-sem,facecolor=c,alpha=0.5)
+	avAx.axvspan(100,200,alpha=0.2,color='green')
+	avAx.axvspan(300,400,alpha=0.2,color='red')
+	avAx.axvspan(500,600,alpha=0.2,color='green')
 	avAx.set_title(title,fontsize=fs)
 	avAx.legend(loc='upper left',fontsize=fs)
 	avAx.set_xlabel('Genomic region (5\' $\mapsto$ 3\')',fontsize=fs)
