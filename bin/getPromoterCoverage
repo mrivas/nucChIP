@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, sys 
+import argparse, sys, numpy 
 import nucChIP
 ###########################################################
 def getParser():
@@ -7,10 +7,10 @@ def getParser():
 	parser.add_argument('-tss',type=str,dest="tssData",help="Python pickle file. Database of TSS positions.")
 	parser.add_argument('-nucRP',type=str,dest="nucRelPos",help="TAB file. Nucleosomes positions relative to TSS, where columns are: region_ID_name TAB distance_relative_to_TSS. If not provided, the program will look the 5 clossest nucleosomes (3/2 dwonstream/upstream) to each gene TSS. Default: 'none'",default="none")
 	parser.add_argument('-nucAP',type=str,dest="nucAbsPos",help="BED file. Nucleosomes absoluto positions. Output of iNPS or DANPOS. Default: 'none'",default="none")
-	parser.add_argument('-fragL',type=int,dest="fragLength",help="INT. Fragment size of the reads. If paired-end equals 0. Default: 0", default=0)
-	parser.add_argument('-lower',type=int,dest="lower",help="INT. Lower insert size of paired-end reads.")
-	parser.add_argument('-upper',type=int,dest="upper",help="INT. Upper insert size of paired-end reads.")
-	parser.add_argument('-bam',type=str,dest="bamFile",help="BAM file. ChIP-seq reads.")
+	parser.add_argument('-fragL',type=str,dest="fragLength",help="INT or colon separated list of INT. Fragment size of the reads. If paired-end equals 0. Default: 0", default=0)
+	parser.add_argument('-lower',type=str,dest="lower",help="INT or colon separated list of INT. Lower insert size of paired-end reads.")
+	parser.add_argument('-upper',type=str,dest="upper",help="INT or colon separated list of INT. Upper insert size of paired-end reads.")
+	parser.add_argument('-bam',type=str,dest="bamFile",help="BAM file or colon separated list of BAM files. ChIP-seq reads. If using colon separated list of BAM files, the fist file correspond to the signal and the second to the background.")
 	parser.add_argument('-expr',type=str,dest="expr",help="TXT file. Expression (fpkm) per gene.")
 	parser.add_argument('-o',type=str,dest="oFile",help="STR. Name of output file.")
 
@@ -24,12 +24,12 @@ def main():
 	tssData	= args.tssData
 	nucRelPos = args.nucRelPos
 	nucAbsPos = args.nucAbsPos
-	bamFile = args.bamFile
+	bamFiles = args.bamFile.split(":")
 	expr	= args.expr
 	oFile   = args.oFile
-	lower   = args.lower
-	upper   = args.upper
-	fragLength = args.fragLength
+	lower   = map( int, args.lower.split(":") )
+	upper   = map( int, args.upper.split(":") )
+	fragLength = map( int, args.fragLength.split(":") )
 	####################################################
 	# Excecution
 	print "Getting expression data per gene"
@@ -57,17 +57,33 @@ def main():
 	elif nucRelPos=="none" and nucAbsPos!="none":
 		print "Getting nucleosomes array per gene"
 		nucArray, nucArrayDists = nucChIP.getNuclPerPromoter2(tssData,nucAbsPos)
-		print "Computing coverage on gene's nucleosome array"
-		nucArrayCoverage = nucChIP.getProfile(75,nucArray,bamFile,fragLength,lower,upper)
-		print "Saving results to output file"
-		out = open(oFile,'w')
-		header = ['gene_id']+['dn2','dn1','dp1','dp2','dp3']+['cn2','cn1','cp1','cp2','cp3']+['fpkm']
-		print >>out, '\t'.join(map(str,header))
-		for gene_id in nucArrayCoverage:
-			if gene_id in geneExpr: fpkm = geneExpr[ gene_id ]
-			else:				   fpkm = 'nan'
-			output =[ gene_id ] + nucArrayDists[gene_id] + nucArrayCoverage[gene_id] + [ fpkm ]
-			print >>out, '\t'.join(map(str,output))
+		if len(bamFiles)==1: # Without control file
+			print "Computing coverage on gene's nucleosome array"
+			nucArrayCoverage = nucChIP.getProfile(75,nucArray,bamFiles[0],fragLength[0],lower[0],upper[0],0)
+			print "Saving results to output file"
+			out = open(oFile,'w')
+			header = ['gene_id']+['dn2','dn1','dp1','dp2','dp3']+['cn2','cn1','cp1','cp2','cp3']+['fpkm']
+			print >>out, '\t'.join(map(str,header))
+			for gene_id in nucArrayCoverage:
+				if gene_id in geneExpr: fpkm = geneExpr[ gene_id ]
+				else:				   fpkm = 'nan'
+				output =[ gene_id ] + nucArrayDists[gene_id] + list(nucArrayCoverage[gene_id]) + [ fpkm ]
+				print >>out, '\t'.join(map(str,output))
+		
+		else: # Control file supplied
+			print "Computing coverage on gene's nucleosome signal array"
+			nucArrayCoverage_signal  = nucChIP.getProfile(75,nucArray,bamFiles[0],fragLength[0],lower[0],upper[0],1)
+			print "Computing coverage on gene's nucleosome control array"
+			nucArrayCoverage_control = nucChIP.getProfile(75,nucArray,bamFiles[1],fragLength[1],lower[1],upper[1],1)
+			print "Saving results to output file"
+			out = open(oFile,'w')
+			header = ['gene_id']+['dn2','dn1','dp1','dp2','dp3']+['cn2','cn1','cp1','cp2','cp3']+['fpkm']
+			print >>out, '\t'.join(map(str,header))
+			for gene_id in nucArrayCoverage_signal:
+				if gene_id in geneExpr: fpkm = geneExpr[ gene_id ]
+				else:				   fpkm = 'nan'
+				output =[ gene_id ] + nucArrayDists[gene_id] + list(nucArrayCoverage_signal[gene_id]/nucArrayCoverage_control[gene_id]) + [ fpkm ]
+				print >>out, '\t'.join(map(str,output))
 		out.close()
 ################################################################
 if __name__ == '__main__':

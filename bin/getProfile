@@ -16,8 +16,8 @@ def getParser():
 	parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
 	parser.add_argument('-d'   , type=str,   dest="database",help="STR. Name of database with TSS info.")
 	parser.add_argument('-w'   , type=int,   dest="wWidth",help="INT. Half width of plotting window.")
-	parser.add_argument('-lower'   , type=int,   dest="lower",help="INT. Lower insert size to be considered. Default: 0",default=0)
-	parser.add_argument('-upper'   , type=int,   dest="upper",help="INT. Upper insert size to be considered. Deafult: 200", default=200)
+	parser.add_argument('-lower'   , type=str,   dest="lower",help="INT or colon separated list of INT. Lower insert size to be considered. Default: 0",default=0)
+	parser.add_argument('-upper'   , type=str,   dest="upper",help="INT. Upper insert size to be considered. Deafult: 200", default=200)
 	parser.add_argument('-perc', type=float, dest="perc",help="FLOAT. Percentile of top extreme values to be discarded.",default=0)
 	parser.add_argument('-plotNucs', type=str, dest="plotNucs",help="STR. Plot nucleosome positions: 'true' or 'false'. Default = 'false'.",default="false")
 	parser.add_argument('-localMaxFile', type=str, dest="localMaxFile",help="STR. File containing positions of nucleosomes relative to TSS. Default = 'none'.",default="none")
@@ -39,8 +39,8 @@ def main():
 	confFile	 = args.confFile
 	database	 = args.database
 	title		= args.title
-	lowerSize		= args.lower
-	upperSize		= args.upper
+	lowerSize		= map( int, args.lower.split(":") )
+	upperSize		= map( int, args.upper.split(":") )
 	fs		   = args.fSize
 	perc		 = args.perc
 	plotNucs     = args.plotNucs
@@ -51,6 +51,7 @@ def main():
 	ncols		= args.cols
 	halfwinwidth = args.wWidth
 	prefix	   = args.prefix
+	pcount     = 1 # pseudo-count
 
 	window = numpy.arange( -halfwinwidth, halfwinwidth ) 
 	nfiles = 0
@@ -68,16 +69,22 @@ def main():
 	# Create profiles for each BAM file
 	for idx,line in enumerate(open(confFile,'r')):
 		line	 = line.strip().split('\t')
-		bamFile  = line[0]
+		bamFiles = line[0].split(":")
 		geneList = line[1]
 		label	= line[2]
 		if len(line)>3: # if single-end, fragLength >0
-			fragLength = int(line[3])
+			fragLength = map( int, line[3].split(":") )
 		else: # if paired-end, fragLength=0
 			fragLength = 0
 		# Regions on where to produce coverage plots
 		regions	   = nucChIP.getRegions(geneList,database,halfwinwidth)
-		profileMatrix = nucChIP.getProfile(halfwinwidth,regions,bamFile,fragLength,lowerSize,upperSize)
+		
+		if len( bamFiles ) == 2:
+			profileMatrix_signal  = nucChIP.getProfile(halfwinwidth,regions,bamFiles[0],fragLength[0],lowerSize[0],upperSize[0],1)
+			profileMatrix_control = nucChIP.getProfile(halfwinwidth,regions,bamFiles[1],fragLength[1],lowerSize[1],upperSize[1],1)
+			profileMatrix = (profileMatrix_signal ) / (profileMatrix_control )
+		else:
+			profileMatrix = nucChIP.getProfile(halfwinwidth,regions,bamFiles[0],fragLength[0],lowerSize[0],upperSize[0],0)
 		# Cap extreme cases
 		upp_percen		= numpy.percentile( profileMatrix, (100.00-float(perc)/2), axis=0 )
 		low_percen		= numpy.percentile( profileMatrix, (float(perc)/2)       , axis=0 )

@@ -476,7 +476,7 @@ def getPlots(out,average,matrix,halfwin):
 ##############################################################
 # getProfile
 ##############################################################
-def getRegions(geneList,database,halfwinwidth): #regionsFile,halfwinwidth):
+def getRegions(geneList,database,halfwinwidth): 
 	tss = pickle.load(open(database,'rb'))
 	regions = []
 	noPresent = 0
@@ -496,8 +496,8 @@ def getRegions(geneList,database,halfwinwidth): #regionsFile,halfwinwidth):
 		regions.append( window )
 	print str(noPresent)+" genes not present on database of TSS"
 	return regions
-
-def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper):
+################################################################
+def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper,pcount):
 	bamFile = pysam.Samfile( bamName, 'rb')
 	libSize = 0
 	for almnt in bamFile: 
@@ -547,9 +547,9 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper):
 					profileMatrix[ row, start_in_window : end_in_window ] += 1
 		
 			# Normalized by library size
-			profileMatrix = profileMatrix / libSize * 1e6 
+			profileMatrix = (profileMatrix + pcount ) / libSize * 1e6 
 			meanCoverage  = numpy.mean( profileMatrix, axis=1 )
-			nucArrayCoverage[ gene_id ] = list(meanCoverage)
+			nucArrayCoverage[ gene_id ] = meanCoverage
 		bamFile.close()
 		return nucArrayCoverage
 
@@ -591,9 +591,8 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper):
 				profileMatrix[ row, start_in_window : end_in_window ] += 1
 		bamFile.close()
 		# Normalized by library size
-		profileMatrix = profileMatrix / libSize * 1e6 
+		profileMatrix = ( profileMatrix + pcount ) / libSize * 1e6 
 		return profileMatrix
-
 #######################################################
 # exprHistCorr
 #######################################################
