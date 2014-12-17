@@ -13,7 +13,7 @@ Contents:
 
    overview
 
-   mnasedChIP
+   nucChIP
 
    installation
   

@@ -4,55 +4,34 @@ Command Line Utilites
 Convert BAM to BED
 ==================
 
-.. argparse::
-   :module: bam2bed 
-   :func: getParser
-   :prog: bame2bed
+.. program-output:: bam2bed -h
 
 Counts the number of overlapping between two BED files
 ======================================================
 
-.. argparse::
-   :module: checkMatches 
-   :func: getParser
-   :prog: checkMatches
+.. program-output:: checkMatches 
 
 Generate coverage over nucleosomes
 ==================================
 
-.. argparse::
-   :module: getAvrCov 
-   :func: getParser
-   :prog: getAvrCov
+.. program-output:: getAvrCov 
 
 Count reads per nucleosome
 ==========================
 
-.. argparse::
-   :module: getCounts 
-   :func: getParser
-   :prog: getCounts
+.. program-output:: getCounts 
 
 Produces coverage figures
 =========================
 
-.. argparse::
-   :module: getFigures 
-   :func: getParser
-   :prog: getFigures
+.. program-output:: getFigures 
 
 Generate coverage over nucleosomes
 ==================================
 
-.. argparse::
-   :module: getProfile
-   :func: getParser
-   :prog: getProfile
+.. program-output:: getProfile
 
 Meges the rows of two BED files
 ===============================
 
-.. argparse::
-   :module: merged
-   :func: getParser
-   :prog: merged
+.. program-output:: merged
