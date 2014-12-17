@@ -5,9 +5,9 @@ Convert BAM to BED
 ==================
 
 .. argparse::
-   :module: bam2bed
+   :module: bam2bed 
    :func: getParser
-   :prog: bam2bed
+   :prog: bame2bed
 
 Counts the number of overlapping between two BED files
 ======================================================

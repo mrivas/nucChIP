@@ -19,9 +19,9 @@ Contents:
   
    walkThrough
 
-.. commandLineTools
+   commandLineTools
 
-.. automodule:: _mnaseChIP
+.. automodule:: _nucChIP
    :members:
 
 

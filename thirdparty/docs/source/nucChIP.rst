@@ -1,4 +1,4 @@
-.. _mnasedChIP:
+.. _nucChIP:
 
 ********************************
 What's Mnased digested ChIP-seq?
