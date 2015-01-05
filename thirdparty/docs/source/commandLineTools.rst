@@ -1,3 +1,5 @@
+.. _commandLineTools:
+
 Command Line Utilites
 **********************
 

@@ -4,19 +4,20 @@
 Overview
 ********
 
-nucChIP is a Python package for the analysis of ChIP-seq data at single nucleosome resolution. nucChIP is designed to be easy to use by both computational and experimental biologists. 
 
-Typically ChIP-seq data at single nucleosome level is produced by digesting the DNA with MNase prior the immuno precipitation. If you aren't familiar with Mnased digested ChIP-seq data, you can start here
+Unlike regular ChIP-seq data which have a resolution of ~200 bp, MNase digested ChIP-seq produces genomic footprints at single nucleosome level. This gain in resolution allow us to observe tight relations between DNA position and histone marks such as: histone profile at TSS, and alternatively spliced exons.  
 
-	:ref:`nucChIP`
+To harvest this type of data, we have developed nucChIP, a Python package designed to be easy to use by both computational and experimental biologists. 
 
 To start analyzing your data with nucChIP follow this installation instructions
 
 	:ref:`installation`
 
-Follow a detailed application case of nucChIP here
+As tutorial, we have included detailed application case of nucChIP here
 
-	:ref:`walkThrough`
+	:ref:`exampleCase`
 
+Finally, a summary list of all nucChIP tools are presented here.
 
+	:ref:`commandLineTools` 
 
