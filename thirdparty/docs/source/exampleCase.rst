@@ -262,14 +262,13 @@ Regardless of the method used, we found that H3K27Ac and H3K27me3 clustered amon
 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_coverage.svg
    
-   Cluster of libraries using counts per nucleosome.
-
+   Cluster of libraries using reads' coverage.
 
 .. _fig-clusterCounts:
 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_counts.svg
    
-   Cluster of libraries using reads' coverage.
+   Cluster of libraries using counts per nucleosome.
 
 
 H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions
@@ -357,12 +356,26 @@ Inclusion of alternatively spliced exons is signaled by histone marks
 
 Alternative splicing is know to be affected by the epigenome [REF], yet current ChIP-seq resolutions have hampered our ability to understand their effect. We used our single-nucleosomal ChIP-seq libraries to compute the histone enrichment at alternatively spliced exons. We used mouse E14 RNA-seq data classify alternatively spliced exons as included or excluded on the the mRNAs. On each set we then computed the histones' enrichment as signal over background rations. Again we used MNase as a background.  The results (Figures :num:`#fig-h3k4me3-as`, :num:`#fig-h3k27ac-as`, :num:`#fig-h3k9me3-as`, and :num:`#fig-h3k27me3-as` show preferential enrichment of all histone marks on included exons. 
 
+.. _fig-H3K4me3-as-ratios:
+
+.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as_ratios.svg
+   :width: 90 %
+   
+   Normalized enrichement of H3K4me3 on alternatively spliced exons.
+
 .. _fig-H3K4me3-as:
 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as.svg
    :width: 90 %
    
    Enrichement of H3K4me3 on alternatively spliced exons.
+
+.. _fig-H3K27Ac-as-ratios:
+
+.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as_ratios.svg
+   :width: 60 %
+   
+   Normalized enrichement of H3K27Ac on alternatively spliced exons.
 
 .. _fig-H3K27Ac-as:
 
@@ -371,6 +384,13 @@ Alternative splicing is know to be affected by the epigenome [REF], yet current 
    
    Enrichement of H3K27Ac on alternatively spliced exons.
 
+.. _fig-H3K9me3-as-ratios:
+
+.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as_ratios.svg
+   :width: 60 %
+   
+   Normalized enrichement of H3K9me3 on alternatively spliced exons.
+
 .. _fig-H3K9me3-as:
 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as.svg
@@ -378,12 +398,24 @@ Alternative splicing is know to be affected by the epigenome [REF], yet current 
    
    Enrichement of H3K9me3 on alternatively spliced exons.
 
+.. _fig-H3K27me3-as-ratios:
+
+.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as_ratios.svg
+   :width: 90 %
+   
+   Normalzied enrichement of H3K27me3 on alternatively spliced exons.
+
 .. _fig-H3K27me3-as:
 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as.svg
    :width: 90 %
+
+.. _fig-8-mnase-as:
+
+.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_as.svg
+   :width: 30 %
    
-   Enrichement of H3K27me3 on alternatively spliced exons.
+   Enrichement of MNase on alternatively spliced exons.
 
 Bibliography
 ============
