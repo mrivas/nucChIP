@@ -25,6 +25,7 @@ sys.path.insert(0, '/data2/rivasas2/singleNucleosome/tools/nucChIP')
 #sys.path.insert(0, os.path.abspath('../../bin'))
 #sys.path.insert(0, os.path.abspath('../../nucChIP'))
 
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -37,8 +38,14 @@ extensions = [
     'sphinx.ext.autodoc',
 	'sphinxarg.ext',
     'sphinx.ext.mathjax',
-	'sphinxcontrib.programoutput'
+	'sphinxcontrib.programoutput',
+	'sphinx.ext.numfig',
+	'sphinxcontrib.bibtex',
 ]
+# numfig:
+# numfig_number_figures = True
+# numfig_figure_caption_prefix = "Figure"
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
