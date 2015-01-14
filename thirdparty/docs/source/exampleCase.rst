@@ -63,18 +63,18 @@ We generated single-nucleosome ChIP-seq libraries of four histone marks (H4K4me3
 Nucleosome positions
 ====================
 
-We used iNPS :cite:`Chen2014` to call nucleosome locations with default parameters. To improve the signal over background ratio, iNPS reduces each fragment length to 75 (nt) around their midpoint. Using 8_mnase fragments with mapping qualities above 20 as input, we found 10,468,598 nucleosome locations genome wide. iNPs classified these 4 kinds. The first, MainPeak representing isolated main nucleosome peaks, accounted for the majority of the calls (80% of the nucleosomes). This was accompanied by the categories MainPeak+Shoulder (11%), MainPeak:doublet (6%), and Shoulder (3%). Compared to MainPeak, Shoulder nucleosomes are closer to flanking nucleosomes and have shorted 'widths'. On the contrary, MainPeak+Shoulder and MainPeak:doublet nucleosomes are farther apart form nearby nucleosoms and with larger 'widths'. Unlike MainPeak, the last three categories suggest association with unstable nucleosomes positions :cite:`Chen2014`. 
+We used iNPS :cite:`Chen2014` to call nucleosome locations with default parameters. Using 8_mnase fragments with mapping qualities above 20 as input, we found 10,468,598 nucleosome locations genome-wide. iNPs classified these nucleosomes into 4 kinds. The first, MainPeak, represents isolated main nucleosome peaks, which accounted for the majority of the calls (80% of the nucleosomes). This was accompanied by the categories MainPeak+Shoulder (11%), MainPeak:doublet (6%), and Shoulder (3%). Compared to MainPeak, Shoulder nucleosomes are closer to flanking nucleosomes and have shorted 'widths'. On the contrary, MainPeak+Shoulder and MainPeak:doublet nucleosomes are farther apart from nearby nucleosomes and with larger 'widths'. Unlike MainPeak, the last three nucleosome categories suggest association with unstable positions :cite:`Chen2014`. 
 
-All together, this amount nucleosomes positions was expected given the size of the mouse genome. The total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; :cite:`Jiang2009` ) covered approximately 77% of the mouse genome length (2.5 Gb; :cite:`Waterston2002`).
+All together, the amount nucleosome positions was expected given the size of the mouse genome. The total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; :cite:`Jiang2009` ) covered approximately 77% of the mouse genome length (2.5 Gb; :cite:`Waterston2002`).
 
-As shown in Figure :num:`#fig-width`, the nucleosome's widths peaks at ~75 nt, which is coherent the lenght used by iNPS to represent the enrichment signals. The sharp peaks is signal of both: well positioned nucleosomes, and isolated nucleosomes. On the other hand, the distance between adjacent nucleosomes has a tipical value of ~ 180 (nt), being this coherent with the nucleosomal DNA length (~147 nt) and the linker DNA length (~38 nt; :cite:`Jiang2009`)
+As shown in Figure :num:`#fig-width`, the nucleosome's widths peaks at ~75 nt, which is coherent the length used by iNPS to represent the enrichment signals (to improve the signal over background ratio, iNPS reduces each fragment length to 75 (nt) around their midpoint). The sharp peaks is signal that most nucleosomes are well positioned and isolated --not overlapping flanking nucleosomes. On the other hand, the distance between adjacent nucleosomes (Figure :num:`#fig-dist`) peaks at ~ 180 (nt), being this coherent with the typical combined length of nucleosomal (~147 nt) and linker DNA segments (~38 nt; :cite:`Jiang2009`)
 
 .. _fig-width:
 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/hist_width.svg
    :width: 50%
 
-   Distribution of nucleosomes' 'widths'.
+   Distribution of nucleosomes' 'widths'. In read, subset of high quality nucleosome (p-values <= 0.05).
 
 .. _fig-dist:
 
@@ -351,10 +351,44 @@ Among H3K4me3 replicates, enrichment on +1 nucleosome positively correlates with
    
    Correlation between gene expression and nucleosomes-specific enrichment of H3K27me3.
 
+
+There isn't genome-wide MNase enrichment bias towards isolated nucleosomes
+==========================================================================
+
+Rizzo et al :cite:`Rizzo2012` found evidence of artificial enrichment of MNase footprints around nucleosomes flanked by nucleosomes free regions. The high enrichment of all but 9_H3K9me3 libraries around the TSS lead us to study whether this may have introduced biases in our data. To test this hypothesis, we compute the Spearman correlation between the enrichment of each nucleosome and their distances to flanking nucleosomes --we used the minimum of the two distances measured between each nucleosome, and its upstream and downstream nucleosomes. The results (Table 2) show that there isn't a genome-wide correlation between both variables in any of our libraries. 
+
+.. csv-table:: Table 2: Correlation between distance between nucleosomes and signal enrichment.
+   :header: "Replicate", "Genome-wide Spearman correlation"
+
+   17_H3K4me3 , 3.04e-02
+   n1_H3K4me3 , 5.03e-02
+   n2_H3K4me3 , 2.75e-02
+   6_H3K27Ac , 3.73e-02
+   14_H3K27Ac , 3.03e-02
+   4_H3K9me3 , 4.13e-02
+   9_H3K9me3 , 1.32e-01
+   5_H3K27me3 , 4.40e-02
+   12_H3K27me3 , 2.05e-02
+   n3_H3K27me3 , 2.42e-02
+   8_mnase , 1.84e-01
+   H3K4me3 , 5.72e-02
+   H3K27Ac , 6.09e-02
+   H3K9me3 , 4.70e-02
+   H3K27me3 , 8.76e-02
+
 Inclusion of alternatively spliced exons is signaled by histone marks
 =====================================================================
 
-Alternative splicing is know to be affected by the epigenome [REF], yet current ChIP-seq resolutions have hampered our ability to understand their effect. We used our single-nucleosomal ChIP-seq libraries to compute the histone enrichment at alternatively spliced exons. We used mouse E14 RNA-seq data classify alternatively spliced exons as included or excluded on the the mRNAs. On each set we then computed the histones' enrichment as signal over background rations. Again we used MNase as a background.  The results (Figures :num:`#fig-h3k4me3-as`, :num:`#fig-h3k27ac-as`, :num:`#fig-h3k9me3-as`, and :num:`#fig-h3k27me3-as` show preferential enrichment of all histone marks on included exons. 
+Alternative splicing is know to be affected by the epigenome :cite:`Luco2011`, yet current ChIP-seq resolutions have hampered our ability to understand their effect. We used our single-nucleosomal ChIP-seq libraries to compute the histone enrichment at alternatively spliced exons. Using mouse E14 RNA-seq data, we computed the percent spliced in (PSI) on each cassette-type exon (MISO :cite:;database :cite:). We classify exons with PSI values (confidense intervals smaller than 0.2) lower than 0.3 as excluded, and higher than 0.7 as included on the correspoding gene. To avoid classify exons on non-active genes as excluded, we requested each cassette-type exon to be covered by at least 10 RNA-seq reads. Enrichment was computed in two ways: with and without normalization by MNase. MNase normalzied enrichment was computed for each gene as the fold change of signal (histone marks reads) over backgroudn (MNase reads), usign 1 as pseudo-counts for numerator and denomintar. The results (Figures :num:`#fig-h3k4me3-as-ratios`, :num:`#fig-h3k27ac-as-ratios`, :num:`#fig-h3k9me3-as-ratios`, and :num:`#fig-h3k27me3-as-ratios` show preferential enrichment of all histone marks on included exons.
+
+Enrichment without MNase-normalization was computed along with fragment-size heatmaps not only for the histone marks libraries but also MNase data. The MNase library showed no evidence of significant depletion of nucleosomes around cassette-type exons( Figure :num:`#fig-8-mnase-as`), and therefore unlikely to induced position-specific biases on the enrichment of the MNase ChIP-seq libraries which, in turn, showed clear evidence of enrichment of all histone marks on included over excluded cassette-typ exons (Figures :num:`#fig-h3k4me3-as`, :num:`#fig-h3k27ac-as`, :num:`#fig-h3k9me3-as`, :num:`#fig-h3k27me3-as`, and :num:`#fig-8-mnase-as`).
+
+.. _fig-8-mnase-as:
+
+.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_as.svg
+   :width: 30 %
+   
+   Enrichement of MNase on alternatively spliced exons.
 
 .. _fig-H3K4me3-as-ratios:
 
@@ -410,12 +444,6 @@ Alternative splicing is know to be affected by the epigenome [REF], yet current 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as.svg
    :width: 90 %
 
-.. _fig-8-mnase-as:
-
-.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_as.svg
-   :width: 30 %
-   
-   Enrichement of MNase on alternatively spliced exons.
 
 Bibliography
 ============

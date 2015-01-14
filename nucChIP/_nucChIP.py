@@ -179,13 +179,13 @@ def getNucl(nuclFile,pValue):
 #		# Skip nucleosomes with P-values greater than 5e-5
 		if float(fields[8])<pValue: continue
 		chrom = fields[0]
-		start = int(fields[1])
-		end = int(fields[2])
-		midpoint = numpy.mean([start,end])
+		start_original = int(fields[1])
+		end_original   = int(fields[2])
+		midpoint = numpy.mean([start_original,end_original])
 		start = int(max(midpoint -  75,0))
 		end   = int(midpoint + 75)
 		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
-		nucl[iv] += str(chrom)+"_"+str(start)+"_"+str(end)
+		nucl[iv] += str(chrom)+"_"+str(start_original)+"_"+str(end_original)
 	return nucl
 
 #########################################################################
