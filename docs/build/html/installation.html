@@ -1,0 +1,223 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Prerequisites and installation &mdash; nucChIP 1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="nucChIP 1 documentation" href="index.html"/>
+        <link rel="next" title="Example case" href="exampleCase.html"/>
+        <link rel="prev" title="Overview" href="overview.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> nucChIP</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Prerequisites and installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation-on-linux">Installation on Linux</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="exampleCase.html">Example case</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#data-summary">1. Data summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#nucleosome-positions">Nucleosome positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#reproducibility">Reproducibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions">H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#position-specific-nucleosomes-control-gene-expression">Position-specific nucleosomes control gene expression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">There isn&#8217;t genome-wide MNase enrichment bias towards isolated nucleosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">Inclusion of alternatively spliced exons is signaled by histone marks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#bibliography">Bibliography</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#convert-bam-to-bed">Convert BAM to BED</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#counts-the-number-of-overlapping-between-two-bed-files">Counts the number of overlapping between two BED files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#generate-coverage-over-nucleosomes">Generate coverage over nucleosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#count-reads-per-nucleosome">Count reads per nucleosome</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#produces-coverage-figures">Produces coverage figures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#id1">Generate coverage over nucleosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#meges-the-rows-of-two-bed-files">Meges the rows of two BED files</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">nucChIP</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Prerequisites and installation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/installation.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="prerequisites-and-installation">
+<span id="installation"></span><h1>Prerequisites and installation<a class="headerlink" href="#prerequisites-and-installation" title="Permalink to this headline">¶</a></h1>
+<p>nucChIP source code, installation scripts, and source code of this website are available at</p>
+<blockquote>
+<div><a class="reference external" href="https://github.com/mrivas/nucChIP">nucChIP github page</a></div></blockquote>
+<div class="section" id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>To use nucChIP, you need at least version 2.5 of <a class="reference external" href="http://www.python.org/">Python</a> (Python 3 doesn&#8217;t work yet).</p>
+</div>
+<div class="section" id="installation-on-linux">
+<h2>Installation on Linux<a class="headerlink" href="#installation-on-linux" title="Permalink to this headline">¶</a></h2>
+<p>nucChIP installation package will take care of all dependencies. You just need to download the <em>source</em> files, unzip them, and go into the unzipped directory.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>wget https://github.com/mrivas/nucChIP/archive/master.zip nucChIP.zip
+<span class="nv">$ </span>unzip nucChIP.zip
+<span class="nv">$ </span><span class="nb">cd </span>nucChIP
+</pre></div>
+</div>
+<p>To install nucChIP locally ( only for the current user in case you don&#8217;t have super-user permission) type</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python setup.py install --user
+</pre></div>
+</div>
+<p>To make nucChIP available to all users, use instead</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python setup.py build
+<span class="nv">$ </span>sudo python setup.py install
+</pre></div>
+</div>
+<p>To test the installation</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nv">$ </span>python
+&gt;&gt; import nucChIP
+</pre></div>
+</div>
+<p>if no errors are reported, your are all set.</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="exampleCase.html" class="btn btn-neutral float-right" title="Example case"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="overview.html" class="btn btn-neutral" title="Overview"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Marcelo Rivas-Astroza.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,714 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Example case &mdash; nucChIP 1 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="nucChIP 1 documentation" href="index.html"/>
+        <link rel="next" title="Command Line Utilites" href="commandLineTools.html"/>
+        <link rel="prev" title="Prerequisites and installation" href="installation.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="index.html" class="fa fa-home"> nucChIP</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Prerequisites and installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installation-on-linux">Installation on Linux</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Example case</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#data-summary">1. Data summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#nucleosome-positions">Nucleosome positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reproducibility">Reproducibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions">H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#position-specific-nucleosomes-control-gene-expression">Position-specific nucleosomes control gene expression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">There isn&#8217;t genome-wide MNase enrichment bias towards isolated nucleosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">Inclusion of alternatively spliced exons is signaled by histone marks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bibliography">Bibliography</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#convert-bam-to-bed">Convert BAM to BED</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#counts-the-number-of-overlapping-between-two-bed-files">Counts the number of overlapping between two BED files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#generate-coverage-over-nucleosomes">Generate coverage over nucleosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#count-reads-per-nucleosome">Count reads per nucleosome</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#produces-coverage-figures">Produces coverage figures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#id1">Generate coverage over nucleosomes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#meges-the-rows-of-two-bed-files">Meges the rows of two BED files</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">nucChIP</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Example case</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/exampleCase.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="example-case">
+<span id="examplecase"></span><h1>Example case<a class="headerlink" href="#example-case" title="Permalink to this headline">¶</a></h1>
+<p>Here we present the use of nucChIP to analyze our in-house data. We generated MNased digested ChIP-seq libraries of several mouse histone marks as well as MNase data alone. The samples were taken from mouse E14 and mouse fibroblast-like cells (day 4 after guided differentiation of E14 cells fibroblast).</p>
+<div class="section" id="data-summary">
+<h2>1. Data summary<a class="headerlink" href="#data-summary" title="Permalink to this headline">¶</a></h2>
+<p>We generated single-nucleosome ChIP-seq libraries of four histone marks (H4K4me3, H3K27Ac, H3K9me3, and H3K27me3), and used a publicly available MNase data set (un-spunned data from <a class="reference internal" href="#carone2014" id="id1">[1]</a>). A summary of all data is presented in Table 1. In our ChIP-seq protocol, we used MNase digestion rather than sonication to produce genomic histone footprints at single-nucleosome resolution. The libraries were extracted from two cell-lines: mouse E14, and mouse fibroblast-like (See Methods).</p>
+<table border="1" class="docutils">
+<caption>Table 1: Mouse E14 libraries.</caption>
+<colgroup>
+<col width="17%" />
+<col width="17%" />
+<col width="17%" />
+<col width="17%" />
+<col width="17%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Library (type)</th>
+<th class="head">Replicate ID</th>
+<th class="head"># Reads</th>
+<th class="head">Alignment rate (%)</th>
+<th class="head"># Fragments</th>
+<th class="head"># Fragment MAPQ&gt;=20</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>H3K27me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/12_H3K27me3.pairend_rmdup.sort.bam">12_H3K27me3</a></td>
+<td>41727332</td>
+<td>16.17</td>
+<td>3390346</td>
+<td>2519561</td>
+</tr>
+<tr class="row-odd"><td>H3K27me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/5_H3K27me3.pairend_rmdup.sort.bam">5_H3K27me3</a></td>
+<td>84379845</td>
+<td>82.77</td>
+<td>35072483</td>
+<td>30405555</td>
+</tr>
+<tr class="row-even"><td>H3K9me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/4_H3K9me3.pairend_rmdup.sort.bam">4_H3K9me3</a></td>
+<td>91197916</td>
+<td>84.16</td>
+<td>38617758</td>
+<td>33180391</td>
+</tr>
+<tr class="row-odd"><td>H3K9me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/9_H3K9me3.pairend_rmdup.sort.bam">9_H3K9me3</a></td>
+<td>63153628</td>
+<td>75.31</td>
+<td>23932067</td>
+<td>19637520</td>
+</tr>
+<tr class="row-even"><td>H3K27Ac (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/14_H3K27Ac.pairend_rmdup.sort.bam">14_H3K27Ac</a></td>
+<td>72746990</td>
+<td>65.41</td>
+<td>23886474</td>
+<td>20931875</td>
+</tr>
+<tr class="row-odd"><td>H3K27Ac (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/6_H3K27Ac.pairend_rmdup.sort.bam">6_H3K27Ac</a></td>
+<td>36822734</td>
+<td>75.74</td>
+<td>13953975</td>
+<td>11805574</td>
+</tr>
+<tr class="row-even"><td>H3K4me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/17_H3K4me3.pairend_rmdup.sort.bam">17_H3K4me3</a></td>
+<td>16206340</td>
+<td>10.72</td>
+<td>796542</td>
+<td>401970</td>
+</tr>
+<tr class="row-odd"><td>H3K4me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n1_H3K4me3.pairend_rmdup.sort.bam">n1_H3K4me3</a></td>
+<td>23451320</td>
+<td>95.5</td>
+<td>11277740</td>
+<td>9703381</td>
+</tr>
+<tr class="row-even"><td>H3K4me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n2_H3K4me3.pairend_rmdup.sort.bam">n2_H3K4me3</a></td>
+<td>14765216</td>
+<td>94.03</td>
+<td>6819315</td>
+<td>5267592</td>
+</tr>
+<tr class="row-odd"><td>H3K27me3 (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n3_H3K27me3.pairend_rmdup.sort.bam">n3_H3K27me3</a></td>
+<td>16024783</td>
+<td>95.44</td>
+<td>7572511</td>
+<td>6084379</td>
+</tr>
+<tr class="row-even"><td>MNase (MNase)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/8_mnase.sort_rmdup.bam">8_mnase</a></td>
+<td>203367131</td>
+<td>96.06</td>
+<td>120922096</td>
+<td>44912058*</td>
+</tr>
+<tr class="row-odd"><td>H3K27Ac (Sonicated)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K27Ac.singend_rmdup.sort.bam">H3K27Ac</a></td>
+<td>18739298</td>
+<td>71.04</td>
+<td>13312397</td>
+<td>NA</td>
+</tr>
+<tr class="row-even"><td>H3K27me3 (Sonicated)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K27me3.singend_rmdup.sort.bam">H3K27me3</a></td>
+<td>13680637</td>
+<td>70.16</td>
+<td>9598335</td>
+<td>NA</td>
+</tr>
+<tr class="row-odd"><td>H3K4me3 (Sonicated)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K4me3.singend_rmdup.sort.bam">H3K4me3</a></td>
+<td>6687568</td>
+<td>63.93</td>
+<td>4275362</td>
+<td>NA</td>
+</tr>
+<tr class="row-even"><td>H3K9me3 (Sonicated)</td>
+<td><a class="reference external" href="https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K9me3.singend_rmdup.sort.bam">H3K9me3</a></td>
+<td>18851693</td>
+<td>21.43</td>
+<td>4039918</td>
+<td>NA</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The library types <strong>MNase</strong> and <strong>Sonicated</strong>, correspond to MNase digested and Sonicated ChIP-seq libraries, respectively. * Reads from <strong>8_mnase</strong> library were also filter to represent only fragment lengths in the nucleosomal range: 135 to 165 (nt).</p>
+</div>
+</div>
+<div class="section" id="nucleosome-positions">
+<h2>Nucleosome positions<a class="headerlink" href="#nucleosome-positions" title="Permalink to this headline">¶</a></h2>
+<p>We used iNPS <a class="reference internal" href="#chen2014" id="id9">[2]</a> to call nucleosome locations with default parameters. Using 8_mnase fragments with mapping qualities above 20 as input, we found 10,468,598 nucleosome locations genome-wide. iNPs classified these nucleosomes into 4 kinds. The first, MainPeak, represents isolated main nucleosome peaks, which accounted for the majority of the calls (80% of the nucleosomes). This was accompanied by the categories MainPeak+Shoulder (11%), MainPeak:doublet (6%), and Shoulder (3%). Compared to MainPeak, Shoulder nucleosomes are closer to flanking nucleosomes and have shorted &#8216;widths&#8217;. On the contrary, MainPeak+Shoulder and MainPeak:doublet nucleosomes are farther apart from nearby nucleosomes and with larger &#8216;widths&#8217;. Unlike MainPeak, the last three nucleosome categories suggest association with unstable positions <a class="reference internal" href="#chen2014" id="id10">[2]</a>.</p>
+<p>All together, the amount nucleosome positions was expected given the size of the mouse genome. The total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; <a class="reference internal" href="#jiang2009" id="id11">[3]</a> ) covered approximately 77% of the mouse genome length (2.5 Gb; <a class="reference internal" href="#waterston2002" id="id12">[6]</a>).</p>
+<p>As shown in Figure <a href="#fig-width"> 1</a>, the nucleosome&#8217;s widths peaks at ~75 nt, which is coherent the length used by iNPS to represent the enrichment signals (to improve the signal over background ratio, iNPS reduces each fragment length to 75 (nt) around their midpoint). The sharp peaks is signal that most nucleosomes are well positioned and isolated &#8211;not overlapping flanking nucleosomes. On the other hand, the distance between adjacent nucleosomes (Figure <a href="#fig-dist"> 2</a>) peaks at ~ 180 (nt), being this coherent with the typical combined length of nucleosomal (~147 nt) and linker DNA segments (~38 nt; <a class="reference internal" href="#jiang2009" id="id13">[3]</a>)</p>
+<div class="figure" id="fig-width">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_width.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_width.svg" width="50%" /></a>
+<p class="caption">Figure 1: Distribution of nucleosomes&#8217; &#8216;widths&#8217;. In read, subset of high quality nucleosome (p-values &lt;= 0.05).</p>
+</div>
+<div class="figure" id="fig-dist">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_dist.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_dist.svg" width="50%" /></a>
+<p class="caption">Figure 2: Distribution of distances between adjacent nucleosomes.</p>
+</div>
+</div>
+<div class="section" id="reproducibility">
+<h2>Reproducibility<a class="headerlink" href="#reproducibility" title="Permalink to this headline">¶</a></h2>
+<p>We assessed the information content of our single-nucleosome histone libraries by measuring their similarity with referencial sonicated ChIP-seq libraries to check if they cluster together.</p>
+<p>First, we had to preprocess all our libraries. Although MNase digested ChIP-seq produces fragment lengths of 147 nu- cleotides (nt) –the length of DNA wrapped around a nucleosome– in practice fragments sizes may be larger or smaller. To improve the resolution of our data, we regularized the fragment lengths by extending +/-75 bases around each paired-end read middle point (see <a href="#fig-shift"> 3</a>). In the case of single-end libraries we enlarged each read up to 200 bases towards the 3’ end, and extended their length +/- 75 bases around their resulting middle points. Thus, all reads were regularized to a fragment lengths (150 bases) similar to the nucleosomal DNA size.</p>
+<div class="figure" id="fig-shift">
+<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/shift.svg" /><p class="caption">Figure 3: Regularization of fragments length. (A) After MNase digestion, paired or single-end reads are produced. (B) Fragments lengths are regularized to a custom length by extending their middle point +/- 75 bases. Unlike paired-end reads which provides the fragment length, single-end fragment lengths are estimated as the average fragment length of the library. (C) Provided the nucleosome locations, reads are counted per each nucleosome, and an enrichment ratio is computed.</p>
+</div>
+<p>We did this transformation with the nucChIP&#8217;s script <tt class="xref py py-class docutils literal"><span class="pre">bam2bed</span></tt>.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: bam2bed [-h] [-b BFILE] [-l LTYPE] [-lower LOWER] [-upper UPPER]
+               [-e EXTEN] [-t FILETYPE] [-o OFILE]
+
+Transform BAM reads to resemble the true position of a ChIP seq fragment.
+
+optional arguments:
+  -h, --help    show this help message and exit
+  -b BFILE      BAM file. Aligned single or paried-end ChIP-seq reads
+  -l LTYPE      INT. Library type: 0 if library is paired-end, fragment length
+                is estimated from data; different from 0 if library is single-
+                end, the value assigned here is used as fragment length.
+  -lower LOWER  INT. Lower isize of paired-end read. Default: 0
+  -upper UPPER  INT. Upper isize of paired-end read. Default: 200
+  -e EXTEN      INT. Half length of each read around their fragment midpoing.
+  -t FILETYPE   STR. Type of output file: &#39;bam&#39; or &#39;bed&#39;. If chosen &#39;bam&#39;, and
+                optional field, &#39;AL:i&#39;, is added containg the average length
+                of the fragments.
+  -o OFILE      Output file.
+</pre></div>
+</div>
+<p>For the regularization of mouse E14, three thing are worth noticing. First, library <strong>8_mnase</strong> contain reads spanning lengths from 0 to 200 bp, therefore we restricted the conversion only to those reads with reads in the nucleosomal range [135, 165] bp. Second, library <strong>all_nuc</strong> is single-end, accordingly we assumed that the typical fragment length was 150 bp. The set of these parameters can be seen on the <tt class="docutils literal"><span class="pre">if</span> <span class="pre">...</span> <span class="pre">else</span></tt> statements. Finally, by default <tt class="xref py py-class docutils literal"><span class="pre">bam2bed</span></tt> uses only reads with mapping qualities of 20 or more, filtering out &#8211;in this case&#8211; all pairs where at least one reads has lower qualities.</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c">############################################################################################</span>
+<span class="c"># Convert BAM files into regularized BED files</span>
+<span class="nv">nproc</span><span class="o">=</span>0
+<span class="nv">maxProc</span><span class="o">=</span>10
+<span class="k">for </span>bam in <span class="k">$(</span>ls /data2/rivasas2/singleNucleosome/secondBatch/rmdup/byReplicates/*_rmdup.sort.bam /data2/rivasas2/singleNucleosome/Teif_data/alignments/8_mnase.sort_rmdup.bam<span class="k">)</span>; <span class="k">do</span>
+<span class="k">   </span><span class="nv">lib</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$bam</span> | awk <span class="s1">&#39;{n=split($0,a,&quot;/&quot;);split(a[n],b,&quot;.&quot;);print b[1]}&#39;</span> <span class="k">)</span>
+
+    <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$lib&quot;</span> <span class="o">==</span> <span class="s2">&quot;8_mnase&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">       </span><span class="nv">fragLength</span><span class="o">=</span>0
+       <span class="nv">upper</span><span class="o">=</span>165
+       <span class="nv">lower</span><span class="o">=</span>135
+    <span class="k">elif</span> <span class="o">[</span> <span class="s2">&quot;$lib&quot;</span> <span class="o">==</span> <span class="s2">&quot;all_nuc&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">       </span><span class="nv">fragLength</span><span class="o">=</span>150
+       <span class="nv">upper</span><span class="o">=</span>200
+       <span class="nv">lower</span><span class="o">=</span>0
+   <span class="k">else</span>
+<span class="k">       </span><span class="nv">fragLength</span><span class="o">=</span>0
+       <span class="nv">upper</span><span class="o">=</span>200
+       <span class="nv">lower</span><span class="o">=</span>0
+    <span class="k">fi</span>
+
+<span class="k">   </span><span class="nb">echo</span> <span class="s2">&quot;Converting to BED the lib frag lower upper &quot;</span> <span class="nv">$lib</span> <span class="nv">$fragLength</span> <span class="nv">$lower</span> <span class="nv">$upper</span>
+   bam2bed <span class="se">\</span>
+       -b <span class="nv">$bam</span> <span class="se">\</span>
+       -l <span class="nv">$fragLength</span> <span class="se">\</span>
+       -e 75 <span class="se">\</span>
+       -t bed <span class="se">\</span>
+       -upper <span class="nv">$upper</span> <span class="se">\</span>
+       -lower <span class="nv">$lower</span> <span class="se">\</span>
+       -o <span class="k">${</span><span class="nv">lib</span><span class="k">}</span>.REG.bed &amp;
+   <span class="nv">nproc</span><span class="o">=</span><span class="k">$((</span><span class="nv">$nproc</span><span class="o">+</span><span class="m">1</span><span class="k">))</span>
+
+   <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$nproc&quot;</span> -ge <span class="s2">&quot;$maxProc&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">       </span><span class="nb">wait</span>
+<span class="nb">       </span><span class="nv">nproc</span><span class="o">=</span>0
+       <span class="nb">echo </span>RESET-------
+   <span class="k">fi</span>
+
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>For single-nucleosomal and reference ChIP-seq libraries, coverage was computed on 50-bases windows at chromosome 1 and normalized by library size. For all histone marks, we used <a class="reference internal" href="#carone2014" id="id14">[1]</a> MNase data (8_mnase) as background to compute the signal over background ratios (pseudo-values of 1 were added to both numerator and denominators).</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="nb">echo</span> <span class="s2">&quot;######################################################################&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;Creates windows of 50 bases on chrom 1&quot;</span>
+fetchChromSizes mm9 | grep -w <span class="s1">&#39;chr1&#39;</span> &gt; mm9.chromSizes
+bedtools makewindows -g mm9.chromSizes -w 50 &gt; windows50.bed
+
+<span class="nb">echo</span> <span class="s2">&quot;#####################################################################&quot;</span>
+<span class="nb">echo</span> <span class="s2">&quot;Compute coverage on each window&quot;</span>
+<span class="k">for </span>bed in /data2/rivasas2/singleNucleosome/secondBatch/nucLocation/*bed /data2/rivasas2/singleNucleosome/secondBatch/nucLocation/regularChIP/*bed; <span class="k">do</span>
+<span class="k">   </span><span class="nv">lib</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$bed</span> | awk <span class="s1">&#39;{n=split($0,a,&quot;/&quot;);split(a[n],b,&quot;.&quot;);print b[1]}&#39;</span> <span class="k">)</span>
+   <span class="nv">libSize</span><span class="o">=</span><span class="k">$(</span>wc -l <span class="nv">$bed</span> | awk <span class="s1">&#39;{print $1}&#39;</span><span class="k">)</span>
+   <span class="nv">scale</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$libSize</span> | awk <span class="s1">&#39;{print 1000000/$0}&#39;</span><span class="k">)</span>
+   <span class="nb">echo</span> <span class="s2">&quot;Computing coverage for lib libSize scale&quot;</span> <span class="nv">$lib</span> <span class="nv">$libSize</span> <span class="nv">$scale</span>
+   coverageBed -a <span class="nv">$bed</span> -b windows50.bed | awk -v <span class="nv">x</span><span class="o">=</span><span class="k">${</span><span class="nv">scale</span><span class="k">}</span> <span class="s1">&#39;BEGIN{FS=OFS=&quot;\t&quot;}{scaled=$4*x; print $0,scaled}&#39;</span> &gt; <span class="k">${</span><span class="nv">lib</span><span class="k">}</span>.coverage.bed
+<span class="c">#done</span>
+
+<span class="k">for </span>bed in *bed; <span class="k">do</span>
+<span class="k">    </span><span class="nv">lib</span><span class="o">=</span><span class="k">${</span><span class="nv">bed</span><span class="p">%%.coverage.bed</span><span class="k">}</span>
+    <span class="nb">echo</span> <span class="s2">&quot;Sorting&quot;</span> <span class="nv">$lib</span>
+    sort -k1,1 -k2,2n <span class="k">${</span><span class="nv">lib</span><span class="k">}</span>.coverage.bed &gt; <span class="k">${</span><span class="nv">lib</span><span class="k">}</span>.coverage_sorted.bed
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>Alternatively, we also used the MNase data to determined the position of 10M nucleosomes genome-wide (See Methods). Over the genetic span of high quality nuclesome regions (iNPs, p-value&lt;= 0.05) on chromosome 1, we counted the number of overlapping histone fragments, and normalized them as fragments per kilobase of nucleosome per million fragment mapped (FPKM).</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c">#######################################################################</span>
+<span class="c"># MNase digested ChIP</span>
+<span class="nv">nproc</span><span class="o">=</span>0
+<span class="nv">maxProc</span><span class="o">=</span>6
+<span class="k">for </span>bam in /data2/rivasas2/singleNucleosome/secondBatch/rmdup/byReplicates/*_rmdup.sort.bam /data2/rivasas2/singleNucleosome/Teif_data/alignments/8_mnase.sort_rmdup.bam; <span class="k">do</span>
+<span class="k">   </span><span class="nv">lib</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$bam</span> | awk <span class="s1">&#39;{n=split($0,a,&quot;/&quot;);split(a[n],b,&quot;.&quot;);print b[1]}&#39;</span> <span class="k">)</span>
+
+   <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$lib&quot;</span> <span class="o">==</span> <span class="s2">&quot;all_nuc&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">       </span><span class="nv">fragLength</span><span class="o">=</span>150
+       <span class="nv">upper</span><span class="o">=</span>200
+       <span class="nv">lower</span><span class="o">=</span>0
+   <span class="k">elif</span> <span class="o">[</span> <span class="s2">&quot;$lib&quot;</span> <span class="o">==</span> <span class="s2">&quot;8_mnase&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">       </span><span class="nv">fragLength</span><span class="o">=</span>0
+       <span class="nv">upper</span><span class="o">=</span>165
+       <span class="nv">lower</span><span class="o">=</span>135
+   <span class="k">else</span>
+<span class="k">       </span><span class="nv">fragLength</span><span class="o">=</span>0
+       <span class="nv">upper</span><span class="o">=</span>200
+       <span class="nv">lower</span><span class="o">=</span>0
+   <span class="k">fi</span>
+<span class="k">   for </span>nucFile in /data2/rivasas2/singleNucleosome/secondBatch/nucLocation/8_mnase/8_mnase.bed /data2/rivasas2/singleNucleosome/secondBatch/nucLocation/all_nuc/all_nuc.bed; <span class="k">do</span>
+<span class="k">       </span><span class="nv">nuc</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$nucFile</span> | awk <span class="s1">&#39;{n=split($0,a,&quot;/&quot;);split(a[n],b,&quot;.&quot;);print b[1]}&#39;</span> <span class="k">)</span>
+       <span class="nb">echo</span> <span class="s2">&quot;Computing count for &quot;</span> <span class="nv">$lib</span> <span class="nv">$fragLength</span> <span class="nv">$lower</span> <span class="nv">$upper</span> <span class="nv">$nuc</span>
+       getCounts <span class="se">\</span>
+           -b <span class="nv">$bam</span> <span class="se">\</span>
+           -n <span class="nv">$nucFile</span> <span class="se">\</span>
+           -pValue 1.3 <span class="se">\</span>
+           -l <span class="nv">$fragLength</span> <span class="se">\</span>
+           -lower <span class="nv">$lower</span> <span class="se">\</span>
+           -upper <span class="nv">$upper</span> <span class="se">\</span>
+           -e 75 <span class="se">\</span>
+           -o <span class="k">${</span><span class="nv">lib</span><span class="k">}</span>.<span class="k">${</span><span class="nv">nuc</span><span class="k">}</span>.counts.bed &amp;
+       <span class="nv">nproc</span><span class="o">=</span><span class="k">$((</span><span class="nv">$nproc</span><span class="o">+</span><span class="m">1</span><span class="k">))</span>
+
+       <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$nproc&quot;</span> -ge <span class="s2">&quot;$maxProc&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">           </span><span class="nb">wait</span>
+<span class="nb">           </span><span class="nv">nproc</span><span class="o">=</span>0
+           <span class="nb">echo </span>RESET-------
+       <span class="k">fi</span>
+<span class="k">   done</span>
+
+<span class="k">done</span>
+
+<span class="c">##################################################################</span>
+<span class="c"># Regular ChIP</span>
+<span class="nv">nproc</span><span class="o">=</span>0
+<span class="nv">maxProc</span><span class="o">=</span>4
+<span class="k">for </span>bam in <span class="k">$(</span>ls /data2/rivasas2/singleNucleosome/secondBatch/rmdup/regularChIP/*.singend_rmdup.sort.bam | grep -v IgG <span class="k">)</span>; <span class="k">do</span>
+<span class="k">   </span><span class="nv">lib</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$bam</span> | awk <span class="s1">&#39;{n=split($0,a,&quot;/&quot;);split(a[n],b,&quot;.&quot;);print b[1]}&#39;</span> <span class="k">)</span>
+
+   <span class="nv">fragLength</span><span class="o">=</span>200
+   <span class="nv">upper</span><span class="o">=</span>200
+   <span class="nv">lower</span><span class="o">=</span>0
+   <span class="k">for </span>nucFile in /data2/rivasas2/singleNucleosome/secondBatch/nucLocation/8_mnase/8_mnase.bed /data2/rivasas2/singleNucleosome/secondBatch/nucLocation/all_nuc/all_nuc.bed; <span class="k">do</span>
+<span class="k">       </span><span class="nv">nuc</span><span class="o">=</span><span class="k">$(</span><span class="nb">echo</span> <span class="nv">$nucFile</span> | awk <span class="s1">&#39;{n=split($0,a,&quot;/&quot;);split(a[n],b,&quot;.&quot;);print b[1]}&#39;</span> <span class="k">)</span>
+       <span class="nb">echo</span> <span class="s2">&quot;Computing count for &quot;</span> <span class="nv">$lib</span> <span class="nv">$fragLength</span> <span class="nv">$lower</span> <span class="nv">$upper</span> <span class="nv">$nuc</span>
+       getCounts <span class="se">\</span>
+           -b <span class="nv">$bam</span> <span class="se">\</span>
+           -n <span class="nv">$nucFile</span> <span class="se">\</span>
+           -pValue 1.3 <span class="se">\</span>
+           -l <span class="nv">$fragLength</span> <span class="se">\</span>
+           -lower <span class="nv">$lower</span> <span class="se">\</span>
+           -upper <span class="nv">$upper</span> <span class="se">\</span>
+           -e 75 <span class="se">\</span>
+           -o <span class="k">${</span><span class="nv">lib</span><span class="k">}</span>.<span class="k">${</span><span class="nv">nuc</span><span class="k">}</span>.counts.bed &amp;
+       <span class="nv">nproc</span><span class="o">=</span><span class="k">$((</span><span class="nv">$nproc</span><span class="o">+</span><span class="m">1</span><span class="k">))</span>
+
+       <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$nproc&quot;</span> -ge <span class="s2">&quot;$maxProc&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+<span class="k">           </span><span class="nb">wait</span>
+<span class="nb">           </span><span class="nv">nproc</span><span class="o">=</span>0
+           <span class="nb">echo </span>RESET-------
+       <span class="k">fi</span>
+<span class="k">   done</span>
+
+<span class="k">done</span>
+</pre></div>
+</div>
+<p>For both cases, we used two metrics to measure libraries similarities: Spearman correlation, and Euclidean distance. The clustering was done with these R&#8217;s scripts:</p>
+<p>R_script for coverage
+R_script for counts per nucleosome</p>
+<p>Regardless of the method used, we found that H3K27Ac and H3K27me3 clustered among their single-nucleosomal replicates, respectively (see Figures <a href="#fig-clustercoverage"> 4</a> and <a href="#fig-clustercounts"> 5</a>). Conversely, H3K4me3 and H3K9me3 single-nucleosomal replicates were largely dispersed on the resulting dendrograms. This is due to differences on MNase digestion intensity (see next section) and library sizes. In all cases, however, single-nucleosomal libraries didn’t cluster closed to their corresponding reference ChIP-seq libraries. We hypothesized that this is due to the resolution differences between both types of datasets.</p>
+<div class="figure" id="fig-clustercoverage">
+<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_coverage.svg" /><p class="caption">Figure 4: Cluster of libraries using reads&#8217; coverage.</p>
+</div>
+<div class="figure" id="fig-clustercounts">
+<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_counts.svg" /><p class="caption">Figure 5: Cluster of libraries using counts per nucleosome.</p>
+</div>
+</div>
+<div class="section" id="h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions">
+<h2>H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions<a class="headerlink" href="#h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions" title="Permalink to this headline">¶</a></h2>
+<p>Then, we asked: are the single-nucleosome ChIP-seq libraries coherent with the known biological associations of regular ChIP-seq? H3K4me3 and H3K27Ac are known to be preferentially enriched on the transcription starting site (TSS) of active genes. On the contrary, H3K9me3, and H3K27me3 are preferentially enriched at inactive genes&#8217; TSS. Concordantly, we classify genes according to their expression levels. For each expression level we computed the single-nucleosomal histone enrichment (see Figures <a href="#fig-h3k4me3-tss"> 6</a>, <a href="#fig-h3k27ac-tss"> 7</a>, <a href="#fig-h3k9me3-tss"> 8</a>, and <a href="#fig-h3k27me3-tss"> 9</a>).</p>
+<p>H3K4me3 and H3K27Ac footprints are coherent with literature <a class="reference internal" href="#carone2014" id="id15">[1]</a>. They were depleted immediately before TSS, but enriched thereafter in a manner proportional to gene expression. Conversely, among H3K9me3 replicates only one (9_H3K9me3) was inversely correlated with gene expression whereas all H3K27me3&#8217;s replicates were positively correlated with gene expression.</p>
+<p>This may be the result of TSS specific biases. According to REF, regions flanked by nucleosome depleted regions are easier to digest by MNase and in consequence their presence may be overrepresented on the ChIP-seq library. This problem is significant if the MNase digestion is poor. To explore this possibility, we plotted the fragment densities around the TSS. Fragment densities about the nucleosomal size (150 nt) mean poor MNase digestion. Figures see Figures <a href="#fig-h3k4me3-tss"> 6</a>, <a href="#fig-h3k27ac-tss"> 7</a>, <a href="#fig-h3k9me3-tss"> 8</a>, and <a href="#fig-h3k27me3-tss"> 9</a> show that this is the case for all but n1_H3K4me3.</p>
+<div class="figure" id="fig-h3k4me3-tss">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_tss.svg" width="90%" /></a>
+<p class="caption">Figure 6: Coverage and fragment lendth of H3K4me3 reads at TSS.</p>
+</div>
+<div class="figure" id="fig-h3k27ac-tss">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_tss.svg" width="60%" /></a>
+<p class="caption">Figure 7: Coverage and fragment lendth of H3K27Ac reads at TSS.</p>
+</div>
+<div class="figure" id="fig-h3k9me3-tss">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_tss.svg" width="60%" /></a>
+<p class="caption">Figure 8: Coverage and fragment lendth of H3K9me3 reads at TSS.</p>
+</div>
+<div class="figure" id="fig-h3k27me3-tss">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_tss.svg" width="90%" /></a>
+<p class="caption">Figure 9: Coverage and fragment lendth of H3K27me3 reads at TSS.</p>
+</div>
+<div class="figure" id="fig-8-mnase-tss">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_tss.svg" width="30%" /></a>
+<p class="caption">Figure 10: Coverage and fragment lendth of MNase reads at TSS.</p>
+</div>
+</div>
+<div class="section" id="position-specific-nucleosomes-control-gene-expression">
+<h2>Position-specific nucleosomes control gene expression<a class="headerlink" href="#position-specific-nucleosomes-control-gene-expression" title="Permalink to this headline">¶</a></h2>
+<p>The positive correlation between gene expression and the enrichment levels of H3K4me3 at the +1 nucleosome, leaded us to hypothesized that gene expression is controlled by position-specific nucleosome epigenetic marks. We tested this hypothesis, by computing the linear correlation between the average histone enrichment at eight gene expression quantiles (inactive genes were not included).</p>
+<p>Among H3K4me3 replicates, enrichment on +1 nucleosome positively correlates with gene expression (<a href="#fig-h3k4me3-lm">11</a>) in a consistent manner.  In the case of H3K27Ac, both nucleosome +1 and +2 positively correlates with gene expression (<a href="#fig-h3k27ac-lm">12</a>). Surprisingly, H3K9me3 and H3K27me3 are also positively correlated to gene expression at nucleosomes +1 and +2 which is the opposite as expected (Figures <a href="#fig-h3k9me3-lm"> 13</a> and <a href="#fig-h3k27me3-lm"> 14</a>). As discussed before, we believe that this is an artifact due to MNase under-digestion.</p>
+<div class="figure" id="fig-h3k4me3-lm">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_lm.svg" width="90%" /></a>
+<p class="caption">Figure 11: Correlation between gene expression and nucleosomes-specific enrichment of H3K4me3.</p>
+</div>
+<div class="figure" id="fig-h3k27ac-lm">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_lm.svg" width="60%" /></a>
+<p class="caption">Figure 12: Correlation between gene expression and nucleosomes-specific enrichment of H3K27Ac.</p>
+</div>
+<div class="figure" id="fig-h3k9me3-lm">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_lm.svg" width="60%" /></a>
+<p class="caption">Figure 13: Correlation between gene expression and nucleosomes-specific enrichment of H3K9me3.</p>
+</div>
+<div class="figure" id="fig-h3k27me3-lm">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_lm.svg" width="90%" /></a>
+<p class="caption">Figure 14: Correlation between gene expression and nucleosomes-specific enrichment of H3K27me3.</p>
+</div>
+</div>
+<div class="section" id="there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">
+<h2>There isn&#8217;t genome-wide MNase enrichment bias towards isolated nucleosomes<a class="headerlink" href="#there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes" title="Permalink to this headline">¶</a></h2>
+<p>Rizzo et al <a class="reference internal" href="#rizzo2012" id="id16">[5]</a> found evidence of artificial enrichment of MNase footprints around nucleosomes flanked by nucleosomes free regions. The high enrichment of all but 9_H3K9me3 libraries around the TSS lead us to study whether this may have introduced biases in our data. To test this hypothesis, we compute the Spearman correlation between the enrichment of each nucleosome and their distances to flanking nucleosomes &#8211;we used the minimum of the two distances measured between each nucleosome, and its upstream and downstream nucleosomes. The results (Table 2) show that there isn&#8217;t a genome-wide correlation between both variables in any of our libraries.</p>
+<table border="1" class="docutils">
+<caption>Table 2: Correlation between distance between nucleosomes and signal enrichment.</caption>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Replicate</th>
+<th class="head">Genome-wide Spearman correlation</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>17_H3K4me3</td>
+<td>3.04e-02</td>
+</tr>
+<tr class="row-odd"><td>n1_H3K4me3</td>
+<td>5.03e-02</td>
+</tr>
+<tr class="row-even"><td>n2_H3K4me3</td>
+<td>2.75e-02</td>
+</tr>
+<tr class="row-odd"><td>6_H3K27Ac</td>
+<td>3.73e-02</td>
+</tr>
+<tr class="row-even"><td>14_H3K27Ac</td>
+<td>3.03e-02</td>
+</tr>
+<tr class="row-odd"><td>4_H3K9me3</td>
+<td>4.13e-02</td>
+</tr>
+<tr class="row-even"><td>9_H3K9me3</td>
+<td>1.32e-01</td>
+</tr>
+<tr class="row-odd"><td>5_H3K27me3</td>
+<td>4.40e-02</td>
+</tr>
+<tr class="row-even"><td>12_H3K27me3</td>
+<td>2.05e-02</td>
+</tr>
+<tr class="row-odd"><td>n3_H3K27me3</td>
+<td>2.42e-02</td>
+</tr>
+<tr class="row-even"><td>8_mnase</td>
+<td>1.84e-01</td>
+</tr>
+<tr class="row-odd"><td>H3K4me3</td>
+<td>5.72e-02</td>
+</tr>
+<tr class="row-even"><td>H3K27Ac</td>
+<td>6.09e-02</td>
+</tr>
+<tr class="row-odd"><td>H3K9me3</td>
+<td>4.70e-02</td>
+</tr>
+<tr class="row-even"><td>H3K27me3</td>
+<td>8.76e-02</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">
+<h2>Inclusion of alternatively spliced exons is signaled by histone marks<a class="headerlink" href="#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks" title="Permalink to this headline">¶</a></h2>
+<p>Alternative splicing is know to be affected by the epigenome <a class="reference internal" href="#luco2011" id="id17">[4]</a>, yet current ChIP-seq resolutions have hampered our ability to understand their effect. We used our single-nucleosomal ChIP-seq libraries to compute the histone enrichment at alternatively spliced exons. Using mouse E14 RNA-seq data, we computed the percent spliced in (PSI) on each cassette-type exon (MISO :cite:;database :cite:). We classify exons with PSI values (confidense intervals smaller than 0.2) lower than 0.3 as excluded, and higher than 0.7 as included on the correspoding gene. To avoid classify exons on non-active genes as excluded, we requested each cassette-type exon to be covered by at least 10 RNA-seq reads. Enrichment was computed in two ways: with and without normalization by MNase. MNase normalzied enrichment was computed for each gene as the fold change of signal (histone marks reads) over backgroudn (MNase reads), usign 1 as pseudo-counts for numerator and denomintar. The results (Figures <a href="#fig-h3k4me3-as-ratios"> 16</a>, <a href="#fig-h3k27ac-as-ratios"> 18</a>, <a href="#fig-h3k9me3-as-ratios"> 20</a>, and <a href="#fig-h3k27me3-as-ratios"> 22</a> show preferential enrichment of all histone marks on included exons.</p>
+<p>Enrichment without MNase-normalization was computed along with fragment-size heatmaps not only for the histone marks libraries but also MNase data. The MNase library showed no evidence of significant depletion of nucleosomes around cassette-type exons( Figure <a href="#fig-8-mnase-as"> 15</a>), and therefore unlikely to induced position-specific biases on the enrichment of the MNase ChIP-seq libraries which, in turn, showed clear evidence of enrichment of all histone marks on included over excluded cassette-typ exons (Figures <a href="#fig-h3k4me3-as"> 17</a>, <a href="#fig-h3k27ac-as"> 19</a>, <a href="#fig-h3k9me3-as"> 21</a>, <a href="#fig-h3k27me3-as"> 23</a>, and <a href="#fig-8-mnase-as"> 15</a>).</p>
+<div class="figure" id="fig-8-mnase-as">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_as.svg" width="30%" /></a>
+<p class="caption">Figure 15: Enrichement of MNase on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k4me3-as-ratios">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as_ratios.svg" width="90%" /></a>
+<p class="caption">Figure 16: Normalized enrichement of H3K4me3 on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k4me3-as">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as.svg" width="90%" /></a>
+<p class="caption">Figure 17: Enrichement of H3K4me3 on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k27ac-as-ratios">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as_ratios.svg" width="60%" /></a>
+<p class="caption">Figure 18: Normalized enrichement of H3K27Ac on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k27ac-as">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as.svg" width="60%" /></a>
+<p class="caption">Figure 19: Enrichement of H3K27Ac on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k9me3-as-ratios">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as_ratios.svg" width="60%" /></a>
+<p class="caption">Figure 20: Normalized enrichement of H3K9me3 on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k9me3-as">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as.svg" width="60%" /></a>
+<p class="caption">Figure 21: Enrichement of H3K9me3 on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k27me3-as-ratios">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as_ratios.svg" width="90%" /></a>
+<p class="caption">Figure 22: Normalzied enrichement of H3K27me3 on alternatively spliced exons.</p>
+</div>
+<div class="figure" id="fig-h3k27me3-as">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as.svg" width="90%" /></a>
+</div>
+</div>
+<div class="section" id="bibliography">
+<h2>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h2>
+<p id="bibtex-bibliography-exampleCase-0"><table class="docutils citation" frame="void" id="carone2014" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[1]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id14">2</a>, <a class="fn-backref" href="#id15">3</a>)</em> Benjamin&nbsp;R Carone, Jui-Hung Hung, Sarah&nbsp;J Hainer, Min-Te Chou, Dawn&nbsp;M Carone, Zhiping Weng, Thomas&nbsp;G Fazzio, and Oliver&nbsp;J Rando. High-Resolution Mapping of Chromatin Packaging in Mouse Embryonic Stem Cells and Sperm.. <em>Developmental cell</em>, 30(1):11–22, July 2014. <a class="reference external" href="http://www.cell.com/article/S153458071400344X/fulltext">URL: http://www.cell.com/article/S153458071400344X/fulltext</a>, <a class="reference external" href="http://dx.doi.org/10.1016/j.devcel.2014.05.024">doi:10.1016/j.devcel.2014.05.024</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="chen2014" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[2]</td><td><em>(<a class="fn-backref" href="#id9">1</a>, <a class="fn-backref" href="#id10">2</a>)</em> Weizhong Chen, Yi&nbsp;Liu, Shanshan Zhu, Christopher&nbsp;D Green, Gang Wei, and Jing-Dong&nbsp;Jackie Han. Improved nucleosome-positioning algorithm iNPS for accurate nucleosome positioning from sequencing data.. <em>Nature communications</em>, 5:4909, January 2014. <a class="reference external" href="http://www.nature.com/ncomms/2014/140918/ncomms5909/full/ncomms5909.html">URL: http://www.nature.com/ncomms/2014/140918/ncomms5909/full/ncomms5909.html</a>, <a class="reference external" href="http://dx.doi.org/10.1038/ncomms5909">doi:10.1038/ncomms5909</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="jiang2009" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[3]</td><td><em>(<a class="fn-backref" href="#id11">1</a>, <a class="fn-backref" href="#id13">2</a>)</em> Cizhong Jiang and B&nbsp;Franklin Pugh. Nucleosome positioning and gene regulation: advances through genomics.. <em>Nature reviews. Genetics</em>, 10(3):161–72, March 2009. <a class="reference external" href="http://dx.doi.org/10.1038/nrg2522">URL: http://dx.doi.org/10.1038/nrg2522</a>, <a class="reference external" href="http://dx.doi.org/10.1038/nrg2522">doi:10.1038/nrg2522</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="luco2011" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id17">[4]</a></td><td>Reini&nbsp;F Luco, Mariano Allo, Ignacio&nbsp;E Schor, Alberto&nbsp;R Kornblihtt, and Tom Misteli. Epigenetics in alternative pre-mrna splicing. <em>Cell</em>, 144(1):16–26, 2011.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="rizzo2012" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id16">[5]</a></td><td>Jason&nbsp;M Rizzo, Jonathan&nbsp;E Bard, and Michael&nbsp;J Buck. Standardized collection of MNase-seq experiments enables unbiased dataset comparisons.. <em>BMC molecular biology</em>, 13(1):15, January 2012. <a class="reference external" href="http://www.biomedcentral.com/1471-2199/13/15">URL: http://www.biomedcentral.com/1471-2199/13/15</a>, <a class="reference external" href="http://dx.doi.org/10.1186/1471-2199-13-15">doi:10.1186/1471-2199-13-15</a>.</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="waterston2002" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id12">[6]</a></td><td>Robert&nbsp;H Waterston and et&nbsp;al. Initial sequencing and comparative analysis of the mouse genome.. <em>Nature</em>, 420(6915):520–62, December 2002. <a class="reference external" href="http://dx.doi.org/10.1038/nature01262">URL: http://dx.doi.org/10.1038/nature01262</a>, <a class="reference external" href="http://dx.doi.org/10.1038/nature01262">doi:10.1038/nature01262</a>.</td></tr>
+</tbody>
+</table>
+</p>
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="commandLineTools.html" class="btn btn-neutral float-right" title="Command Line Utilites"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="installation.html" class="btn btn-neutral" title="Prerequisites and installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Marcelo Rivas-Astroza.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
