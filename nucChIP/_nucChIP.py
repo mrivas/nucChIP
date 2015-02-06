@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import pysam, HTSeq, numpy, pickle, itertools, operator, pybedtools, wLib
+import pysam, HTSeq, numpy, pickle, itertools, operator, pybedtools, wLib, pandas
 from numpy import inf
 from numpy import nan
 from scipy import signal
@@ -976,7 +976,7 @@ def getExonProfile(halfwinwidth,regions,exons,bamName,fragLength,lower,upper,num
 				else:                    # If read is on '-' strand
 					almntStart = almnt.aend - fragLength 
 					almntEnd  = almnt.aend
-				
+			
 			if almntStart > region.end or almntEnd < region.start: continue
 			if region.strand == "+":
 				start_in_window = almntStart - region.start
@@ -994,3 +994,93 @@ def getExonProfile(halfwinwidth,regions,exons,bamName,fragLength,lower,upper,num
 	# Normalized by library size
 	profileMatrix = profileMatrix / libSize * 1e6 
 	return profileMatrix
+
+##############################################################	
+# getNucProfile
+##############################################################	
+def getNuclCount(nuclFile,cutoff):
+	#Assigns an ID to each nucleosome
+
+	nucl = HTSeq.GenomicArrayOfSets('auto',stranded=False)
+	nLine=1
+	for line in open(nuclFile,'r'):
+		fields = line.strip().split('\t')
+		if len(fields)==1 or not( fields[1].isdigit()): continue # skip header lines
+		# Skip nucleosomes with cutoff below given threshold
+		#if float(fields[8])<cutoff: continue # using p-value
+		if float(fields[5])<cutoff: continue # using number of supporting reads
+		chrom = fields[0]
+		start = int(fields[1])
+		end   = int(fields[2])
+		count          = int(fields[10])
+		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
+		nucl[iv] += str(chrom)+"_"+str(start)+"_"+str(end)+"_"+str(count)
+	return nucl
+##############################################################	
+def getCountsPerNuc(exonList,nucleosomes,nucPos,halfWin,exon_position):
+	# Initialized nucPositions
+	exonPositions, exonCounts = {}, {}
+	for nucleosome in nucPos: 
+		exonPositions[nucleosome]=[]
+		exonCounts[nucleosome]=[]
+	# Find nuc list per exon
+	for line in open(exonList,"r"):
+		exon_name = line
+		line = line.strip().split("\t")
+		chrom,start,end,exon_strand = line[0],int(line[1]),int(line[2]),line[3]
+		if exon_strand=="+":
+			if exon_position=="5p": exon_ref = start
+			else:    				exon_ref = end
+		else:
+			if exon_position=="5p": exon_ref = end
+			else:    				exon_ref = start
+		window = HTSeq.GenomicInterval( chrom,exon_ref-halfWin,exon_ref+halfWin)
+		# Intersect nucleosomes with current exon
+		distances, counts = [], []
+		for nuc_iv,nuc_name in nucleosomes[ window ].steps():
+			if len(nuc_name)==0: continue # if no nuc, skip
+			if len(nuc_name)>1: 
+				print "Overlapping nuc on exon ", exon_name
+				for x in nuc_name:
+					print nuc_iv,x
+			chrom, start, end, count = list(nuc_name)[0].split("_")
+			nuc_midpoint = numpy.mean([int(start),int(end)])
+			if exon_strand=="+": distance = nuc_midpoint - exon_ref
+			if exon_strand=="-": distance = exon_ref - nuc_midpoint
+			if abs(distance)>halfWin: continue # skip distance out of range
+			distances.append(distance)
+			counts.append(count)
+		# Fetch nucleosome by nominal positions
+		countsSort, distancesSort  = sortNucs(nucPos,counts,distances) 
+		for idx,nucleosome in enumerate(nucPos):
+			exonPositions[nucleosome].append(distancesSort[idx])
+			exonCounts[nucleosome].append(countsSort[idx])
+	return exonCounts, exonPositions
+##############################################################	
+def sortNucs(nucPos,counts,distances):
+	# Sort nucleosomes names by their distances to exon start
+	counts=[y for (x,y) in sorted(zip(distances,counts))]
+	distances.sort()
+	# Convert counts and distances to numpy array
+	counts=numpy.array(counts)
+	distances=numpy.array(distances)
+	lenPosNuc=sum(nucPos>=0)
+	lenNegNuc=sum(nucPos< 0)
+	posCounts = numpy.repeat(nan,lenPosNuc)
+	negCounts = numpy.repeat(nan,lenNegNuc)
+	posDist = numpy.repeat(nan,lenPosNuc)
+	negDist = numpy.repeat(nan,lenNegNuc)
+	lenP=numpy.min([sum(distances>=0),lenPosNuc])
+	lenN=numpy.min([sum(distances< 0),lenNegNuc])
+	# Sort counts per nucleosome
+	if lenP>0:
+		posCounts[0:lenP] = counts[distances>=0][0:lenP]
+		posDist[0:lenP] = distances[distances>=0][0:lenP]
+	if lenN>0:
+		negCounts[0:lenN] = counts[distances< 0][::-1][0:lenN][::-1]
+		negDist[0:lenN] = distances[distances< 0][::-1][0:lenN][::-1]
+	# Sort distances per nucleosome
+	countsSort=numpy.concatenate((negCounts,posCounts))
+	distancesSort=numpy.concatenate((negDist,posDist))
+	# Output results
+	return countsSort, distancesSort

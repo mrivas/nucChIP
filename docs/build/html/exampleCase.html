@@ -29,7 +29,7 @@
 
   
     <link rel="top" title="nucChIP 1 documentation" href="index.html"/>
-        <link rel="next" title="Command Line Utilites" href="commandLineTools.html"/>
+        <link rel="next" title="Alternatively spliced exons" href="AS_exons.html"/>
         <link rel="prev" title="Prerequisites and installation" href="installation.html"/> 
 
   
@@ -72,9 +72,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#position-specific-nucleosomes-control-gene-expression">Position-specific nucleosomes control gene expression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">There isn&#8217;t genome-wide MNase enrichment bias towards isolated nucleosomes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">Inclusion of alternatively spliced exons is signaled by histone marks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#mnase-normalization-of-nucleosomal-chip-seq">MNase normalization of nucleosomal ChIP-seq</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#bibliography">Bibliography</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="AS_exons.html">Alternatively spliced exons</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#convert-bam-to-bed">Convert BAM to BED</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#counts-the-number-of-overlapping-between-two-bed-files">Counts the number of overlapping between two BED files</a></li>
@@ -261,22 +263,22 @@
 <h2>Nucleosome positions<a class="headerlink" href="#nucleosome-positions" title="Permalink to this headline">¶</a></h2>
 <p>We used iNPS <a class="reference internal" href="#chen2014" id="id9">[2]</a> to call nucleosome locations with default parameters. Using 8_mnase fragments with mapping qualities above 20 as input, we found 10,468,598 nucleosome locations genome-wide. iNPs classified these nucleosomes into 4 kinds. The first, MainPeak, represents isolated main nucleosome peaks, which accounted for the majority of the calls (80% of the nucleosomes). This was accompanied by the categories MainPeak+Shoulder (11%), MainPeak:doublet (6%), and Shoulder (3%). Compared to MainPeak, Shoulder nucleosomes are closer to flanking nucleosomes and have shorted &#8216;widths&#8217;. On the contrary, MainPeak+Shoulder and MainPeak:doublet nucleosomes are farther apart from nearby nucleosomes and with larger &#8216;widths&#8217;. Unlike MainPeak, the last three nucleosome categories suggest association with unstable positions <a class="reference internal" href="#chen2014" id="id10">[2]</a>.</p>
 <p>All together, the amount nucleosome positions was expected given the size of the mouse genome. The total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; <a class="reference internal" href="#jiang2009" id="id11">[3]</a> ) covered approximately 77% of the mouse genome length (2.5 Gb; <a class="reference internal" href="#waterston2002" id="id12">[6]</a>).</p>
-<p>As shown in Figure <a href="#fig-width"> 1</a>, the nucleosome&#8217;s widths peaks at ~75 nt, which is coherent the length used by iNPS to represent the enrichment signals (to improve the signal over background ratio, iNPS reduces each fragment length to 75 (nt) around their midpoint). The sharp peaks is signal that most nucleosomes are well positioned and isolated &#8211;not overlapping flanking nucleosomes. On the other hand, the distance between adjacent nucleosomes (Figure <a href="#fig-dist"> 2</a>) peaks at ~ 180 (nt), being this coherent with the typical combined length of nucleosomal (~147 nt) and linker DNA segments (~38 nt; <a class="reference internal" href="#jiang2009" id="id13">[3]</a>)</p>
+<p>As shown in Figure <a href="#fig-width"> 2</a>, the nucleosome&#8217;s widths peaks at ~75 nt, which is coherent the length used by iNPS to represent the enrichment signals (to improve the signal over background ratio, iNPS reduces each fragment length to 75 (nt) around their midpoint). The sharp peaks is signal that most nucleosomes are well positioned and isolated &#8211;not overlapping flanking nucleosomes. On the other hand, the distance between adjacent nucleosomes (Figure <a href="#fig-dist"> 3</a>) peaks at ~ 180 (nt), being this coherent with the typical combined length of nucleosomal (~147 nt) and linker DNA segments (~38 nt; <a class="reference internal" href="#jiang2009" id="id13">[3]</a>)</p>
 <div class="figure" id="fig-width">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_width.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_width.svg" width="50%" /></a>
-<p class="caption">Figure 1: Distribution of nucleosomes&#8217; &#8216;widths&#8217;. In read, subset of high quality nucleosome (p-values &lt;= 0.05).</p>
+<p class="caption">Figure 2: Distribution of nucleosomes&#8217; &#8216;widths&#8217;. In read, subset of high quality nucleosome (p-values &lt;= 0.05).</p>
 </div>
 <div class="figure" id="fig-dist">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_dist.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_dist.svg" width="50%" /></a>
-<p class="caption">Figure 2: Distribution of distances between adjacent nucleosomes.</p>
+<p class="caption">Figure 3: Distribution of distances between adjacent nucleosomes.</p>
 </div>
 </div>
 <div class="section" id="reproducibility">
 <h2>Reproducibility<a class="headerlink" href="#reproducibility" title="Permalink to this headline">¶</a></h2>
 <p>We assessed the information content of our single-nucleosome histone libraries by measuring their similarity with referencial sonicated ChIP-seq libraries to check if they cluster together.</p>
-<p>First, we had to preprocess all our libraries. Although MNase digested ChIP-seq produces fragment lengths of 147 nu- cleotides (nt) –the length of DNA wrapped around a nucleosome– in practice fragments sizes may be larger or smaller. To improve the resolution of our data, we regularized the fragment lengths by extending +/-75 bases around each paired-end read middle point (see <a href="#fig-shift"> 3</a>). In the case of single-end libraries we enlarged each read up to 200 bases towards the 3’ end, and extended their length +/- 75 bases around their resulting middle points. Thus, all reads were regularized to a fragment lengths (150 bases) similar to the nucleosomal DNA size.</p>
+<p>First, we had to preprocess all our libraries. Although MNase digested ChIP-seq produces fragment lengths of 147 nu- cleotides (nt) –the length of DNA wrapped around a nucleosome– in practice fragments sizes may be larger or smaller. To improve the resolution of our data, we regularized the fragment lengths by extending +/-75 bases around each paired-end read middle point (see <a href="#fig-shift"> 4</a>). In the case of single-end libraries we enlarged each read up to 200 bases towards the 3’ end, and extended their length +/- 75 bases around their resulting middle points. Thus, all reads were regularized to a fragment lengths (150 bases) similar to the nucleosomal DNA size.</p>
 <div class="figure" id="fig-shift">
-<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/shift.svg" /><p class="caption">Figure 3: Regularization of fragments length. (A) After MNase digestion, paired or single-end reads are produced. (B) Fragments lengths are regularized to a custom length by extending their middle point +/- 75 bases. Unlike paired-end reads which provides the fragment length, single-end fragment lengths are estimated as the average fragment length of the library. (C) Provided the nucleosome locations, reads are counted per each nucleosome, and an enrichment ratio is computed.</p>
+<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/shift.svg" /><p class="caption">Figure 4: Regularization of fragments length. (A) After MNase digestion, paired or single-end reads are produced. (B) Fragments lengths are regularized to a custom length by extending their middle point +/- 75 bases. Unlike paired-end reads which provides the fragment length, single-end fragment lengths are estimated as the average fragment length of the library. (C) Provided the nucleosome locations, reads are counted per each nucleosome, and an enrichment ratio is computed.</p>
 </div>
 <p>We did this transformation with the nucChIP&#8217;s script <tt class="xref py py-class docutils literal"><span class="pre">bam2bed</span></tt>.</p>
 <div class="highlight-text"><div class="highlight"><pre>usage: bam2bed [-h] [-b BFILE] [-l LTYPE] [-lower LOWER] [-upper UPPER]
@@ -445,59 +447,59 @@ bedtools makewindows -g mm9.chromSizes -w 50 &gt; windows50.bed
 <p>For both cases, we used two metrics to measure libraries similarities: Spearman correlation, and Euclidean distance. The clustering was done with these R&#8217;s scripts:</p>
 <p>R_script for coverage
 R_script for counts per nucleosome</p>
-<p>Regardless of the method used, we found that H3K27Ac and H3K27me3 clustered among their single-nucleosomal replicates, respectively (see Figures <a href="#fig-clustercoverage"> 4</a> and <a href="#fig-clustercounts"> 5</a>). Conversely, H3K4me3 and H3K9me3 single-nucleosomal replicates were largely dispersed on the resulting dendrograms. This is due to differences on MNase digestion intensity (see next section) and library sizes. In all cases, however, single-nucleosomal libraries didn’t cluster closed to their corresponding reference ChIP-seq libraries. We hypothesized that this is due to the resolution differences between both types of datasets.</p>
+<p>Regardless of the method used, we found that H3K27Ac and H3K27me3 clustered among their single-nucleosomal replicates, respectively (see Figures <a href="#fig-clustercoverage"> 5</a> and <a href="#fig-clustercounts"> 6</a>). Conversely, H3K4me3 and H3K9me3 single-nucleosomal replicates were largely dispersed on the resulting dendrograms. This is due to differences on MNase digestion intensity (see next section) and library sizes. In all cases, however, single-nucleosomal libraries didn’t cluster closed to their corresponding reference ChIP-seq libraries. We hypothesized that this is due to the resolution differences between both types of datasets.</p>
 <div class="figure" id="fig-clustercoverage">
-<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_coverage.svg" /><p class="caption">Figure 4: Cluster of libraries using reads&#8217; coverage.</p>
+<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_coverage.svg" /><p class="caption">Figure 5: Cluster of libraries using reads&#8217; coverage.</p>
 </div>
 <div class="figure" id="fig-clustercounts">
-<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_counts.svg" /><p class="caption">Figure 5: Cluster of libraries using counts per nucleosome.</p>
+<img src="https://132.239.135.28/public/nucChIP/files/exampleCase/dendrogram_ratio_counts.svg" /><p class="caption">Figure 6: Cluster of libraries using counts per nucleosome.</p>
 </div>
 </div>
 <div class="section" id="h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions">
 <h2>H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions<a class="headerlink" href="#h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions" title="Permalink to this headline">¶</a></h2>
-<p>Then, we asked: are the single-nucleosome ChIP-seq libraries coherent with the known biological associations of regular ChIP-seq? H3K4me3 and H3K27Ac are known to be preferentially enriched on the transcription starting site (TSS) of active genes. On the contrary, H3K9me3, and H3K27me3 are preferentially enriched at inactive genes&#8217; TSS. Concordantly, we classify genes according to their expression levels. For each expression level we computed the single-nucleosomal histone enrichment (see Figures <a href="#fig-h3k4me3-tss"> 6</a>, <a href="#fig-h3k27ac-tss"> 7</a>, <a href="#fig-h3k9me3-tss"> 8</a>, and <a href="#fig-h3k27me3-tss"> 9</a>).</p>
+<p>Then, we asked: are the single-nucleosome ChIP-seq libraries coherent with the known biological associations of regular ChIP-seq? H3K4me3 and H3K27Ac are known to be preferentially enriched on the transcription starting site (TSS) of active genes. On the contrary, H3K9me3, and H3K27me3 are preferentially enriched at inactive genes&#8217; TSS. Concordantly, we classify genes according to their expression levels. For each expression level we computed the single-nucleosomal histone enrichment (see Figures <a href="#fig-h3k4me3-tss"> 7</a>, <a href="#fig-h3k27ac-tss"> 8</a>, <a href="#fig-h3k9me3-tss"> 9</a>, and <a href="#fig-h3k27me3-tss"> 10</a>).</p>
 <p>H3K4me3 and H3K27Ac footprints are coherent with literature <a class="reference internal" href="#carone2014" id="id15">[1]</a>. They were depleted immediately before TSS, but enriched thereafter in a manner proportional to gene expression. Conversely, among H3K9me3 replicates only one (9_H3K9me3) was inversely correlated with gene expression whereas all H3K27me3&#8217;s replicates were positively correlated with gene expression.</p>
-<p>This may be the result of TSS specific biases. According to REF, regions flanked by nucleosome depleted regions are easier to digest by MNase and in consequence their presence may be overrepresented on the ChIP-seq library. This problem is significant if the MNase digestion is poor. To explore this possibility, we plotted the fragment densities around the TSS. Fragment densities about the nucleosomal size (150 nt) mean poor MNase digestion. Figures see Figures <a href="#fig-h3k4me3-tss"> 6</a>, <a href="#fig-h3k27ac-tss"> 7</a>, <a href="#fig-h3k9me3-tss"> 8</a>, and <a href="#fig-h3k27me3-tss"> 9</a> show that this is the case for all but n1_H3K4me3.</p>
+<p>This may be the result of TSS specific biases. According to REF, regions flanked by nucleosome depleted regions are easier to digest by MNase and in consequence their presence may be overrepresented on the ChIP-seq library. This problem is significant if the MNase digestion is poor. To explore this possibility, we plotted the fragment densities around the TSS. Fragment densities about the nucleosomal size (150 nt) mean poor MNase digestion. Figures see Figures <a href="#fig-h3k4me3-tss"> 7</a>, <a href="#fig-h3k27ac-tss"> 8</a>, <a href="#fig-h3k9me3-tss"> 9</a>, and <a href="#fig-h3k27me3-tss"> 10</a> show that this is the case for all but n1_H3K4me3.</p>
 <div class="figure" id="fig-h3k4me3-tss">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_tss.svg" width="90%" /></a>
-<p class="caption">Figure 6: Coverage and fragment lendth of H3K4me3 reads at TSS.</p>
+<p class="caption">Figure 7: Coverage and fragment lendth of H3K4me3 reads at TSS.</p>
 </div>
 <div class="figure" id="fig-h3k27ac-tss">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_tss.svg" width="60%" /></a>
-<p class="caption">Figure 7: Coverage and fragment lendth of H3K27Ac reads at TSS.</p>
+<p class="caption">Figure 8: Coverage and fragment lendth of H3K27Ac reads at TSS.</p>
 </div>
 <div class="figure" id="fig-h3k9me3-tss">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_tss.svg" width="60%" /></a>
-<p class="caption">Figure 8: Coverage and fragment lendth of H3K9me3 reads at TSS.</p>
+<p class="caption">Figure 9: Coverage and fragment lendth of H3K9me3 reads at TSS.</p>
 </div>
 <div class="figure" id="fig-h3k27me3-tss">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_tss.svg" width="90%" /></a>
-<p class="caption">Figure 9: Coverage and fragment lendth of H3K27me3 reads at TSS.</p>
+<p class="caption">Figure 10: Coverage and fragment lendth of H3K27me3 reads at TSS.</p>
 </div>
 <div class="figure" id="fig-8-mnase-tss">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_tss.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_tss.svg" width="30%" /></a>
-<p class="caption">Figure 10: Coverage and fragment lendth of MNase reads at TSS.</p>
+<p class="caption">Figure 11: Coverage and fragment lendth of MNase reads at TSS.</p>
 </div>
 </div>
 <div class="section" id="position-specific-nucleosomes-control-gene-expression">
 <h2>Position-specific nucleosomes control gene expression<a class="headerlink" href="#position-specific-nucleosomes-control-gene-expression" title="Permalink to this headline">¶</a></h2>
 <p>The positive correlation between gene expression and the enrichment levels of H3K4me3 at the +1 nucleosome, leaded us to hypothesized that gene expression is controlled by position-specific nucleosome epigenetic marks. We tested this hypothesis, by computing the linear correlation between the average histone enrichment at eight gene expression quantiles (inactive genes were not included).</p>
-<p>Among H3K4me3 replicates, enrichment on +1 nucleosome positively correlates with gene expression (<a href="#fig-h3k4me3-lm">11</a>) in a consistent manner.  In the case of H3K27Ac, both nucleosome +1 and +2 positively correlates with gene expression (<a href="#fig-h3k27ac-lm">12</a>). Surprisingly, H3K9me3 and H3K27me3 are also positively correlated to gene expression at nucleosomes +1 and +2 which is the opposite as expected (Figures <a href="#fig-h3k9me3-lm"> 13</a> and <a href="#fig-h3k27me3-lm"> 14</a>). As discussed before, we believe that this is an artifact due to MNase under-digestion.</p>
+<p>Among H3K4me3 replicates, enrichment on +1 nucleosome positively correlates with gene expression (<a href="#fig-h3k4me3-lm">12</a>) in a consistent manner.  In the case of H3K27Ac, both nucleosome +1 and +2 positively correlates with gene expression (<a href="#fig-h3k27ac-lm">13</a>). Surprisingly, H3K9me3 and H3K27me3 are also positively correlated to gene expression at nucleosomes +1 and +2 which is the opposite as expected (Figures <a href="#fig-h3k9me3-lm"> 14</a> and <a href="#fig-h3k27me3-lm"> 15</a>). As discussed before, we believe that this is an artifact due to MNase under-digestion.</p>
 <div class="figure" id="fig-h3k4me3-lm">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_lm.svg" width="90%" /></a>
-<p class="caption">Figure 11: Correlation between gene expression and nucleosomes-specific enrichment of H3K4me3.</p>
+<p class="caption">Figure 12: Correlation between gene expression and nucleosomes-specific enrichment of H3K4me3.</p>
 </div>
 <div class="figure" id="fig-h3k27ac-lm">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_lm.svg" width="60%" /></a>
-<p class="caption">Figure 12: Correlation between gene expression and nucleosomes-specific enrichment of H3K27Ac.</p>
+<p class="caption">Figure 13: Correlation between gene expression and nucleosomes-specific enrichment of H3K27Ac.</p>
 </div>
 <div class="figure" id="fig-h3k9me3-lm">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_lm.svg" width="60%" /></a>
-<p class="caption">Figure 13: Correlation between gene expression and nucleosomes-specific enrichment of H3K9me3.</p>
+<p class="caption">Figure 14: Correlation between gene expression and nucleosomes-specific enrichment of H3K9me3.</p>
 </div>
 <div class="figure" id="fig-h3k27me3-lm">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_lm.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_lm.svg" width="90%" /></a>
-<p class="caption">Figure 14: Correlation between gene expression and nucleosomes-specific enrichment of H3K27me3.</p>
+<p class="caption">Figure 15: Correlation between gene expression and nucleosomes-specific enrichment of H3K27me3.</p>
 </div>
 </div>
 <div class="section" id="there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">
@@ -565,42 +567,65 @@ R_script for counts per nucleosome</p>
 </div>
 <div class="section" id="inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">
 <h2>Inclusion of alternatively spliced exons is signaled by histone marks<a class="headerlink" href="#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks" title="Permalink to this headline">¶</a></h2>
-<p>Alternative splicing is know to be affected by the epigenome <a class="reference internal" href="#luco2011" id="id17">[4]</a>, yet current ChIP-seq resolutions have hampered our ability to understand their effect. We used our single-nucleosomal ChIP-seq libraries to compute the histone enrichment at alternatively spliced exons. Using mouse E14 RNA-seq data, we computed the percent spliced in (PSI) on each cassette-type exon (MISO :cite:;database :cite:). We classify exons with PSI values (confidense intervals smaller than 0.2) lower than 0.3 as excluded, and higher than 0.7 as included on the correspoding gene. To avoid classify exons on non-active genes as excluded, we requested each cassette-type exon to be covered by at least 10 RNA-seq reads. Enrichment was computed in two ways: with and without normalization by MNase. MNase normalzied enrichment was computed for each gene as the fold change of signal (histone marks reads) over backgroudn (MNase reads), usign 1 as pseudo-counts for numerator and denomintar. The results (Figures <a href="#fig-h3k4me3-as-ratios"> 16</a>, <a href="#fig-h3k27ac-as-ratios"> 18</a>, <a href="#fig-h3k9me3-as-ratios"> 20</a>, and <a href="#fig-h3k27me3-as-ratios"> 22</a> show preferential enrichment of all histone marks on included exons.</p>
-<p>Enrichment without MNase-normalization was computed along with fragment-size heatmaps not only for the histone marks libraries but also MNase data. The MNase library showed no evidence of significant depletion of nucleosomes around cassette-type exons( Figure <a href="#fig-8-mnase-as"> 15</a>), and therefore unlikely to induced position-specific biases on the enrichment of the MNase ChIP-seq libraries which, in turn, showed clear evidence of enrichment of all histone marks on included over excluded cassette-typ exons (Figures <a href="#fig-h3k4me3-as"> 17</a>, <a href="#fig-h3k27ac-as"> 19</a>, <a href="#fig-h3k9me3-as"> 21</a>, <a href="#fig-h3k27me3-as"> 23</a>, and <a href="#fig-8-mnase-as"> 15</a>).</p>
+<p>Alternative splicing is know to be affected by the epigenome <a class="reference internal" href="#luco2011" id="id17">[4]</a>, yet current ChIP-seq resolutions have hampered our ability to understand their effect. We used our single-nucleosomal ChIP-seq libraries to compute the histone enrichment at alternatively spliced exons. Using mouse E14 RNA-seq data, we computed the percent spliced in (PSI) on each cassette-type exon (MISO :cite:;database :cite:). We classify exons with PSI values (confidense intervals smaller than 0.2) lower than 0.3 as excluded, and higher than 0.7 as included on the correspoding gene. To avoid classify exons on non-active genes as excluded, we requested each cassette-type exon to be covered by at least 10 RNA-seq reads. Enrichment was computed in two ways: with and without normalization by MNase. MNase normalzied enrichment was computed for each gene as the fold change of signal (histone marks reads) over backgroudn (MNase reads), usign 1 as pseudo-counts for numerator and denomintar. The results (Figures <a href="#fig-h3k4me3-as-ratios"> 17</a>, <a href="#fig-h3k27ac-as-ratios"> 19</a>, <a href="#fig-h3k9me3-as-ratios"> 21</a>, and <a href="#fig-h3k27me3-as-ratios"> 23</a> show preferential enrichment of all histone marks on included exons.</p>
+<p>Enrichment without MNase-normalization was computed along with fragment-size heatmaps not only for the histone marks libraries but also MNase data. The MNase library showed no evidence of significant depletion of nucleosomes around cassette-type exons( Figure <a href="#fig-8-mnase-as"> 16</a>), and therefore unlikely to induced position-specific biases on the enrichment of the MNase ChIP-seq libraries which, in turn, showed clear evidence of enrichment of all histone marks on included over excluded cassette-typ exons (Figures <a href="#fig-h3k4me3-as"> 18</a>, <a href="#fig-h3k27ac-as"> 20</a>, <a href="#fig-h3k9me3-as"> 22</a>, <a href="#fig-h3k27me3-as"> 24</a>, and <a href="#fig-8-mnase-as"> 16</a>).</p>
 <div class="figure" id="fig-8-mnase-as">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/8_mnase_as.svg" width="30%" /></a>
-<p class="caption">Figure 15: Enrichement of MNase on alternatively spliced exons.</p>
+<p class="caption">Figure 16: Enrichement of MNase on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k4me3-as-ratios">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as_ratios.svg" width="90%" /></a>
-<p class="caption">Figure 16: Normalized enrichement of H3K4me3 on alternatively spliced exons.</p>
+<p class="caption">Figure 17: Normalized enrichement of H3K4me3 on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k4me3-as">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K4me3_as.svg" width="90%" /></a>
-<p class="caption">Figure 17: Enrichement of H3K4me3 on alternatively spliced exons.</p>
+<p class="caption">Figure 18: Enrichement of H3K4me3 on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k27ac-as-ratios">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as_ratios.svg" width="60%" /></a>
-<p class="caption">Figure 18: Normalized enrichement of H3K27Ac on alternatively spliced exons.</p>
+<p class="caption">Figure 19: Normalized enrichement of H3K27Ac on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k27ac-as">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27Ac_as.svg" width="60%" /></a>
-<p class="caption">Figure 19: Enrichement of H3K27Ac on alternatively spliced exons.</p>
+<p class="caption">Figure 20: Enrichement of H3K27Ac on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k9me3-as-ratios">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as_ratios.svg" width="60%" /></a>
-<p class="caption">Figure 20: Normalized enrichement of H3K9me3 on alternatively spliced exons.</p>
+<p class="caption">Figure 21: Normalized enrichement of H3K9me3 on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k9me3-as">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K9me3_as.svg" width="60%" /></a>
-<p class="caption">Figure 21: Enrichement of H3K9me3 on alternatively spliced exons.</p>
+<p class="caption">Figure 22: Enrichement of H3K9me3 on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k27me3-as-ratios">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as_ratios.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as_ratios.svg" width="90%" /></a>
-<p class="caption">Figure 22: Normalzied enrichement of H3K27me3 on alternatively spliced exons.</p>
+<p class="caption">Figure 23: Normalzied enrichement of H3K27me3 on alternatively spliced exons.</p>
 </div>
 <div class="figure" id="fig-h3k27me3-as">
 <a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/H3K27me3_as.svg" width="90%" /></a>
+</div>
+</div>
+<div class="section" id="mnase-normalization-of-nucleosomal-chip-seq">
+<h2>MNase normalization of nucleosomal ChIP-seq<a class="headerlink" href="#mnase-normalization-of-nucleosomal-chip-seq" title="Permalink to this headline">¶</a></h2>
+<p>Per each nucleosome the MNase ChIP-seq enrichment is a subset of the MNase enrichment. Based on this, we can spot nucleosomes artifically over-enriched by MNase ChIP-seq. But first, we have to bring MNase and MNase ChIP-seq readings to a common scale. Under the hypothesis that in an homogeneous population most nucleosomes have similar histone modifications across individuals, the MNase ChIP-seq enrichment should match the MNase enrichment. Thus, we used MNase as reference to compute a scaling factor for the histone marks, <span class="math">\(\alpha\)</span>, that minimizes the genome-wide differences between MNase and MNase ChIP-seq enrichment, <span class="math">\(\Phi(\alpha)\)</span>:</p>
+<div class="math">
+\[\min_{\alpha} \Phi(\alpha) = \sum_{i} {(y_i - \alpha x_i)^2}\]</div>
+<p>where <span class="math">\(y_i\)</span> and <span class="math">\(x_i\)</span> are the number of MNase and MNase ChIP reads on nucleosome <span class="math">\(i\)</span>.</p>
+<p>However, some nucleosome may be artificially over or down enriched. To make the estimation of <span class="math">\(\alpha\)</span> robust, we weighted the terms on <span class="math">\(\Phi(\alpha)\)</span> such that the most representatives values of MNase or MNase ChIP-seq drove the minimization. We did this by multiplying each term by the minimum of between the net probabilities of <span class="math">\(y_i\)</span> and <span class="math">\(x_i\)</span>.</p>
+<div class="math">
+\[\min_{\alpha} \Phi(\alpha) = \sum_{i} {(y_i - \alpha x_i)^2} \min\{\overline{P(y_i)},\overline{P(x_i)}  \}\]</div>
+<p>The net probabilities <span class="math">\(\bar{P(y_i)}\)</span> and <span class="math">\(\bar{P(x_i)}\)</span> are the differences between the probability of observing a signal value minus the probability of observing the same value coming from a background distribution. Using a Poisson distribution to model both processes we have:</p>
+<div class="math">
+\[\begin{split}\overline{P(y_i)} = \max\{ (1-\beta^{(y)}) Poisson(y_i|\lambda_1^{(y)}) - \beta^{(y)} Poisson(y_i|\lambda_0^{(y)}), 0 \} \\
+\overline{P(x_i)} = \max\{ (1-\beta^{(x)}) Poisson(x_i|\lambda_1^{(y)}) - \beta^{(x)} Poisson(x_i|\lambda_0^{(y)}), 0 \}\end{split}\]</div>
+<p>The parameters <span class="math">\(\lambda_0^{(.)}\)</span> and <span class="math">\(\lambda_1^{(.)}\)</span> are the expected values of the background and signal distributions, and <span class="math">\(\beta^{(.)}\)</span> the mixing coefficients. All parameters were estimated by fitting a mixture of Poisson distributions to the data:</p>
+<div class="math">
+\[\begin{split}P(y_i|\beta^{(y)},\lambda_0^{(y)},\lambda_1^{(y)}) = \beta^{(y)} Poisson(y_i|\lambda_0^{(y)}) + (1-\beta^{(y)}) Poisson(y_i|\lambda_1^{(y)}) \\
+P(x_i|\beta^{(x)},\lambda_0^{(x)},\lambda_1^{(x)}) = \beta^{(x)} Poisson(x_i|\lambda_0^{(x)}) + (1-\beta^{(x)}) Poisson(x_i|\lambda_1^{(x)})\end{split}\]</div>
+<p>using the expectation-maximization algorithm.</p>
+<div class="figure" id="fig-hist-n1">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_n1.svg"><img src="https://132.239.135.28/public/nucChIP/files/exampleCase/hist_n1.svg" width="90%" /></a>
+<p class="caption">Figure 25: Mixture model of n1_H3K4me3.</p>
 </div>
 </div>
 <div class="section" id="bibliography">
@@ -651,7 +676,7 @@ R_script for counts per nucleosome</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="commandLineTools.html" class="btn btn-neutral float-right" title="Command Line Utilites"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="AS_exons.html" class="btn btn-neutral float-right" title="Alternatively spliced exons"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="installation.html" class="btn btn-neutral" title="Prerequisites and installation"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -692,7 +717,7 @@ R_script for counts per nucleosome</p>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

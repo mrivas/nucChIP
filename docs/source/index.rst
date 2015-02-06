@@ -19,6 +19,8 @@ Contents:
   
    exampleCase
 
+   AS_exons
+
    commandLineTools
 
 .. automodule:: _nucChIP

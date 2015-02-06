@@ -445,6 +445,46 @@ Enrichment without MNase-normalization was computed along with fragment-size hea
    :width: 90 %
 
 
+MNase normalization of nucleosomal ChIP-seq
+===========================================
+
+Per each nucleosome the MNase ChIP-seq enrichment is a subset of the MNase enrichment. Based on this, we can spot nucleosomes artifically over-enriched by MNase ChIP-seq. But first, we have to bring MNase and MNase ChIP-seq readings to a common scale. Under the hypothesis that in an homogeneous population most nucleosomes have similar histone modifications across individuals, the MNase ChIP-seq enrichment should match the MNase enrichment. Thus, we used MNase as reference to compute a scaling factor for the histone marks, :math:`\alpha`, that minimizes the genome-wide differences between MNase and MNase ChIP-seq enrichment, :math:`\Phi(\alpha)`:
+
+.. math::
+  
+   \min_{\alpha} \Phi(\alpha) = \sum_{i} {(y_i - \alpha x_i)^2}
+
+where :math:`y_i` and :math:`x_i` are the number of MNase and MNase ChIP reads on nucleosome :math:`i`.
+
+However, some nucleosome may be artificially over or down enriched. To make the estimation of :math:`\alpha` robust, we weighted the terms on :math:`\Phi(\alpha)` such that the most representatives values of MNase or MNase ChIP-seq drove the minimization. We did this by multiplying each term by the minimum of between the net probabilities of :math:`y_i` and :math:`x_i`. 
+
+.. math::
+  
+   \min_{\alpha} \Phi(\alpha) = \sum_{i} {(y_i - \alpha x_i)^2} \min\{\overline{P(y_i)},\overline{P(x_i)}  \}
+
+The net probabilities :math:`\bar{P(y_i)}` and :math:`\bar{P(x_i)}` are the differences between the probability of observing a signal value minus the probability of observing the same value coming from a background distribution. Using a Poisson distribution to model both processes we have:
+
+.. math::
+
+   \overline{P(y_i)} = \max\{ (1-\beta^{(y)}) Poisson(y_i|\lambda_1^{(y)}) - \beta^{(y)} Poisson(y_i|\lambda_0^{(y)}), 0 \} \\
+   \overline{P(x_i)} = \max\{ (1-\beta^{(x)}) Poisson(x_i|\lambda_1^{(y)}) - \beta^{(x)} Poisson(x_i|\lambda_0^{(y)}), 0 \}
+
+The parameters :math:`\lambda_0^{(.)}` and :math:`\lambda_1^{(.)}` are the expected values of the background and signal distributions, and :math:`\beta^{(.)}` the mixing coefficients. All parameters were estimated by fitting a mixture of Poisson distributions to the data: 
+
+.. math::
+
+   P(y_i|\beta^{(y)},\lambda_0^{(y)},\lambda_1^{(y)}) = \beta^{(y)} Poisson(y_i|\lambda_0^{(y)}) + (1-\beta^{(y)}) Poisson(y_i|\lambda_1^{(y)}) \\
+   P(x_i|\beta^{(x)},\lambda_0^{(x)},\lambda_1^{(x)}) = \beta^{(x)} Poisson(x_i|\lambda_0^{(x)}) + (1-\beta^{(x)}) Poisson(x_i|\lambda_1^{(x)})
+
+using the expectation-maximization algorithm.
+
+.. _fig-hist_n1:
+
+.. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/hist_n1.svg
+   :width: 90 %
+   
+   Mixture model of n1_H3K4me3.
+
 Bibliography
 ============
 

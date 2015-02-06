@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Python Module Index &mdash; nucChIP 1 documentation</title>
+  <title>Alternatively spliced exons &mdash; nucChIP 1 documentation</title>
   
 
   
@@ -29,13 +29,8 @@
 
   
     <link rel="top" title="nucChIP 1 documentation" href="index.html"/>
- 
-
-    <script type="text/javascript">
-      DOCUMENTATION_OPTIONS.COLLAPSE_INDEX = true;
-    </script>
-
-
+        <link rel="next" title="Command Line Utilites" href="commandLineTools.html"/>
+        <link rel="prev" title="Example case" href="exampleCase.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -62,7 +57,7 @@
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
-            <ul>
+            <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Prerequisites and installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#prerequisites">Prerequisites</a></li>
@@ -81,7 +76,7 @@
 <li class="toctree-l2"><a class="reference internal" href="exampleCase.html#bibliography">Bibliography</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="AS_exons.html">Alternatively spliced exons</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Alternatively spliced exons</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#convert-bam-to-bed">Convert BAM to BED</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#counts-the-number-of-overlapping-between-two-bed-files">Counts the number of overlapping between two BED files</a></li>
@@ -115,8 +110,10 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li></li>
+    <li>Alternatively spliced exons</li>
       <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/AS_exons.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -124,27 +121,63 @@
 </div>
           <div role="main">
             
-
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-_"><strong>_</strong></a>
-   </div>
-
-   <table class="indextable modindextable" cellspacing="0" cellpadding="2">
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-_"><td></td><td>
-       <strong>_</strong></td><td></td></tr>
-     <tr>
-       <td></td>
-       <td>
-       <a href="index.html#module-_nucChIP"><tt class="xref">_nucChIP</tt></a></td><td>
-       <em></em></td></tr>
-   </table>
+  <div class="section" id="alternatively-spliced-exons">
+<span id="as-exons"></span><h1>Alternatively spliced exons<a class="headerlink" href="#alternatively-spliced-exons" title="Permalink to this headline">¶</a></h1>
+<p>We tested whether histone marks and nucleosome enrichment correlates with splicing output, we separated nucleosomes into two sets:</p>
+<blockquote>
+<div><ul class="simple">
+<li>nucleosomes overlapping spliced-in exons, and</li>
+<li>nucleosomes overlapping spliced-out exons</li>
+</ul>
+</div></blockquote>
+<p>For both types of exons, we requiered that each nucleosome location should be supported by at least 3 MNase reads.</p>
+<p>Then, we counted for each nucleosome the number of MNase ChIP-seq and MNAsed reads on them. We also included sonicated ChIP-seq libraries as references. For each histone marks/nucleosome  library we tested whether the distribution on spliced-in vs spliced-out exons differ significantly using the Kolmogorov-Smirnov test.</p>
+<p>The results, Figures 1 to 5, show that:</p>
+<blockquote>
+<div><ul class="simple">
+<li>H3K4me3 are not significantly different on sonicated ChIP-seq but they are on MNase ChIP-seq libraries</li>
+<li>H3K27Ac are significantly different on both MNase ChIP-seq and sonicated ChIP-seq libraries</li>
+<li>H3K9me3 are not significantly different on sonicated ChIP-seq, and results are mixed for MNase ChIP-seq libraries</li>
+<li>H3K27me3 are significatnly different on MNase ChIP-seq but not sonicated ChIP-seq libraries</li>
+<li>MNase library is not significantly different.</li>
+</ul>
+</div></blockquote>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/17_H3K4me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/17_H3K4me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/n1_H3K4me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/n1_H3K4me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/n2_H3K4me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/n2_H3K4me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K4me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K4me3.ks_test.svg" width="45%" /></a>
+<p>Figure 1: H3K4me3</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/6_H3K27Ac.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/6_H3K27Ac.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/14_H3K27Ac.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/14_H3K27Ac.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K27Ac.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K27Ac.ks_test.svg" width="45%" /></a>
+<p>Figure 1: H3K27Ac</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/4_H3K9me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/4_H3K9me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/9_H3K9me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/9_H3K9me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K9me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K9me3.ks_test.svg" width="45%" /></a>
+<p>Figure 1: H3K9me3</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/5_H3K27me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/5_H3K27me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/12_H3K27me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/12_H3K27me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/n3_H3K27me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/n3_H3K27me3.ks_test.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K27me3.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/H3K27me3.ks_test.svg" width="45%" /></a>
+<p>Figure 1: H3K27me3</p>
+<div class="figure">
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/AS_exons/8_mnase.ks_test.svg"><img src="https://132.239.135.28/public/nucChIP/files/AS_exons/8_mnase.ks_test.svg" width="45%" /></a>
+</div>
+<p>Figure 5: MNase</p>
+</div>
 
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="commandLineTools.html" class="btn btn-neutral float-right" title="Command Line Utilites"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="exampleCase.html" class="btn btn-neutral" title="Example case"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

@@ -21,3 +21,7 @@ Finally, a summary list of all nucChIP tools are presented here.
 
 	:ref:`commandLineTools` 
 
+To do:
+   * Add nucleosome based plots of coverage at 3p and 5p ends of each exon
+   * Add control plots of coverage/nucleosome-based on constitutive exons
+   * Add other control plots: using publicly available libraries
