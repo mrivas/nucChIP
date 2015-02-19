@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+import argparse, sys, numpy
+from itertools import izip
+from numpy import nan
+############################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Convert counts ratios to ratios, where the ratios are the number of histone counts over expected histone counts. Nucleosomes with p-values below 0.05 are ignored.')
+	parser.add_argument('-hist'   , type=str,   dest="histCounts",help="STR. Name of file with histone counts per nucleosome.")
+	parser.add_argument('-mnase'   , type=str,   dest="mnaseCounts",help="STR. Name of file with MNase counts per nucleosome.")
+	parser.add_argument('-exp'   , type=str,   dest="expCounts",help="STR. Name of file with the expected histone counts per MNase counts per nucleosome.")
+	parser.add_argument('-o'   , type=str,   dest="out",help="STR. Prefix of output file.")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args     = getParser().parse_args()
+	histCounts  = args.histCounts
+	mnaseCounts = args.mnaseCounts
+	expCounts   = args.expCounts
+	out          = args.out
+
+	# dictionary of expected counts
+	nLine = 0
+	expCount = {}
+	for line in open(expCounts, "r"):
+		if nLine == 0: 
+			nLine += 1
+			continue
+		[mnase, hist] = line.strip().split("\t")
+		expCount[float(mnase)]=float(hist)
+	maxCount = float(mnase)
+	# get ratios of counts over expected counts	
+	out = open(out+".expectedRatios.bed","w")
+	nLine = 0
+	with open(histCounts,"r") as hist_counts, open(mnaseCounts,"r") as mnase_counts: 
+		for h_line,m_line in izip(hist_counts,mnase_counts):
+			h_line=h_line.strip().split("\t")
+			m_line=m_line.strip().split("\t")
+			if nLine==0:
+				print >> out, "\t".join(map(str,h_line))
+				nLine += 1
+				continue
+			if float(m_line[8])<-numpy.log10(0.05): continue # skip low quality nucleosomes
+			h_count = float(h_line[10])
+			m_count = float(m_line[10])
+			if m_count > maxCount:
+				h_line[10] = nan
+			else:
+				h_line[10] = h_count/expCount[m_count]
+			print >> out, "\t".join(map(str,h_line))
+
+	out.close()
+################################################################
+if __name__ == '__main__':
+    main()
+	

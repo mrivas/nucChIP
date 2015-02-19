@@ -61,7 +61,7 @@ def main():
 	# Set avrcov subplots
 	avFig,avAx = pyplot.subplots(1)
 	# Set heatmap subplots
-	htFig,htAx = pyplot.subplots(nfiles/ncols,ncols,sharex=True)
+	#htFig,htAx = pyplot.subplots(nfiles/ncols,ncols,sharex=True)
 	if ncols == 1:
 		idxs = range(nfiles)
 	else:

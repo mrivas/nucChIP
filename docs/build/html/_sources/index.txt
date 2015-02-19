@@ -21,6 +21,8 @@ Contents:
 
    AS_exons
 
+   countsPerNuc
+
    commandLineTools
 
 .. automodule:: _nucChIP

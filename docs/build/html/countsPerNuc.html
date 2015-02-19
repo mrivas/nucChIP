@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Python Module Index &mdash; nucChIP 1 documentation</title>
+  <title>Counts per nucleosome on canonical nucleosomes around AS exons &mdash; nucChIP 1 documentation</title>
   
 
   
@@ -29,13 +29,8 @@
 
   
     <link rel="top" title="nucChIP 1 documentation" href="index.html"/>
- 
-
-    <script type="text/javascript">
-      DOCUMENTATION_OPTIONS.COLLAPSE_INDEX = true;
-    </script>
-
-
+        <link rel="next" title="Command Line Utilites" href="commandLineTools.html"/>
+        <link rel="prev" title="Alternatively spliced exons" href="AS_exons.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -62,7 +57,7 @@
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
         
         
-            <ul>
+            <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Prerequisites and installation</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="installation.html#prerequisites">Prerequisites</a></li>
@@ -82,7 +77,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="AS_exons.html">Alternatively spliced exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="countsPerNuc.html">Counts per nucleosome on canonical nucleosomes around AS exons</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Counts per nucleosome on canonical nucleosomes around AS exons</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#convert-bam-to-bed">Convert BAM to BED</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#counts-the-number-of-overlapping-between-two-bed-files">Counts the number of overlapping between two BED files</a></li>
@@ -116,8 +111,10 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li></li>
+    <li>Counts per nucleosome on canonical nucleosomes around AS exons</li>
       <li class="wy-breadcrumbs-aside">
+        
+          <a href="_sources/countsPerNuc.txt" rel="nofollow"> View page source</a>
         
       </li>
   </ul>
@@ -125,27 +122,27 @@
 </div>
           <div role="main">
             
-
-   <h1>Python Module Index</h1>
-
-   <div class="modindex-jumpbox">
-   <a href="#cap-_"><strong>_</strong></a>
-   </div>
-
-   <table class="indextable modindextable" cellspacing="0" cellpadding="2">
-     <tr class="pcap"><td></td><td>&nbsp;</td><td></td></tr>
-     <tr class="cap" id="cap-_"><td></td><td>
-       <strong>_</strong></td><td></td></tr>
-     <tr>
-       <td></td>
-       <td>
-       <a href="index.html#module-_nucChIP"><tt class="xref">_nucChIP</tt></a></td><td>
-       <em></em></td></tr>
-   </table>
+  <div class="section" id="counts-per-nucleosome-on-canonical-nucleosomes-around-as-exons">
+<h1>Counts per nucleosome on canonical nucleosomes around AS exons<a class="headerlink" href="#counts-per-nucleosome-on-canonical-nucleosomes-around-as-exons" title="Permalink to this headline">¶</a></h1>
+<p>We counted the number of MNase ChIP-seq reads overlapping nucleosomes. We classify exons as spliced-in or spliced-out. For each set we look for nucleosomes overlapping 2000 bp windows center on either the 5 or 3 prime end of each exon.</p>
+<p>We required that a nucleosome should have a p-value lower or equal to 0.05.</p>
+<p>For each window, nucleosomes were assigned to position ranging from -4 up to +5, based on the proximity to canonical positions (determined using genome-wide positioning of nucleosomes around AS exons). Figure 1, shows the canonical nucleosome positions using MNase reads and nucleosome positions computed from the 3 and 5p end of the exons. The MNase and nucleosome peaks doesn’t differ significantly, but the MNase reads produded sharper peaks, specially when computed from the 5p end of the exons. Therefore, we used the MNase peaks computed from the 5p end of the exons to call canonical nucleosome positions.</p>
+<p>When plotting the nucleosomes coverage around AS exons (Figure 2), it can be seen that most nucleosomes are close to the exon boundaries (either 3 or 5p). This is coherent with the genome-wide trend (Figure1).</p>
+<p>Finally, we computed the average enrichment of all MNase ChIP-seq libraries on the canonical nucleosomes. All libraries were normalized by number of total reads. Then we plotted the ratio MNase ChIP-seq over MNase (also normalized by library size). The results are presented on Figures 3-6.</p>
+</div>
 
 
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="commandLineTools.html" class="btn btn-neutral float-right" title="Command Line Utilites"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="AS_exons.html" class="btn btn-neutral" title="Alternatively spliced exons"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

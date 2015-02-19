@@ -1007,20 +1007,24 @@ def getNuclCount(nuclFile,cutoff):
 		fields = line.strip().split('\t')
 		if len(fields)==1 or not( fields[1].isdigit()): continue # skip header lines
 		# Skip nucleosomes with cutoff below given threshold
-		#if float(fields[8])<cutoff: continue # using p-value
-		if float(fields[5])<cutoff: continue # using number of supporting reads
+		if float(fields[8])<cutoff: continue # using p-value
+		#if float(fields[5])<cutoff: continue # using number of supporting reads
 		chrom = fields[0]
 		start = int(fields[1])
 		end   = int(fields[2])
-		count          = int(fields[10])
+		count          = float(fields[10])
 		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
 		nucl[iv] += str(chrom)+"_"+str(start)+"_"+str(end)+"_"+str(count)
 	return nucl
 ##############################################################	
-def getCountsPerNuc(exonList,nucleosomes,nucPos,halfWin,exon_position):
+def getCountsPerNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,labels):
+	# Make labels dict
+	labelsDict={}
+	for idx,position in enumerate(nucPos):
+		labelsDict[position]=labels[idx]
 	# Initialized nucPositions
 	exonPositions, exonCounts = {}, {}
-	for nucleosome in nucPos: 
+	for nucleosome in labels: 
 		exonPositions[nucleosome]=[]
 		exonCounts[nucleosome]=[]
 	# Find nuc list per exon
@@ -1049,38 +1053,81 @@ def getCountsPerNuc(exonList,nucleosomes,nucPos,halfWin,exon_position):
 			if exon_strand=="-": distance = exon_ref - nuc_midpoint
 			if abs(distance)>halfWin: continue # skip distance out of range
 			distances.append(distance)
-			counts.append(count)
+			counts.append(float(count))
 		# Fetch nucleosome by nominal positions
-		countsSort, distancesSort  = sortNucs(nucPos,counts,distances) 
-		for idx,nucleosome in enumerate(nucPos):
-			exonPositions[nucleosome].append(distancesSort[idx])
-			exonCounts[nucleosome].append(countsSort[idx])
+		#countsSort, distancesSort  = sortNucs(counts,distances) 
+		countsSort, distancesSort  = sortNucs2(counts,distances,nucPos,labelsDict) 
+		#for nucleosome in nucPos:
+		for nucleosome in labels:
+			if not( nucleosome in countsSort): continue
+			exonPositions[nucleosome] += distancesSort[nucleosome]
+			exonCounts[nucleosome] += countsSort[nucleosome]
 	return exonCounts, exonPositions
 ##############################################################	
-def sortNucs(nucPos,counts,distances):
+def sortNucs(counts,distances):
 	# Sort nucleosomes names by their distances to exon start
 	counts=[y for (x,y) in sorted(zip(distances,counts))]
 	distances.sort()
-	# Convert counts and distances to numpy array
 	counts=numpy.array(counts)
 	distances=numpy.array(distances)
-	lenPosNuc=sum(nucPos>=0)
-	lenNegNuc=sum(nucPos< 0)
-	posCounts = numpy.repeat(nan,lenPosNuc)
-	negCounts = numpy.repeat(nan,lenNegNuc)
-	posDist = numpy.repeat(nan,lenPosNuc)
-	negDist = numpy.repeat(nan,lenNegNuc)
-	lenP=numpy.min([sum(distances>=0),lenPosNuc])
-	lenN=numpy.min([sum(distances< 0),lenNegNuc])
-	# Sort counts per nucleosome
-	if lenP>0:
-		posCounts[0:lenP] = counts[distances>=0][0:lenP]
-		posDist[0:lenP] = distances[distances>=0][0:lenP]
-	if lenN>0:
-		negCounts[0:lenN] = counts[distances< 0][::-1][0:lenN][::-1]
-		negDist[0:lenN] = distances[distances< 0][::-1][0:lenN][::-1]
-	# Sort distances per nucleosome
-	countsSort=numpy.concatenate((negCounts,posCounts))
-	distancesSort=numpy.concatenate((negDist,posDist))
+	# Assign nucl position labels
+	n=len(distances) # number of elements 
+	n_neg=sum(distances<0) # number of negative elements
+	nucLabels=numpy.array( range(-n_neg,n-n_neg) )
+	nucLabels[nucLabels>=0] += 1
+	
+	countsSort = {}
+	distancesSort = {}
+	for idx,label in enumerate(nucLabels):	
+		countsSort[label]    =  counts[idx]
+		distancesSort[label] =  distances[idx]
 	# Output results
 	return countsSort, distancesSort
+##############################################################	
+def sortNucs2(counts,distances,nucPos,labelsDict):
+	# Sort nucleosomes names by their distances to exon start
+	counts=[y for (x,y) in sorted(zip(distances,counts))]
+	distances.sort()
+	counts=numpy.array(counts)
+	distances=numpy.array(distances)
+	
+	countsSort = {}
+	distancesSort = {}
+	# Start from the positive distances
+	for idx,distance in enumerate(distances):
+		min_idx = numpy.argmin( abs(nucPos - distance) )
+		min_dist = nucPos[min_idx]
+		label = labelsDict[min_dist]
+		if label in distancesSort:
+			distancesSort[ label ] += [ distance ]
+			countsSort[ label ]    += [ counts[idx] ]
+		else:
+			distancesSort[ label ] = [ distance ]
+			countsSort[ label ] = [ counts[idx] ]
+	return countsSort, distancesSort	
+
+
+
+###	# Convert counts and distances to numpy array
+###	counts=numpy.array(counts)
+###	distances=numpy.array(distances)
+###	lenPosNuc=sum(nucPos>=0)
+###	lenNegNuc=sum(nucPos< 0)
+###	posCounts = numpy.repeat(nan,lenPosNuc)
+###	negCounts = numpy.repeat(nan,lenNegNuc)
+###	posDist = numpy.repeat(nan,lenPosNuc)
+###	negDist = numpy.repeat(nan,lenNegNuc)
+###	lenP=numpy.min([sum(distances>=0),lenPosNuc])
+###	lenN=numpy.min([sum(distances< 0),lenNegNuc])
+###	# Sort counts per nucleosome
+###	if lenP>0:
+###		posCounts[0:lenP] = counts[distances>=0][0:lenP]
+###		posDist[0:lenP] = distances[distances>=0][0:lenP]
+###	if lenN>0:
+###		negCounts[0:lenN] = counts[distances< 0][::-1][0:lenN][::-1]
+###		negDist[0:lenN] = distances[distances< 0][::-1][0:lenN][::-1]
+###	# Sort distances per nucleosome
+###	countsSort=numpy.concatenate((negCounts,posCounts))
+###	distancesSort=numpy.concatenate((negDist,posDist))
+###	# Output results
+###	return countsSort, distancesSort

@@ -7,8 +7,9 @@ def getParser():
     parser = argparse.ArgumentParser(description='Plot coverage per nucleosomes around exons.')
     parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
     parser.add_argument('-hw'   , type=int,   dest="halfWin",help="INT. Half window size to be drawn around the exons.")
+    parser.add_argument('-nf'   , type=str,   dest="nucFile",help="TXT. File with nucleosome positions. Incompatible with -n option. Default 'none'", default="none")
     parser.add_argument('-n'   , type=str,   dest="nucPos",help="LIST. Space separated list of nuclesomes positions to plot. For instance: '-1,+1,+2'.")
-    parser.add_argument('-co'   , type=float,   dest="cutoff",help="FLOAT. Cutoff, minimum number of supporting reads for a nucleosome to be used.")
+    parser.add_argument('-co'   , type=float,   dest="cutoff",help="FLOAT. p-value cutoff.")#Cutoff, minimum number of supporting reads for a nucleosome to be used.")
     parser.add_argument('-p'   , type=str,   dest="prefix",help="STR. Prefix to be used on the output figures. The figures will be called: [prefix].avrCounts.svg")
     parser.add_argument('-e'   , type=str,   dest="exon_position",help="STR. Exon position around where the nucleosomes will be plotted. Could be: '5p' or '3p'.")
 
@@ -21,24 +22,28 @@ def main():
 	args     = getParser().parse_args()
 	confFile = args.confFile
 	halfWin  = args.halfWin
-	nucPos = numpy.array(map(int,args.nucPos.split(" "))) # space separated list "-1,+1,+2" (sorted)
-	cutoff  = args.cutoff # 
+	if args.nucFile == "none":
+		nucPos = numpy.array(map(int,args.nucPos.split(" "))) # space separated list "-1,+1,+2" (sorted)
+	else:
+		nucPos = []
+		for line in open(args.nucFile,"r"):
+			nucPos.append( float(line.strip()) )
+	cutoff  = -numpy.log10(args.cutoff) # p-value of nucleosomes
+	#cutoff  = args.cutoff # number of supportin MNase counts 
 	prefix  = args.prefix
 	exon_position = args.exon_position # "5p" or "3p"
 
-#	confFile = "/data2/rivasas2/singleNucleosome/secondBatch/counts/AS_exons/test/test.conf.txt"
-#	halfWin = 1000
-#	nucPos = numpy.array([-1,1,2])
-#	#cutoff  = -numpy.log10(float(0.5)) # pValue cutoff (here, converted to -log10(pValue))
-#	cutoff  = 3 # number of supporting reads per nucleosome 
-#	prefix  = "test"
-#	exon_position = "5p"
-
+	# Make labels
+	nucPos=numpy.array(nucPos)
+	n=len(nucPos) # number of elements 
+	n_neg=sum(nucPos<0) # number of negative elements
+	labels=numpy.array( range(-n_neg,n-n_neg) )
+	labels[labels>=0] += 1
 	# Count the number of replicates on conf file
 	nRep=0
 	for line in open(confFile,"r"): nRep += 1
 	# Iterate over replicates
-	resultsPositions, resultsCounts, resultsNames = {},{},{}
+	resultsPositions, resultsCounts , resultsNames = {},{},{}
 	for idx,line in enumerate(open(confFile,"r")):
 		line    = line.strip().split("\t")
 		bedFile = line[0] # counts per nucleosome in BED format
@@ -48,11 +53,11 @@ def main():
 		print "Get nucleosomes of library ", idx
 		nucleosomes_count = nucChIP.getNuclCount(bedFile,cutoff)
 		print "Get list of positions and counts on included exons of library ", idx
-		nucCountsIn,nucPositionsIn = nucChIP.getCountsPerNuc(exonListIn,nucleosomes_count,nucPos,halfWin,exon_position)
+		nucCountsIn,nucPositionsIn = nucChIP.getCountsPerNuc(exonListIn,nucleosomes_count,nucPos,halfWin,exon_position,labels)
 		print "Get list of positions and counts on excluded exons of library ", idx
-		nucCountsOut,nucPositionsOut = nucChIP.getCountsPerNuc(exonListOut,nucleosomes_count,nucPos,halfWin,exon_position)
+		nucCountsOut,nucPositionsOut = nucChIP.getCountsPerNuc(exonListOut,nucleosomes_count,nucPos,halfWin,exon_position,labels)
 		# Iterate over nucleosomes: -1, +1, +2, etc	
-		for nuc_label in nucPos:
+		for nuc_label in labels:
 			# nucleosome position
 			positionsIn,   positionsOut   = nucPositionsIn[nuc_label],  nucPositionsOut[nuc_label]
 			avrPositionIn, avrPositionOut = numpy.nanmean(positionsIn), numpy.nanmean(positionsOut)
@@ -64,14 +69,14 @@ def main():
 			print avrPositionIn,  avrCountIn
 			print avrPositionOut, avrCountOut
 			# Store results
-			if nuc_label == nucPos[0]:
+			if nuc_label == labels[0]:
 				resultsPositions[idx]=numpy.array([avrPositionIn,avrPositionOut])
 				resultsCounts[idx]=numpy.array([avrCountIn,avrCountOut])
-				resultsNames[idx]=numpy.array([name])
+				resultsNames[idx]=[name]
 			else:
 				resultsPositions[idx]=numpy.vstack((resultsPositions[idx],[avrPositionIn, avrPositionOut]))
 				resultsCounts[idx]=numpy.vstack((resultsCounts[idx],[avrCountIn,avrCountOut]))
-				resultsNames[idx]=numpy.vstack((resultsNames[idx],[name]))
+				resultsNames[idx].append(name)
 
 	# Visualized results
 	fig, ax = pyplot.subplots(nRep,1,sharex=True)
@@ -80,7 +85,7 @@ def main():
 		minY=numpy.min(resultsCounts[idx])
 		alpha = maxY-minY
 		thick = alpha*0.05
-		for idx2,nuc_label in enumerate(nucPos):
+		for idx2,nuc_label in enumerate(labels):
 			
 			avrPositionIn, avrPositionOut = resultsPositions[idx][idx2]
 			avrCountIn,avrCountOut = resultsCounts[idx][idx2]
