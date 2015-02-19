@@ -23,6 +23,8 @@ Contents:
 
    countsPerNuc
 
+   methods
+
    commandLineTools
 
 .. automodule:: _nucChIP
