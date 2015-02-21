@@ -6,21 +6,17 @@ Methods
 Enrichment of histone marks
 ---------------------------
 
-The number of MNase reads supporting the position of a nucleosome is a confounding variable for the number of histone reads overlapping the same nucleosome. This may be due to position-specific properties of the genome, such as chromatin compactness or GC content, that results in local under-sampling of both MNAse and MNase ChIP-seq fragments. This process may introduced spurious signals of histone enrichment as some region may appear highly enriched compared with --otherwise equal-- under-sampled regions. A widely used correction method is to normalized the number of histone reads by the number of MNase reads. That's, on any given nucleosome, :math:`j`, the number of histone reads, :math:`x_j`, is normalized as the ratio:
+Position-specific properties of the genome, such as chromatin compactness or GC content, results in local under-sampling of MNase ChIP-seq fragments. This process may introduced spurious signals of enrichment as some region may appear highly enriched compared with --otherwise equal-- under-sampled regions. A widely used correction method is to normalized the number of histone reads by an estimate of the level of local under-sampling (typically MNase or IgG). That's, on any given nucleosome, :math:`j`, the number of histone reads, :math:`x_j`, is normalized as the ratio:
 
 .. math::
 
    r_j = \frac{ x_j } { n_j }
 
-where :math:`n_j` is the number of MNase reads. 
+where :math:`n_j` is the concomitant number of control reads. 
 
-This method assumes that :math:`x_j` is linearly dependent on :math:`n_j`. However, this doesn't capture the may not be a accurate representation of their relation. 
+However, this method doesn't take into account the random noise introduced during the sequencing step. Once ready for sequencing, the fragments of a library are chosen randomly according to a binomial distribution. Thus, any estimate of local under-sampling should be treated statistically. 
 
-A better estimate of the ammoun of :math:`x_j` given 
-
-In particular, assuming that the values of :math:`x_j` are more statistically significant at larger values of :math:`n_j` of under-sampled genomic regions is more prevalent among nucleosomes with low values of :math:`n_j` than among nucleosomes with large values of :math:`n_j`. Under this assumption, we hypothesized that :math:`x_j` should follow a rather saturation curve with respect to :math:`n_j`.
-
-To take this effect into account, we model statistically the relation between :math:`x_j` and :math:`n_j`.  we normalized :math:`x_j` as:
+Here, we propose to estimate under-sampling at the nucleosome level as the expected value of histone reads given the value of the control at the same nucleosome. That's, the normalized the :math:`x_j` values as:
 
 .. math::
 
@@ -28,7 +24,7 @@ To take this effect into account, we model statistically the relation between :m
 
 where, :math:`E(X|n_j)` is the expected number of histone reads per nucleosome, :math:`X`, given :math:`n_j` supporting MNase reads. 
 
-To test whether our normalization method is better than the classical one, we first check our hypothesis by computing :math:`E(X|n_j)` for the observed range of :math:`n_j` using all genomic nucleosomes (iNPs): 
+:math:`E(X|n_j)` was computed for the observed range of :math:`n_j` using all genomic nucleosomes (iNPs): 
 
 .. math::
 
@@ -41,8 +37,6 @@ By compromising all genomic nucleosomes, :math:`E(X|n_j))` is not only unbias to
 Additionally, since :math:`E(X|n_j)` is directly proportional to the total number of reads per histone library, the ratios :math:`r_j` are a metric already normalized by library size.
 
 For each MNase ChIP-seq library, after removing outliers (read counts per nucleosome over 99% quantiles) :math:`E(X|n_j)` resulted (Figures 1-4) in monotonic transformations of the number of MNase reads per nucleosome. Interestingly, :math:`E(X|n_j)` saturates in the direction of the :math:`x`-axis, meaning that as the number of supporting of MNase reads gets larger its confounding effect on histone reads gets attenuated. By taking into account this effect, :math:`E(X|n_j)` improves the sensitivity of :math:`r_j` compared to the widely used method of using :math:`n_j` as denominator for :math:`r_j`. This difference is specially important among nucleosomes with large values of :math:`n_j`, where using :math:`n_j` as denominator for :math:`r_j` would otherwise over-amplifies the difference between their histone enrichment signals. 
-
-These results support our hypothesis, and therefore favor the use of :math:`E(X|n_j)` over :math:`n_j` as denominators for :math:`r_j`.
 
 The linear relationship between :math:`n_j` and :math:`x_j` would only holds when the proportion of under-sampled nucleosomes remains constant with respect to :math:`n_j`. If this may be the case for a particular library, :math:`E(X|n_j)` will be simply reduce to :math:`n_j`. Thus, :math:`E(X|n_j)` can be interpreted as general alternative to :math:`n_j` for cases when the proportion of under-sampled nucleosomes doesn't remain constant with :math:`n_j`.
 
