@@ -14,13 +14,9 @@ The number of MNase reads supporting the position of a nucleosome is a confoundi
 
 where :math:`n_j` is the number of MNase reads. 
 
-This method assumes that :math:`x_j` is linearly dependent on :math:`n_j`. However, this doesn't capture the may not be a accurate representation of their relation. 
+This method assumes that :math:`x_j` is linearly dependent on :math:`n_j`. However, this may not be a accurate representation of their relation. In particular, is plausible to assume that the proportion of under-sampled genomic regions is more prevalent among nucleosomes with low values of :math:`n_j` than among nucleosomes with large values of :math:`n_j`. Under this assumption, we hypothesized that the expected value of :math:`x_j` should follow a rather saturation curve with respect to :math:`n_j`.
 
-A better estimate of the ammoun of :math:`x_j` given 
-
-In particular, assuming that the values of :math:`x_j` are more statistically significant at larger values of :math:`n_j` of under-sampled genomic regions is more prevalent among nucleosomes with low values of :math:`n_j` than among nucleosomes with large values of :math:`n_j`. Under this assumption, we hypothesized that :math:`x_j` should follow a rather saturation curve with respect to :math:`n_j`.
-
-To take this effect into account, we model statistically the relation between :math:`x_j` and :math:`n_j`.  we normalized :math:`x_j` as:
+To take this effect into account, we normalized :math:`x_j` as:
 
 .. math::
 

@@ -29,7 +29,7 @@
 
   
     <link rel="top" title="nucChIP 1 documentation" href="index.html"/>
-        <link rel="next" title="Command Line Utilites" href="commandLineTools.html"/>
+        <link rel="next" title="Coverage on internal exons" href="internalExons.html"/>
         <link rel="prev" title="Alternatively spliced exons" href="AS_exons.html"/> 
 
   
@@ -78,6 +78,11 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="AS_exons.html">Alternatively spliced exons</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Counts per nucleosome on canonical nucleosomes around AS exons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="internalExons.html">Coverage on internal exons</a></li>
+<li class="toctree-l1"><a class="reference internal" href="methods.html">Methods</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="methods.html#enrichment-of-histone-marks">Enrichment of histone marks</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#convert-bam-to-bed">Convert BAM to BED</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#counts-the-number-of-overlapping-between-two-bed-files">Counts the number of overlapping between two BED files</a></li>
@@ -129,6 +134,26 @@
 <p>For each window, nucleosomes were assigned to position ranging from -4 up to +5, based on the proximity to canonical positions (determined using genome-wide positioning of nucleosomes around AS exons). Figure 1, shows the canonical nucleosome positions using MNase reads and nucleosome positions computed from the 3 and 5p end of the exons. The MNase and nucleosome peaks doesn’t differ significantly, but the MNase reads produded sharper peaks, specially when computed from the 5p end of the exons. Therefore, we used the MNase peaks computed from the 5p end of the exons to call canonical nucleosome positions.</p>
 <p>When plotting the nucleosomes coverage around AS exons (Figure 2), it can be seen that most nucleosomes are close to the exon boundaries (either 3 or 5p). This is coherent with the genome-wide trend (Figure1).</p>
 <p>Finally, we computed the average enrichment of all MNase ChIP-seq libraries on the canonical nucleosomes. All libraries were normalized by number of total reads. Then we plotted the ratio MNase ChIP-seq over MNase (also normalized by library size). The results are presented on Figures 3-6.</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/8_mnase_allExonEndDB.avrcov.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/8_mnase_allExonEndDB.avrcov.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/8_mnase_allExonStartDB.avrcov.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/8_mnase_allExonStartDB.avrcov.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_allExonEndDB.avrcov.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_allExonEndDB.avrcov.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_allExonStartDB.avrcov.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_allExonStartDB.avrcov.svg" width="45%" /></a>
+<p>Figure 1: Canonical nucleosome positions</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_exonEndDB.avrcov.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_exonEndDB.avrcov.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_exonStartDB.avrcov.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/nucleosomesHighQual_exonStartDB.avrcov.svg" width="45%" /></a>
+<p>Figure 2: Nucleosomes coverage around AS exons</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K4me3_3p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K4me3_3p.avrCounts.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K4me3_5p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K4me3_5p.avrCounts.svg" width="45%" /></a>
+<p>Figure 3: Average enrichment of H3K4me3 on the canonical nucleosomes</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27Ac_3p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27Ac_3p.avrCounts.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27Ac_5p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27Ac_5p.avrCounts.svg" width="45%" /></a>
+<p>Figure 4: Average enrichment of H3K27Ac on the canonical nucleosomes</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K9me3_3p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K9me3_3p.avrCounts.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K9me3_5p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K9me3_5p.avrCounts.svg" width="45%" /></a>
+<p>Figure 5: Average enrichment of H3K9me3 on the canonical nucleosomes</p>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27me3_3p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27me3_3p.avrCounts.svg" width="45%" /></a>
+<a class="reference internal image-reference" href="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27me3_5p.avrCounts.svg"><img src="https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27me3_5p.avrCounts.svg" width="45%" /></a>
+<p>Figure 6: Average enrichment of H3K27me3 on the canonical nucleosomes</p>
 </div>
 
 
@@ -137,7 +162,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="commandLineTools.html" class="btn btn-neutral float-right" title="Command Line Utilites"/>Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="internalExons.html" class="btn btn-neutral float-right" title="Coverage on internal exons"/>Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="AS_exons.html" class="btn btn-neutral" title="Alternatively spliced exons"><span class="fa fa-arrow-circle-left"></span> Previous</a>

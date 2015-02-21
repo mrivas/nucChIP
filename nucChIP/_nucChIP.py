@@ -996,7 +996,7 @@ def getExonProfile(halfwinwidth,regions,exons,bamName,fragLength,lower,upper,num
 	return profileMatrix
 
 ##############################################################	
-# getNucProfile
+# getCanonicalNucProfile
 ##############################################################	
 def getNuclCount(nuclFile,cutoff):
 	#Assigns an ID to each nucleosome
@@ -1106,28 +1106,37 @@ def sortNucs2(counts,distances,nucPos,labelsDict):
 			countsSort[ label ] = [ counts[idx] ]
 	return countsSort, distancesSort	
 
+########################################################################
+# getNucProfile
+########################################################################
+def getNucCoverage(halfwinwidth,regions,signalFile,controlFile,pvalue,expValues):
 
+	nuc_signals = HTSeq.GenomicArrayOfSets('auto',stranded=False)
+	with open(signalFile,'r') as sFile, open(controlFile,'r') as cFile:
+		for sLine,nLine in itertools.izip(sFile,cFile):
+			if float(cLine[8])<-numpy.log10(pvalue): continue
+			sLine = sLine.strip().split("\t")
+			nLine = nLine.strip().split("\t")
+			chrom, start, end = sLine[0], int(sLine[1]),int(sLine[2])
+			nuc_iv = HTSeq.GenomicInterval(chrom, start,end)
+			x,n = float(sLine[10]),float(cLine[10])
+			r = x/expValues[n]
+			nuc_signals[ nuc_iv ] += r
 
-###	# Convert counts and distances to numpy array
-###	counts=numpy.array(counts)
-###	distances=numpy.array(distances)
-###	lenPosNuc=sum(nucPos>=0)
-###	lenNegNuc=sum(nucPos< 0)
-###	posCounts = numpy.repeat(nan,lenPosNuc)
-###	negCounts = numpy.repeat(nan,lenNegNuc)
-###	posDist = numpy.repeat(nan,lenPosNuc)
-###	negDist = numpy.repeat(nan,lenNegNuc)
-###	lenP=numpy.min([sum(distances>=0),lenPosNuc])
-###	lenN=numpy.min([sum(distances< 0),lenNegNuc])
-###	# Sort counts per nucleosome
-###	if lenP>0:
-###		posCounts[0:lenP] = counts[distances>=0][0:lenP]
-###		posDist[0:lenP] = distances[distances>=0][0:lenP]
-###	if lenN>0:
-###		negCounts[0:lenN] = counts[distances< 0][::-1][0:lenN][::-1]
-###		negDist[0:lenN] = distances[distances< 0][::-1][0:lenN][::-1]
-###	# Sort distances per nucleosome
-###	countsSort=numpy.concatenate((negCounts,posCounts))
-###	distancesSort=numpy.concatenate((negDist,posDist))
-###	# Output results
-###	return countsSort, distancesSort
+	nRegions = len( regions )
+	profileMatrix = numpy.zeros( ( nRegions, 2*halfwinwidth ), dtype="d" )
+	for row,region in enumerate(regions):
+		for nuc_iv,nuc_signal in nuc_signals[region].steps():
+
+			if region.strand == "+":
+				start_in_window = nuc_iv.start - region.start
+				end_in_window   = nuc_iv.end   - region.start
+			else:
+				start_in_window = -nuc_iv.end   + region.end
+				end_in_window   = -nuc_iv.start + region.end
+
+			start_in_window = max( start_in_window, 0 )
+			end_in_window = min( end_in_window, 2*halfwinwidth )
+			profileMatrix[ row, start_in_window : end_in_window ] += nuc_signal
+		
+	return profileMatrix
