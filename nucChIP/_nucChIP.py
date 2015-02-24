@@ -1111,18 +1111,25 @@ def sortNucs2(counts,distances,nucPos,labelsDict):
 ########################################################################
 def getNucCoverage(halfwinwidth,regions,signalFile,controlFile,pvalue,expValues):
 
+	print "Computing r_j values"
 	nuc_signals = HTSeq.GenomicArrayOfSets('auto',stranded=False)
+	nLine=0
 	with open(signalFile,'r') as sFile, open(controlFile,'r') as cFile:
-		for sLine,nLine in itertools.izip(sFile,cFile):
-			if float(cLine[8])<-numpy.log10(pvalue): continue
+		for sLine,cLine in itertools.izip(sFile,cFile):
+			nLine +=1
+			if nLine%1000000==0: print "read",nLine, "lines"
+			if nLine==1: continue # skip header line
 			sLine = sLine.strip().split("\t")
-			nLine = nLine.strip().split("\t")
+			cLine = cLine.strip().split("\t")
+			if float(cLine[8])<-numpy.log10(pvalue): continue
 			chrom, start, end = sLine[0], int(sLine[1]),int(sLine[2])
 			nuc_iv = HTSeq.GenomicInterval(chrom, start,end)
 			x,n = float(sLine[10]),float(cLine[10])
+			if not n in expValues: continue # discard n as outlaier
 			r = x/expValues[n]
 			nuc_signals[ nuc_iv ] += r
 
+	print "Computing coverage of nucleosomes"
 	nRegions = len( regions )
 	profileMatrix = numpy.zeros( ( nRegions, 2*halfwinwidth ), dtype="d" )
 	for row,region in enumerate(regions):
@@ -1135,8 +1142,11 @@ def getNucCoverage(halfwinwidth,regions,signalFile,controlFile,pvalue,expValues)
 				start_in_window = -nuc_iv.end   + region.end
 				end_in_window   = -nuc_iv.start + region.end
 
+			signal_total=[]
+			for signal in nuc_signal: signal_total.append( signal )
+			if len(signal_total)==0: continue 
 			start_in_window = max( start_in_window, 0 )
 			end_in_window = min( end_in_window, 2*halfwinwidth )
-			profileMatrix[ row, start_in_window : end_in_window ] += nuc_signal
+			profileMatrix[ row, start_in_window : end_in_window ] += numpy.mean(signal_total)
 		
 	return profileMatrix

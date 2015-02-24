@@ -1,15 +1,18 @@
 #!/usr/bin/env python
 import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, nucChIP
 from matplotlib import pyplot
+from scipy import stats
 
 ###########################################################
 def getParser():
 	parser = argparse.ArgumentParser(description='Generate coverage plots.')
 	parser.add_argument('-conf'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
 	parser.add_argument('-control'   , type=str,   dest="controlFile",help="STR. Name of BED file with the counts of the control (IgG or MNase).")
+	parser.add_argument('-pvalue'   , type=float,   dest="pvalue",help="FLOAT. P-value to filter out nucleosomes from the the control. Default: 1", default=1)
 	parser.add_argument('-expV'   , type=str,   dest="expVfile",help="STR. Name of TXT file with the expected values per count of control: control_counts TAB expected_value.")
+	parser.add_argument('-hw'   , type=int,   dest="halfwinwidth",help="INT. Half window size. Default: 1000", default=1000)
 	parser.add_argument('-db'   , type=str,   dest="database",help="STR. Name of database with the location of the regions of the genome to be plotted.")
-	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix of output files.")
+	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix for title of figures and name of output file.")
 
 	if len(sys.argv) == 1:
 		print >> sys.stderr,parser.print_help()
@@ -20,7 +23,9 @@ def main():
 	args	  = getParser().parse_args()
 	confFile  = args.confFile
 	controlFile = args.controlFile
+	pvalue    = args.pvalue
 	expVfile  = args.expVfile # expected values file
+	halfwinwidth = args.halfwinwidth
 	database  = args.database
 	prefix    = args.prefix
 
@@ -38,6 +43,7 @@ def main():
     # Set avrcov subplots
 	avFig,avAx = pyplot.subplots(1)
 	window = numpy.arange( -halfwinwidth, halfwinwidth )
+	nfiles = 0
 	for line in open(confFile,'r'): nfiles += 1
 	color  = iter( matplotlib.cm.rainbow( numpy.linspace(0,1,nfiles) ) )
 	cmap   = matplotlib.colors.LinearSegmentedColormap.from_list('my_colormap',['white','red'],256)
@@ -49,22 +55,23 @@ def main():
 		regionsList = line[1]
 		label       = line[2]
 
-		regions = nucChIp.getRegions(regionsList,database,halfwinwidth)
+		regions = nucChIP.getRegions(regionsList,database,halfwinwidth)
 		coverageMatrix = nucChIP.getNucCoverage(halfwinwidth,regions,signalFile,controlFile,pvalue,expValues)
 
 		coverage = numpy.mean( coverageMatrix, axis=0 )
 		sem = stats.sem( coverageMatrix, axis=0)
-		c = nex(color)
+		c = next(color)
 		
-		avAx.plot(windwo,coverage,lw=0.9,label=label,color=c)
+		avAx.plot(window,coverage,lw=0.9,label=label,color=c)
 		avAx.fill_between(window, coverage+sem,coverage-sem,facecolor=c,alpha=0.5)
 
-	avAx.set_title(title,fontsize=fs)
+	fs=14
+	avAx.set_title(prefix,fontsize=fs)
 	avAx.legend(loc='upper left',fontsize=fs)
 	avAx.set_xlabel('Genomic region (5\' $\mapsto$ 3\')',fontsize=fs)
 	avAx.set_ylabel('Normalized read count',fontsize=fs)
 	avAx.grid()
-	avFig.savefig(prefix+".avrcov.svg")
+	avFig.savefig(prefix+".nuc_avrcov.svg")
 
 ################################################################
 if __name__ == '__main__':
