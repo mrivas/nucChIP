@@ -25,6 +25,8 @@ Contents:
 
    internalExons
 
+   fragmentDist
+
    methods
 
    commandLineTools

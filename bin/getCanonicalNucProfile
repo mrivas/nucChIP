@@ -1,121 +1,127 @@
 #!/usr/bin/env python
 import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, nucChIP
 from numpy import nan
+matplotlib.use('Agg')
 from matplotlib import pyplot
+import matplotlib.patches as mpatch
 ############################################################
 def getParser():
-    parser = argparse.ArgumentParser(description='Plot coverage per nucleosomes around exons.')
-    parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
-    parser.add_argument('-hw'   , type=int,   dest="halfWin",help="INT. Half window size to be drawn around the exons.")
-    parser.add_argument('-nf'   , type=str,   dest="nucFile",help="TXT. File with nucleosome positions. If not used, coverage is plotted in a continuous fashion. Default 'none'", default="none")
-    parser.add_argument('-co'   , type=float,   dest="cutoff",help="FLOAT. p-value cutoff.")#Cutoff, minimum number of supporting reads for a nucleosome to be used.")
-    parser.add_argument('-p'   , type=str,   dest="prefix",help="STR. Prefix to be used on the output figures. The figures will be called: [prefix].avrCounts.svg")
-    parser.add_argument('-e'   , type=str,   dest="exon_position",help="STR. Exon position around where the nucleosomes will be plotted. Could be: '5p' or '3p'.")
+	parser = argparse.ArgumentParser(description='Plot coverage per nucleosomes around exons.')
+	parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
+	parser.add_argument('-control'   , type=str,   dest="controlFile",help="STR. Name of BED file with the counts of the control (IgG or MNase).")
+	parser.add_argument('-pvalue'   , type=float,   dest="pvalue",help="FLOAT. p-value cutoff.")#Cutoff, minimum number of supporting reads for a nucleosome to be used.")
+	parser.add_argument('-expV'   , type=str,   dest="expVfile",help="STR. Name of TXT file with the expected values per count of control: control_counts TAB expected_value.")
+	parser.add_argument('-halfWin'   , type=int,   dest="halfWin",help="INT. Half window size to be drawn around the exons.")
+	parser.add_argument('-nucPos'   , type=str,   dest="nucFile",help="TXT. File with nucleosome positions. If not used, coverage is plotted in a continuous fashion.")
+	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix to be used on the output figures. The figures will be called: [prefix].avrRatios.svg")
+	parser.add_argument('-e'   , type=str,   dest="exon_position",help="STR. Exon position around where the nucleosomes will be plotted. Could be: '5p' or '3p'.")
 
-    if len(sys.argv) == 1:
-        print >> sys.stderr,parser.print_help()
-        exit(0)
-    return parser
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
 ###########################################################
 def main():
 	args     = getParser().parse_args()
 	confFile = args.confFile
+	controlFile=args.controlFile
+	pvalue  = args.pvalue # p-value of nucleosomes
+	expVfile  = args.expVfile # expected values file
 	halfWin  = args.halfWin
-	if args.nucFile != "none":
-		nucPos = []
-		for line in open(args.nucFile,"r"):
-			nucPos.append( float(line.strip()) )
-	cutoff  = -numpy.log10(args.cutoff) # p-value of nucleosomes
-	#cutoff  = args.cutoff # number of supportin MNase counts 
+	nucPos = []
+	for line in open(args.nucFile,"r"):
+		nucPos.append( float(line.strip()) )
+	nucPos=numpy.array(nucPos)
 	prefix  = args.prefix
 	exon_position = args.exon_position # "5p" or "3p"
 
+	# Read expected values file, and save it as dict
+	expValues={}
+	nLine=0
+	for line in open( expVfile,"r"):
+		if nLine==0: # skips header line
+			nLine += 1
+			continue
+		line = line.strip().split("\t")
+		n,mu = float(line[0]), float(line[1])
+		expValues[ n ] = mu
 	# Make labels
-	nucPos=numpy.array(nucPos)
 	n=len(nucPos) # number of elements 
 	n_neg=sum(nucPos<0) # number of negative elements
-	labels=numpy.array( range(-n_neg,n-n_neg) )
-	labels[labels>=0] += 1
-	# Count the number of replicates on conf file
-	nRep=0
-	for line in open(confFile,"r"): nRep += 1
-	# Iterate over replicates
-	resultsPositions, resultsCounts , resultsNames = {},{},{}
+	nucLabels=numpy.array( range(-n_neg,n-n_neg) )
+	nucLabels[nucLabels>=0] += 1 # [-3,-2,-1,1,2,3,4]
+	# Iterate over lines of confFile
+	resultsPositions, resultsRatios , resultsNames = {},{},[]
 	for idx,line in enumerate(open(confFile,"r")):
 		line    = line.strip().split("\t")
-		bedFile = line[0] # counts per nucleosome in BED format
-		exonListIn = line[1] # list of exons with whom the nucleosome should overlap,  TXT format
-		exonListOut = line[2] # list of exons with whom the nucleosome should overlap,  TXT format
-		name    = line[3] # name of replicate
+		signalFile = line[0] # counts per nucleosome in BED format
+		exonList = line[1] # list of exons with whom the nucleosome should overlap,  TXT format
+		resultsNames.append( line[2] ) # name of replicate
 		print "Get nucleosomes of library ", idx
-		nucleosomes_count = nucChIP.getNuclCount(bedFile,cutoff)
+		nucleosomes_r = nucChIP.getNucRatios(signalFile,controlFile,pvalue,expValues)
 		print "Get list of positions and counts on included exons of library ", idx
-		nucCountsIn,nucPositionsIn = nucChIP.getCountsPerNuc(exonListIn,nucleosomes_count,nucPos,halfWin,exon_position,labels)
-		print "Get list of positions and counts on excluded exons of library ", idx
-		nucCountsOut,nucPositionsOut = nucChIP.getCountsPerNuc(exonListOut,nucleosomes_count,nucPos,halfWin,exon_position,labels)
+		nucRatios,nucPositions = nucChIP.getRatiosPerCanonicalNuc(exonList,nucleosomes_r,nucPos,halfWin,exon_position,nucLabels)
 		# Iterate over nucleosomes: -1, +1, +2, etc	
-		for nuc_label in labels:
+		for nuc_label in nucLabels:
 			# nucleosome position
-			positionsIn,   positionsOut   = nucPositionsIn[nuc_label],  nucPositionsOut[nuc_label]
-			avrPositionIn, avrPositionOut = numpy.nanmean(positionsIn), numpy.nanmean(positionsOut)
-			# counts
-			countsIn, countsOut  = nucCountsIn[nuc_label], nucCountsOut[nuc_label]
-			avrCountIn, avrCountOut  = numpy.nanmean(countsIn), numpy.nanmean(countsOut)
-			# draw horizontal lines
-			print idx
-			print avrPositionIn,  avrCountIn
-			print avrPositionOut, avrCountOut
+			positions   = nucPositions[nuc_label]
+			avrPosition = numpy.nanmean(positions)
+			# ratios
+			ratios   = nucRatios[nuc_label]
+			avrRatio = numpy.nanmean(ratios)
+			print avrRatio, avrPosition
 			# Store results
-			if nuc_label == labels[0]:
-				resultsPositions[idx]=numpy.array([avrPositionIn,avrPositionOut])
-				resultsCounts[idx]=numpy.array([avrCountIn,avrCountOut])
-				resultsNames[idx]=[name]
+			if nuc_label == nucLabels[0]:
+				resultsPositions[idx]=[avrPosition]
+				resultsRatios[idx]=[avrRatio]
 			else:
-				resultsPositions[idx]=numpy.vstack((resultsPositions[idx],[avrPositionIn, avrPositionOut]))
-				resultsCounts[idx]=numpy.vstack((resultsCounts[idx],[avrCountIn,avrCountOut]))
-				resultsNames[idx].append(name)
+				resultsPositions[idx].append(avrPosition)
+				resultsRatios[idx].append(avrRatio)
 
-	# Visualized results
-	fig, ax = pyplot.subplots(nRep,1,sharex=True)
-	for idx in range(nRep):
-		maxY=numpy.max(resultsCounts[idx])
-		minY=numpy.min(resultsCounts[idx])
-		alpha = maxY-minY
-		thick = alpha*0.05
-		for idx2,nuc_label in enumerate(labels):
-			
-			avrPositionIn, avrPositionOut = resultsPositions[idx][idx2]
-			avrCountIn,avrCountOut = resultsCounts[idx][idx2]
-			name = resultsNames[idx][idx2]
-			if nRep>1:
-				ax[idx].broken_barh([(avrPositionIn -75, 150)],(avrCountIn -thick/2,thick),facecolors="red" )
-				ax[idx].broken_barh([(avrPositionOut-75, 150)],(avrCountOut-thick/2,thick),facecolors="blue")
-			else:
-				ax.broken_barh([(avrPositionIn -75, 150)],(avrCountIn -thick/2,thick),facecolors="red" )
-				ax.broken_barh([(avrPositionOut-75, 150)],(avrCountOut-thick/2,thick),facecolors="blue")
-			# boxplots
-			# bp.boxplot(counts)
-
-		# Set figure parameters
-		if nRep>1:
-			ax[idx].set_ylim(minY-0.1*alpha,maxY+0.1*alpha)
-			ax[idx].set_title(name)
-			ax[idx].set_xlim(-halfWin,halfWin)
-			if idx==(nRep-1):
-				ax[idx].set_xlabel("Distance (b) to exons "+exon_position+" end")
-			#ax.set_yticks([15,25])
-			#ax.set_yticklabels(['Bill', 'Jim'])
-			ax[idx].grid(True)
-		else:
-			ax.set_ylim(minY-0.1*alpha,maxY+0.1*alpha)
-			ax.set_title(name)
-			ax.set_xlim(-halfWin,halfWin)
-			ax.set_xlabel("Distance (b) to exons "+exon_position+" end")
-			#ax.set_yticks([15,25])
-			#ax.set_yticklabels(['Bill', 'Jim'])
-			ax.grid(True)
+	# Prepare figure for visualization
+	fig, ax = pyplot.subplots(1)
+	maxY_array, minY_array= [], []
+	nfiles = 0
+	for line in open(confFile,'r'): 
+		maxY_array.append( numpy.max(resultsRatios[nfiles]) )
+		minY_array.append( numpy.min(resultsRatios[nfiles]) )
+		nfiles += 1
+	
+	maxY=numpy.max(maxY_array)
+	minY=numpy.min(minY_array)
+	hight = maxY-minY
+	thick = hight*0.05
+	
+	color  = iter( matplotlib.cm.rainbow( numpy.linspace(0,1,nfiles) ) )
+	cmap   = matplotlib.colors.LinearSegmentedColormap.from_list('my_colormap',['white','red'],256)
+	# Plot canonical nucleosome positions
+	for pos in nucPos:
+		lower=max(-halfWin,pos-74)
+		upper=min(halfWin,pos+74)
+		ax.axvspan(lower,upper,alpha=0.2,color="grey")
+	# Plot bars with avr enrichment per canonical nucleosome	
+	legendBars, legendNames = [],[]
+	for idx in range(nfiles):
+		name = resultsNames[idx]
+		c=next(color)
+		for idx2,nuc_label in enumerate(nucLabels):
+			avrPosition = resultsPositions[idx][idx2]
+			avrRatio    = resultsRatios[idx][idx2]
+			start_pos = max([avrPosition-74,-halfWin])
+			len_pos   = min([148,halfWin-(avrPosition-74)])
+			ax.broken_barh([(start_pos, len_pos)],(avrRatio -thick/2,thick),facecolor=c,alpha=0.5)
+		legendBars.append( mpatch.Rectangle((0, 0), 1, 1, fc=c,alpha=0.5) )
+		legendNames.append(name)
+	# Set figure parameters
+	ax.set_ylim(minY-0.1*hight,maxY+0.1*hight)
+	ax.set_xlim(-halfWin,halfWin)
+	ax.set_title(prefix)
+	ax.legend(legendBars, legendNames,loc='upper left')
+	ax.set_xlabel("Distance (b) to exons "+exon_position+" end")
+	ax.set_ylabel("Average normalized read count per nucleosomes")
+	ax.grid(True)
 	print "Creating figure"
-	fig.savefig(prefix+".avrCounts.svg")
+	fig.savefig(prefix+".avrRatios.svg")
 ################################################################
 if __name__ == '__main__':
-    main()	
+	main()	

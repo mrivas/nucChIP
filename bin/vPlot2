@@ -1,0 +1,66 @@
+#!/usr/bin/env python
+import argparse, sys, numpy, matplotlib, nucChIP
+from matplotlib import pyplot
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Generate v-plots.')
+	parser.add_argument('-confFile'   , type=str,   dest="confFile",help="Configureation file. Each row is BAM file TAB regionList TAB title. The first row is used a reference to normalized the other lines.")
+	parser.add_argument('-db'   , type=str,   dest="database",help="Pickle file. Database where the TSS positions are stored.")
+	parser.add_argument('-lower'   , type=int,   dest="lower",help="INT. Lower bound for the fragment size.")
+	parser.add_argument('-upper'   , type=int,   dest="upper",help="INT. Upper bound for the fragment size.")
+	parser.add_argument('-perc', type=float, dest="perc",help="FLOAT. Percentile of top extreme values to be discarded. Default: 75",default=75)
+	parser.add_argument('-fs'   , type=int,   dest="fontSize",help="INT. Font size. Default: 14", default=14)
+	parser.add_argument('-halfWin', type=int, dest="halfWin",help="INT. Half window size to be expanded around TSS. Default: 1000",default=1000)
+	parser.add_argument('-o'   , type=str,   dest="prefix",help="Prefix of output files.")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args		 = getParser().parse_args()
+	confFile 	 = args.confFile
+	database     = args.database
+	lower	     = args.lower
+	upper	     = args.upper
+	fs   		 = args.fontSize
+	perc		 = args.perc
+	halfwinwidth = args.halfWin
+	prefix	     = args.prefix
+
+	for idx, line in enumerate(open(confFile,"r")):
+		line = line.strip().split("\t")
+		bamName = line[0]
+		geneList = line[1]
+		title    = line[2]
+		# Regions on where to produce coverage plots
+		regions	   = nucChIP.getRegions(geneList,database,halfwinwidth)
+		normalize="true"
+		profileMatrix = nucChIP.getSizeProfile(halfwinwidth,regions,bamName,lower,upper,normalize)
+		# Compute values for visualization of heatmap
+		if idx==0: 
+			profileRef=profileMatrix
+		else:
+			profileMatrix=profileMatrix/profileRef
+		profileMax		= numpy.max(profileMatrix,axis=1)
+		upp_percen		= numpy.percentile( profileMax, perc )
+
+		# Heatmap
+		nRows, nCols = numpy.shape(profileMatrix)
+		ax = pyplot.subplot(111)
+		im = ax.imshow(profileMatrix, vmax=upp_percen,extent=[-halfwinwidth,halfwinwidth,lower,upper], aspect='auto',interpolation="gaussian" )
+		pyplot.title(title,fontsize=fs)
+		pyplot.xlabel('Distance (nt) to TSS',fontsize=fs)
+		pyplot.ylabel('Fragment length (nt)',fontsize=fs)
+		divider = make_axes_locatable(ax)
+		cax = divider.append_axes("right", size="5%", pad=0.05)
+		cbar = pyplot.colorbar(im, cax=cax)
+
+		pyplot.savefig(prefix+"_"+title+".vplotRatios.svg")
+		pyplot.close()
+################################################################
+if __name__ == '__main__':
+	main()

@@ -858,15 +858,19 @@ def getFragDistribution(bamName):
 # vPlot
 ########################################################################################
 
-def getSizeProfile(halfwinwidth,regions,bamName,lower,upper):
+def getSizeProfile(halfwinwidth,regions,bamName,lower,upper,normalize):
 	bamFile = pysam.Samfile( bamName, 'rb')
 	
 	nRows=upper-lower+1
 	profileMatrix = numpy.zeros( ( nRows, 2*halfwinwidth ), dtype="d" )
 	# Iterate over regions
+#This (nRegions)was recently added, it may be deleted
+#This (nRegions)was recently added, it may be deleted
+	nRegions=0
 	for region in regions:
 		# Check if chromosome is on the BAM file
 		if bamFile.gettid(region.chrom)==-1: continue
+		nRegions += 1
 		for almnt in bamFile.fetch( region.chrom,region.start-200,region.end+200 ):
 			if almnt.is_unmapped or not( almnt.is_read1) or almnt.mapq<20: continue
 			# Discard fragments larger than 200 nt
@@ -892,7 +896,10 @@ def getSizeProfile(halfwinwidth,regions,bamName,lower,upper):
 	
 	bamFile.close()
 	
-	return profileMatrix
+	if normalize=="true":
+		return profileMatrix/nRegions + 1
+	else:
+		return profileMatrix
 
 #######################################################################################	
 # exonProfile
@@ -998,39 +1005,40 @@ def getExonProfile(halfwinwidth,regions,exons,bamName,fragLength,lower,upper,num
 ##############################################################	
 # getCanonicalNucProfile
 ##############################################################	
-def getNuclCount(nuclFile,cutoff):
-	#Assigns an ID to each nucleosome
+def getNucRatios(signalFile,controlFile,pvalue,expValues):
 
-	nucl = HTSeq.GenomicArrayOfSets('auto',stranded=False)
-	nLine=1
-	for line in open(nuclFile,'r'):
-		fields = line.strip().split('\t')
-		if len(fields)==1 or not( fields[1].isdigit()): continue # skip header lines
-		# Skip nucleosomes with cutoff below given threshold
-		if float(fields[8])<cutoff: continue # using p-value
-		#if float(fields[5])<cutoff: continue # using number of supporting reads
-		chrom = fields[0]
-		start = int(fields[1])
-		end   = int(fields[2])
-		count          = float(fields[10])
-		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
-		nucl[iv] += str(chrom)+"_"+str(start)+"_"+str(end)+"_"+str(count)
-	return nucl
+	print "Computing r_j values"
+	nuc_signals = HTSeq.GenomicArrayOfSets('auto',stranded=False)
+	nLine=0
+	with open(signalFile,'r') as sFile, open(controlFile,'r') as cFile:
+		for sLine,cLine in itertools.izip(sFile,cFile):
+			nLine +=1
+			if nLine==1: continue # skip header line
+			sLine = sLine.strip().split("\t")
+			cLine = cLine.strip().split("\t")
+			if float(cLine[8])<-numpy.log10(pvalue): continue
+			chrom, start, end = sLine[0], int(sLine[1]),int(sLine[2])
+			nuc_iv = HTSeq.GenomicInterval(chrom, start,end)
+			x,n = float(sLine[10]),float(cLine[10])
+			if not n in expValues: continue # discard n as outlaier
+			r = x/expValues[n]
+			nuc_signals[ nuc_iv ] += str(chrom)+"_"+str(start)+"_"+str(end)+"_"+str(r)
+	return nuc_signals
 ##############################################################	
-def getCountsPerNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,labels):
-	# Make labels dict
-	labelsDict={}
+def getRatiosPerCanonicalNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,nucLabels):
+	# Make nucLabels dict
+	nucLabelsDict={}
 	for idx,position in enumerate(nucPos):
-		labelsDict[position]=labels[idx]
+		nucLabelsDict[position]=nucLabels[idx]
 	# Initialized nucPositions
-	exonPositions, exonCounts = {}, {}
-	for nucleosome in labels: 
-		exonPositions[nucleosome]=[]
-		exonCounts[nucleosome]=[]
+	exonPositions, exonRatios = {}, {}
+	for nuc_label in nucLabels: 
+		exonPositions[nuc_label]=[]
+		exonRatios[nuc_label]=[]
 	# Find nuc list per exon
 	for line in open(exonList,"r"):
 		exon_name = line
-		line = line.strip().split("\t")
+		line = line.strip().split("_")
 		chrom,start,end,exon_strand = line[0],int(line[1]),int(line[2]),line[3]
 		if exon_strand=="+":
 			if exon_position=="5p": exon_ref = start
@@ -1040,71 +1048,73 @@ def getCountsPerNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,labels):
 			else:    				exon_ref = start
 		window = HTSeq.GenomicInterval( chrom,exon_ref-halfWin,exon_ref+halfWin)
 		# Intersect nucleosomes with current exon
-		distances, counts = [], []
+		distances, ratios = [], []
 		for nuc_iv,nuc_name in nucleosomes[ window ].steps():
 			if len(nuc_name)==0: continue # if no nuc, skip
 			if len(nuc_name)>1: 
 				print "Overlapping nuc on exon ", exon_name
 				for x in nuc_name:
 					print nuc_iv,x
-			chrom, start, end, count = list(nuc_name)[0].split("_")
+			chrom, start, end, ratio = list(nuc_name)[0].split("_")
 			nuc_midpoint = numpy.mean([int(start),int(end)])
 			if exon_strand=="+": distance = nuc_midpoint - exon_ref
 			if exon_strand=="-": distance = exon_ref - nuc_midpoint
-			if abs(distance)>halfWin: continue # skip distance out of range
+			if abs(distance)>(halfWin+75): continue # skip distance out of range
 			distances.append(distance)
-			counts.append(float(count))
-		# Fetch nucleosome by nominal positions
-		#countsSort, distancesSort  = sortNucs(counts,distances) 
-		countsSort, distancesSort  = sortNucs2(counts,distances,nucPos,labelsDict) 
+			ratios.append(float(ratio))
+		# Fetch nucleosome by canonical positions
+		#ratiosSort, distancesSort  = sortNucs(ratios,distances) 
+		ratiosSort, distancesSort  = sortNucs2(ratios,distances,nucPos,nucLabelsDict) 
 		#for nucleosome in nucPos:
-		for nucleosome in labels:
-			if not( nucleosome in countsSort): continue
-			exonPositions[nucleosome] += distancesSort[nucleosome]
-			exonCounts[nucleosome] += countsSort[nucleosome]
-	return exonCounts, exonPositions
+		for nuc_label in nucLabels:
+			if not( nuc_label in ratiosSort): 
+				exonRatios[nuc_label] += [0]
+			else:
+				exonPositions[nuc_label] += distancesSort[nuc_label]
+				exonRatios[nuc_label] += ratiosSort[nuc_label]
+	return exonRatios, exonPositions
+################################################################	
+##def sortNucs(counts,distances):
+##	# Sort nucleosomes names by their distances to exon start
+##	counts=[y for (x,y) in sorted(zip(distances,counts))]
+##	distances.sort()
+##	counts=numpy.array(counts)
+##	distances=numpy.array(distances)
+##	# Assign nucl position labels
+##	n=len(distances) # number of elements 
+##	n_neg=sum(distances<0) # number of negative elements
+##	nucLabels=numpy.array( range(-n_neg,n-n_neg) )
+##	nucLabels[nucLabels>=0] += 1
+##	
+##	countsSort = {}
+##	distancesSort = {}
+##	for idx,label in enumerate(nucLabels):	
+##		countsSort[label]    =  counts[idx]
+##		distancesSort[label] =  distances[idx]
+##	# Output results
+##	return countsSort, distancesSort
 ##############################################################	
-def sortNucs(counts,distances):
+def sortNucs2(ratios,distances,nucPos,nucLabelsDict):
 	# Sort nucleosomes names by their distances to exon start
-	counts=[y for (x,y) in sorted(zip(distances,counts))]
+	ratios=[y for (x,y) in sorted(zip(distances,ratios))]
 	distances.sort()
-	counts=numpy.array(counts)
-	distances=numpy.array(distances)
-	# Assign nucl position labels
-	n=len(distances) # number of elements 
-	n_neg=sum(distances<0) # number of negative elements
-	nucLabels=numpy.array( range(-n_neg,n-n_neg) )
-	nucLabels[nucLabels>=0] += 1
-	
-	countsSort = {}
-	distancesSort = {}
-	for idx,label in enumerate(nucLabels):	
-		countsSort[label]    =  counts[idx]
-		distancesSort[label] =  distances[idx]
-	# Output results
-	return countsSort, distancesSort
-##############################################################	
-def sortNucs2(counts,distances,nucPos,labelsDict):
-	# Sort nucleosomes names by their distances to exon start
-	counts=[y for (x,y) in sorted(zip(distances,counts))]
-	distances.sort()
-	counts=numpy.array(counts)
+	ratios=numpy.array(ratios)
 	distances=numpy.array(distances)
 	
-	countsSort = {}
+	ratiosSort = {}
 	distancesSort = {}
 	# Start from the positive distances
 	for idx,distance in enumerate(distances):
 		min_idx = numpy.argmin( abs(nucPos - distance) )
 		min_dist = nucPos[min_idx]
-		label = labelsDict[min_dist]
+		label = nucLabelsDict[min_dist]
 		if label in distancesSort:
 			distancesSort[ label ] += [ distance ]
-			countsSort[ label ]    += [ counts[idx] ]
+			ratiosSort[ label ]    += [ ratios[idx] ]
 		else:
 			distancesSort[ label ] = [ distance ]
-			countsSort[ label ] = [ counts[idx] ]
-	return countsSort, distancesSort	
+			ratiosSort[ label ] = [ ratios[idx] ]
+	return ratiosSort, distancesSort	
 
 ########################################################################
 # getNucProfile
@@ -1117,13 +1127,14 @@ def getNucCoverage(halfwinwidth,regions,signalFile,controlFile,pvalue,expValues)
 	with open(signalFile,'r') as sFile, open(controlFile,'r') as cFile:
 		for sLine,cLine in itertools.izip(sFile,cFile):
 			nLine +=1
-			if nLine%1000000==0: print "read",nLine, "lines"
+			#if nLine%1000000==0: print "read",nLine, "lines"
 			if nLine==1: continue # skip header line
 			sLine = sLine.strip().split("\t")
 			cLine = cLine.strip().split("\t")
 			if float(cLine[8])<-numpy.log10(pvalue): continue
 			chrom, start, end = sLine[0], int(sLine[1]),int(sLine[2])
-			nuc_iv = HTSeq.GenomicInterval(chrom, start,end)
+			midpoint = numpy.mean([start,end])
+			nuc_iv = HTSeq.GenomicInterval(chrom, midpoint-75,midpoint+75)
 			x,n = float(sLine[10]),float(cLine[10])
 			if not n in expValues: continue # discard n as outlaier
 			r = x/expValues[n]

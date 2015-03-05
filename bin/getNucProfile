@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, nucChIP
+matplotlib.use('Agg')
 from matplotlib import pyplot
 from scipy import stats
+from scipy import signal
+from scipy.signal import argrelmax
 
 ###########################################################
 def getParser():
-	parser = argparse.ArgumentParser(description='Generate coverage plots.')
+	parser = argparse.ArgumentParser(description='Generate normalized enrichment per nucleosome (signal counts per nucleosome divided by expected counts given a control).')
 	parser.add_argument('-conf'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
 	parser.add_argument('-control'   , type=str,   dest="controlFile",help="STR. Name of BED file with the counts of the control (IgG or MNase).")
 	parser.add_argument('-pvalue'   , type=float,   dest="pvalue",help="FLOAT. P-value to filter out nucleosomes from the the control. Default: 1", default=1)
 	parser.add_argument('-expV'   , type=str,   dest="expVfile",help="STR. Name of TXT file with the expected values per count of control: control_counts TAB expected_value.")
 	parser.add_argument('-hw'   , type=int,   dest="halfwinwidth",help="INT. Half window size. Default: 1000", default=1000)
 	parser.add_argument('-db'   , type=str,   dest="database",help="STR. Name of database with the location of the regions of the genome to be plotted.")
+	parser.add_argument('-plotNucs', type=str, dest="plotNucs",help="STR. Plot nucleosome positions: 'true' or 'false'. Default = 'false'.",default="false")
 	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix for title of figures and name of output file.")
 
 	if len(sys.argv) == 1:
@@ -27,6 +31,7 @@ def main():
 	expVfile  = args.expVfile # expected values file
 	halfwinwidth = args.halfwinwidth
 	database  = args.database
+	plotNucs  = args.plotNucs
 	prefix    = args.prefix
 
 	# Extract expected values
@@ -64,6 +69,24 @@ def main():
 		
 		avAx.plot(window,coverage,lw=0.9,label=label,color=c)
 		avAx.fill_between(window, coverage+sem,coverage-sem,facecolor=c,alpha=0.5)
+
+		if idx==0 and plotNucs=="true":
+			# smooth coverage
+			smooth=signal.savgol_filter(coverage, 147, 3)
+			# plot smooth coverage
+			avAx.plot(window,smooth,color='r',label="smoothed")
+			# compute local maxima
+			maxIdxs = argrelmax(smooth,order=50)[0]
+			localMax = window[maxIdxs]
+            # Saved positions to txt file
+			out=open(prefix+'.localMax.txt','w')
+			for val in localMax:
+				#avAx.axvline(x=val,linewidth=2, color='r')
+				lower=max(min(window),val-74)
+				upper=min(max(window),val+74)
+				avAx.axvspan(lower,upper,alpha=0.2,color=c)
+				print >>out, val
+			out.close()
 
 	fs=14
 	avAx.set_title(prefix,fontsize=fs)

@@ -34,38 +34,32 @@ def main():
 	##############################################
 	# Get non-redudant exons per gene
 	gtf_file = HTSeq.GFF_Reader( gtfFile )
-	transcript_id="dummy" # dummy initialization
-	nrExons={}
-	exons=[]
+	exons = {}
 	for feature in gtf_file:
 		if feature.type != "exon": continue
-		if feature.attr["transcript_id"] != transcript_id:
-			if len(exons)>2:
-				if not feature.attr["gene_id"] in nrExons:
-					nrExons[gene_id]=set()
-				for exon in exons[1:-1]: # skip first and last exons
-					nrExons[gene_id].add(exon) # non redundant set of exons
-			transcript_id = feature.attr["transcript_id"]
-			gene_id = feature.attr["gene_id"]
-			exons = [feature.iv]
+		gene_id = feature.attr["gene_id"]
+		transcript_id = feature.attr["transcript_id"]
+		if not gene_id in exons:
+			exons[gene_id]={}
+			exons[gene_id][transcript_id]=[feature.iv]
 		else:
-			exons.append(feature.iv)
-	# Add left-overs
-	if not gene_id in nrExons:
-		nrExons[gene_id]=set()
-	if len(exons)>2:
-		for exon in exons[1:-1]: # skip first and last exons
-			nrExons[feature.attr["gene_id"]].add(exon) # non redundant set of exons
+			if not transcript_id in exons[gene_id]:
+				exons[gene_id][transcript_id]=[feature.iv]
+			else:
+				exons[gene_id][transcript_id].append(feature.iv)
 	##############################################
 	# Print results
 	out=open(outFile,'w')
-	for gene_id in nrExons:
-		for exon in nrExons[gene_id]:
-			if not gene_id in gene_exps:
-				continue
-			else:
-				gene_exp = gene_exps[gene_id]
-			print >>out, "\t".join(map(str,[exon.chrom,exon.start,exon.end,gene_id,gene_exp,exon.strand]))
+	for gene_id in exons:
+		if not gene_id in gene_exps:
+			continue
+		else:
+			gene_exp = gene_exps[gene_id]
+		for transcript_id in exons[gene_id]:
+			if len(exons[gene_id][transcript_id])>2:
+				xs=exons[gene_id][transcript_id]
+				for x in xs[1:-1]:
+					print >>out, "\t".join(map(str,[x.chrom,x.start,x.end,gene_id,gene_exp,x.strand]))
 	out.close()
 ################################################################
 if __name__ == '__main__':
