@@ -38,7 +38,13 @@ H3K4me3 is proportional to exon inclusion
 
 MNase and H3K9me3 are slightly enriched on spliced-in exons
 
-
+Procedure
+1. Map data to mm9 with bowtie2, default parameters
+2. Remove duplicates with picards tools
+3. Count reads per nucleosome, getCounts
+4. Compute expected values, with R script
+5. Plot coverage per nucleosome,
+6. Plot fragment size distribution, vPlot2
 
 Discussion
 ----------

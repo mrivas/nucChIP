@@ -1,0 +1,174 @@
+#!/usr/bin/env python
+import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, scipy, nucChIP
+from numpy import nan
+from scipy import stats
+matplotlib.use('Agg')
+from matplotlib import pyplot
+import matplotlib.patches as mpatch
+############################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Plot coverage per nucleosomes around exons.')
+	parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
+	parser.add_argument('-control'   , type=str,   dest="controlFile",help="STR. Name of BED file with the counts of the control (IgG or MNase).")
+	parser.add_argument('-pvalue'   , type=float,   dest="pvalue",help="FLOAT. p-value cutoff.")#Cutoff, minimum number of supporting reads for a nucleosome to be used.")
+	parser.add_argument('-expV'   , type=str,   dest="expVfile",help="STR. Name of TXT file with the expected values per count of control: control_counts TAB expected_value.")
+	parser.add_argument('-halfWin'   , type=int,   dest="halfWin",help="INT. Half window size to be drawn around the exons.")
+	parser.add_argument('-nucPos'   , type=str,   dest="nucFile",help="TXT. File with nucleosome positions. If not used, coverage is plotted in a continuous fashion.")
+	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix to be used on the output figures. The figures will be called: [prefix].avrRatios.svg")
+	parser.add_argument('-e'   , type=str,   dest="exon_position",help="STR. Exon position around where the nucleosomes will be plotted. Could be: '5p' or '3p'.")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args     = getParser().parse_args()
+	confFile = args.confFile
+	controlFile=args.controlFile
+	pvalue  = args.pvalue # p-value of nucleosomes
+	expVfile  = args.expVfile # expected values file
+	halfWin  = args.halfWin
+	nucPos = []
+	for line in open(args.nucFile,"r"):
+		nucPos.append( float(line.strip()) )
+	nucPos=numpy.array(nucPos)
+	prefix  = args.prefix
+	exon_position = args.exon_position # "5p" or "3p"
+
+	# Read expected values file, and save it as dict
+	expValues={}
+	nLine=0
+	for line in open( expVfile,"r"):
+		if nLine==0: # skips header line
+			nLine += 1
+			continue
+		line = line.strip().split("\t")
+		n,mu = float(line[0]), float(line[1])
+		expValues[ n ] = mu
+	# Make labels
+	n=len(nucPos) # number of elements 
+	n_neg=sum(nucPos<0) # number of negative elements
+	nucLabels=numpy.array( range(-n_neg,n-n_neg) )
+	nucLabels[nucLabels>=0] += 1 # [-3,-2,-1,1,2,3,4]
+	# Iterate over lines of confFile
+	resultsPositions, resultsRatios , resultsNames = {},{},[]
+	for idx,line in enumerate(open(confFile,"r")):
+		line    = line.strip().split("\t")
+		signalFile = line[0] # counts per nucleosome in BED format
+		exonList = line[1] # list of exons with whom the nucleosome should overlap,  TXT format
+		resultsNames.append( line[2] ) # name of replicate
+		print "Get nucleosomes of library ", idx
+		nucleosomes_r = nucChIP.getNucRatios(signalFile,controlFile,pvalue,expValues)
+		print "Get list of positions and counts on included exons of library ", idx
+		nucRatios,nucPositions = nucChIP.getRatiosPerCanonicalNuc(exonList,nucleosomes_r,nucPos,halfWin,exon_position,nucLabels)
+		# Iterate over nucleosomes: -1, +1, +2, etc	
+		for nuc_label in nucLabels:
+			# nucleosome position
+			positions   = nucPositions[nuc_label]
+			avrPosition = numpy.nanmean(positions)
+			# ratios
+			ratios   = nucRatios[nuc_label]
+			# Store results
+			if nuc_label == nucLabels[0]:
+				resultsPositions[idx]=[avrPosition]
+				resultsRatios[idx]=[ratios]
+			else:
+				resultsPositions[idx].append(avrPosition)
+				resultsRatios[idx].append(ratios)
+
+	# Prepare figure for visualization
+	fig, ax = pyplot.subplots(1)
+	nfiles = 0
+	for line in open(confFile,'r'): nfiles += 1
+	
+	color  = iter( matplotlib.cm.rainbow( numpy.linspace(0,1,nfiles) ) )
+	cmap   = matplotlib.colors.LinearSegmentedColormap.from_list('my_colormap',['white','red'],256)
+	# Plot canonical nucleosome positions
+	for pos in nucPos:
+		lower=max(-halfWin,pos-74)
+		upper=min(halfWin,pos+74)
+		ax.axvspan(lower,upper,alpha=0.7,color="grey")
+	# Plot boxplots, each centered on avr distance	
+	legendBars, legendNames = [],[]
+	for idx in range(nfiles):
+		name = resultsNames[idx]
+		c=next(color)
+	
+		data=[]
+		for idx2,nuc_label in enumerate(nucLabels):
+			x = numpy.array( resultsRatios[idx][idx2])
+			bootstrap = nucChIP.bootstrap( x, 1500, numpy.nanmean )	
+			data.append(bootstrap)
+		
+		widths=46
+		positions = numpy.array(nucPos) + (idx-1)*(widths + 6)
+		bp=ax.boxplot(data,positions=positions, sym="",patch_artist=True,widths=widths,notch=True,showmeans=True)
+		
+		pyplot.setp(bp['boxes'], facecolor=c)
+		pyplot.setp(bp['whiskers'], color=c)
+		pyplot.setp(bp['medians'], color=c)
+		pyplot.setp(bp['means'], color=c)
+		pyplot.setp(bp['caps'], color=c)
+
+
+		legendBars.append( mpatch.Rectangle((0, 0), 1, 1, fc=c) )
+		legendNames.append(name)
+	# Set figure parameters
+	ax.set_xlim(-halfWin-75,halfWin+75)
+	ax.set_xticks(nucPos)
+	xtickNames = pyplot.setp(ax, xticklabels= [ '%.1f' % elem for elem in nucPos ] ) 
+	pyplot.setp(xtickNames, rotation=45)
+	ax.set_title(prefix)
+	ax.legend(legendBars, legendNames,loc='upper left')
+	pyplot.gcf().subplots_adjust(bottom=0.15)
+	ax.set_xlabel("Average distance (b) to exons "+exon_position+" end")
+	ax.set_ylabel("Bootstrap distribution of \n normalized read count per nucleosomes (mean)")
+	ax.yaxis.grid(True)
+	print "Creating figure"
+	fig.savefig(prefix+".boxplot.svg")
+	######################################################################################
+	# Perform Kolmogorov-Smirnov statistic between any 2 samples at nucleosome 1
+	fig2, ax2 = pyplot.subplots(1)
+	pvalues=numpy.zeros((scipy.misc.comb(3,2),len(nucPos)))
+	# header line
+	row_names=[]
+	for i,j in zip([0,0,1],[1,2,2]):
+		row_names.append( resultsNames[i]+"-"+resultsNames[j] )
+	col_names=nucLabels
+	# filling
+	row_idx=0
+	for i,j in zip([0,0,1],[1,2,2]):
+		row=[]
+		for nuc_idx,nuc_label in enumerate(nucLabels):
+			pvalue=stats.ks_2samp(resultsRatios[i][nuc_idx], resultsRatios[j][nuc_idx])[1]
+			row.append(pvalue)
+		pvalues[row_idx,:] = row
+		row_idx += 1
+	# Plot heatmap of pvalues
+	pvalues=-numpy.log(pvalues)/-numpy.log(0.05)
+	hm=ax2.pcolor(pvalues)
+
+	for y in range(pvalues.shape[0]):
+		for x in range(pvalues.shape[1]):
+			if pvalues[y,x]<1:continue
+			ax2.text(x + 0.5, y + 0.5, "sig",
+					 horizontalalignment='center',
+					 verticalalignment='center',color="white"
+					 )
+	fig2.colorbar(hm)
+	pyplot.setp(ax2,xticks=numpy.arange(0,len(col_names))+0.5,
+				    xticklabels=col_names,
+				    yticks=numpy.arange(0,len(row_names))+0.5,
+				    yticklabels=row_names)
+	ax2.set_title(prefix)	
+
+	ax2.set_xlabel("Nucleosomes around "+exon_position+" end of exons")
+	ax2.set_ylabel("Pair-wise comparisons among exon types")
+	pyplot.gcf().subplots_adjust(left=0.3)
+	ax2.yaxis.grid(True)
+	print "Creating pvalues figure"
+	fig2.savefig(prefix+".pvalues.svg")
+################################################################
+if __name__ == '__main__':
+	main()	

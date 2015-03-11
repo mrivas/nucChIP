@@ -6,7 +6,7 @@ def getParser():
 	parser = argparse.ArgumentParser(description='Count reads per nucleosome.')
 	parser.add_argument('-b',type=str,dest="bFile",help="BAM file. ChIP-seq reads.")
 	parser.add_argument('-n',type=str,dest="nFile",help="BED file. Nucleosome position data, output of Danpos or iNPS.")
-	parser.add_argument('-pValue',type=float,dest="pValue",help="FLOAT file. pValue cut-off of nucleosomes on BED file.")
+	parser.add_argument('-pValue',type=float,dest="pValue",help="FLOAT file. -log of pValue cut-off of nucleosomes on BED file.")
 	parser.add_argument('-upper',type=int,dest="upper",help="INT. Upper threshold for insert size. Default: 200", default=200)
 	parser.add_argument('-lower',type=int,dest="lower",help="INT. Lower threshold for insert size. Default: 0", default=0)
 	parser.add_argument('-l',type=int,dest="lType",help="INT. Library type: if equal to 0, data is assumed to be paired-end and read lengths are estimated from data itself; if different from 0, data is assumed to be single-end and read lengths use this value extend every read.")

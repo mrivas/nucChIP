@@ -1,0 +1,127 @@
+#!/usr/bin/env python
+import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, nucChIP
+from numpy import nan
+from matplotlib import pyplot
+############################################################
+def getParser():
+    parser = argparse.ArgumentParser(description='Plot coverage per nucleosomes around exons.')
+    parser.add_argument('-c'   , type=str,   dest="confFile",help="STR. Name of configuration file.")
+    parser.add_argument('-hw'   , type=int,   dest="halfWin",help="INT. Half window size to be drawn around the exons.")
+    parser.add_argument('-nf'   , type=str,   dest="nucFile",help="TXT. File with nucleosome positions. If not used, coverage is plotted in a continuous fashion. Default 'none'", default="none")
+    parser.add_argument('-co'   , type=float,   dest="cutoff",help="FLOAT. p-value cutoff.")#Cutoff, minimum number of supporting reads for a nucleosome to be used.")
+    parser.add_argument('-p'   , type=str,   dest="prefix",help="STR. Prefix to be used on the output figures. The figures will be called: [prefix].avrCounts.svg")
+    parser.add_argument('-e'   , type=str,   dest="exon_position",help="STR. Exon position around where the nucleosomes will be plotted. Could be: '5p' or '3p'.")
+
+    if len(sys.argv) == 1:
+        print >> sys.stderr,parser.print_help()
+        exit(0)
+    return parser
+###########################################################
+def main():
+	args     = getParser().parse_args()
+	confFile = args.confFile
+	halfWin  = args.halfWin
+	if args.nucFile != "none":
+		nucPos = []
+		for line in open(args.nucFile,"r"):
+			nucPos.append( float(line.strip()) )
+	cutoff  = -numpy.log10(args.cutoff) # p-value of nucleosomes
+	#cutoff  = args.cutoff # number of supportin MNase counts 
+	prefix  = args.prefix
+	exon_position = args.exon_position # "5p" or "3p"
+
+	# Make labels
+	nucPos=numpy.array(nucPos)
+	n=len(nucPos) # number of elements 
+	n_neg=sum(nucPos<0) # number of negative elements
+	labels=numpy.array( range(-n_neg,n-n_neg) )
+	labels[labels>=0] += 1
+	# Count the number of replicates on conf file
+	nRep=0
+	for line in open(confFile,"r"): nRep += 1
+	# Iterate over replicates
+	resultsPositions, resultsCounts , resultsNames = {},{},{}
+	for idx,line in enumerate(open(confFile,"r")):
+		line    = line.strip().split("\t")
+		signalFile = line[0] # counts per nucleosome in BED format
+		exonListIn = line[1] # list of exons with whom the nucleosome should overlap,  TXT format
+#		exonListOut = line[2] # list of exons with whom the nucleosome should overlap,  TXT format
+#		name    = line[3] # name of replicate
+		name    = line[2] # name of replicate
+		print "Get nucleosomes of library ", idx
+#		nucleosomes_count = nucChIP.getNuclCount(bedFile,cutoff)
+		nucleosomes_count = nucChIP.getNuclCount(signalFile,controlFile,pvalue,expValues)
+		print "Get list of positions and counts on included exons of library ", idx
+		nucCountsIn,nucPositionsIn = nucChIP.getCountsPerNuc(exonListIn,nucleosomes_count,nucPos,halfWin,exon_position,labels)
+#		print "Get list of positions and counts on excluded exons of library ", idx
+#		nucCountsOut,nucPositionsOut = nucChIP.getCountsPerNuc(exonListOut,nucleosomes_count,nucPos,halfWin,exon_position,labels)
+		# Iterate over nucleosomes: -1, +1, +2, etc	
+		for nuc_label in labels:
+			# nucleosome position
+#			positionsIn,   positionsOut   = nucPositionsIn[nuc_label],  nucPositionsOut[nuc_label]
+#			avrPositionIn, avrPositionOut = numpy.nanmean(positionsIn), numpy.nanmean(positionsOut)
+			positionsIn   = nucPositionsIn[nuc_label]
+			avrPositionIn = numpy.nanmean(positionsIn)
+			# counts
+#			countsIn, countsOut  = nucCountsIn[nuc_label], nucCountsOut[nuc_label]
+#			avrCountIn, avrCountOut  = numpy.nanmean(countsIn), numpy.nanmean(countsOut)
+			countsIn   = nucCountsIn[nuc_label]
+			avrCountIn = numpy.nanmean(countsIn)
+			# draw horizontal lines
+			print idx
+			print avrPositionIn,  avrCountIn
+#			print avrPositionOut, avrCountOut
+			# Store results
+			if nuc_label == labels[0]:
+				resultsPositions[idx]=numpy.array([avrPositionIn,avrPositionOut])
+				resultsCounts[idx]=numpy.array([avrCountIn,avrCountOut])
+				resultsNames[idx]=[name]
+			else:
+				resultsPositions[idx]=numpy.vstack((resultsPositions[idx],[avrPositionIn, avrPositionOut]))
+				resultsCounts[idx]=numpy.vstack((resultsCounts[idx],[avrCountIn,avrCountOut]))
+				resultsNames[idx].append(name)
+
+	# Visualized results
+	fig, ax = pyplot.subplots(nRep,1,sharex=True)
+	for idx in range(nRep):
+		maxY=numpy.max(resultsCounts[idx])
+		minY=numpy.min(resultsCounts[idx])
+		alpha = maxY-minY
+		thick = alpha*0.05
+		for idx2,nuc_label in enumerate(labels):
+			
+			avrPositionIn, avrPositionOut = resultsPositions[idx][idx2]
+			avrCountIn,avrCountOut = resultsCounts[idx][idx2]
+			name = resultsNames[idx][idx2]
+			if nRep>1:
+				ax[idx].broken_barh([(avrPositionIn -75, 150)],(avrCountIn -thick/2,thick),facecolors="red" )
+				ax[idx].broken_barh([(avrPositionOut-75, 150)],(avrCountOut-thick/2,thick),facecolors="blue")
+			else:
+				ax.broken_barh([(avrPositionIn -75, 150)],(avrCountIn -thick/2,thick),facecolors="red" )
+				ax.broken_barh([(avrPositionOut-75, 150)],(avrCountOut-thick/2,thick),facecolors="blue")
+			# boxplots
+			# bp.boxplot(counts)
+
+		# Set figure parameters
+		if nRep>1:
+			ax[idx].set_ylim(minY-0.1*alpha,maxY+0.1*alpha)
+			ax[idx].set_title(name)
+			ax[idx].set_xlim(-halfWin,halfWin)
+			if idx==(nRep-1):
+				ax[idx].set_xlabel("Distance (b) to exons "+exon_position+" end")
+			#ax.set_yticks([15,25])
+			#ax.set_yticklabels(['Bill', 'Jim'])
+			ax[idx].grid(True)
+		else:
+			ax.set_ylim(minY-0.1*alpha,maxY+0.1*alpha)
+			ax.set_title(name)
+			ax.set_xlim(-halfWin,halfWin)
+			ax.set_xlabel("Distance (b) to exons "+exon_position+" end")
+			#ax.set_yticks([15,25])
+			#ax.set_yticklabels(['Bill', 'Jim'])
+			ax.grid(True)
+	print "Creating figure"
+	fig.savefig(prefix+".avrCounts.svg")
+################################################################
+if __name__ == '__main__':
+    main()	

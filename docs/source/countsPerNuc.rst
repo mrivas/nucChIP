@@ -25,6 +25,12 @@ Finally, we computed the average enrichment of all MNase ChIP-seq libraries on t
 Figure 1: Canonical nucleosome positions
 
 .. figure::
+.. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/8_mnase_3p.avrRatios.svg
+   :width: 45%
+.. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/8_mnase_5p.avrRatios.svg
+   :width: 45%
+Figure 2: Average enrichment of 8_mnase on the canonical nucleosomes
+
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/17_H3K4me3_3p.avrRatios.svg
    :width: 45%
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/17_H3K4me3_5p.avrRatios.svg
@@ -41,7 +47,7 @@ Figure 1: Canonical nucleosome positions
    :width: 45%
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/n2_H3K4me3_5p.avrRatios.svg
    :width: 45%
-Figure 2: Average enrichment of H3K4me3 on the canonical nucleosomes
+Figure 3: Average enrichment of H3K4me3 on the canonical nucleosomes
 
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/14_H3K27Ac_3p.avrRatios.svg
    :width: 45%
@@ -55,7 +61,7 @@ Figure 2: Average enrichment of H3K4me3 on the canonical nucleosomes
    :width: 45%
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K27Ac_5p.avrRatios.svg
    :width: 45%
-Figure 3: Average enrichment of H3K27Ac on the canonical nucleosomes
+Figure 4: Average enrichment of H3K27Ac on the canonical nucleosomes
 
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/4_H3K9me3_3p.avrRatios.svg
    :width: 45%
@@ -69,7 +75,7 @@ Figure 3: Average enrichment of H3K27Ac on the canonical nucleosomes
    :width: 45%
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/H3K9me3_5p.avrRatios.svg
    :width: 45%
-Figure 4: Average enrichment of H3K9me3 on the canonical nucleosomes
+Figure 5: Average enrichment of H3K9me3 on the canonical nucleosomes
 
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/12_H3K27me3_3p.avrRatios.svg
    :width: 45%
@@ -87,4 +93,5 @@ Figure 4: Average enrichment of H3K9me3 on the canonical nucleosomes
    :width: 45%
 .. image:: https://132.239.135.28/public/nucChIP/files/countsPerNuc/n3_H3K27me3_5p.avrRatios.svg
    :width: 45%
-Figure 5: Average enrichment of H3K27me3 on the canonical nucleosomes
+Figure 6: Average enrichment of H3K27me3 on the canonical nucleosomes
+

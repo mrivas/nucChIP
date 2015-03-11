@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, nucChIP
+import argparse, sys, HTSeq, numpy, pysam, matplotlib, itertools, pandas,nucChIP
 matplotlib.use('Agg')
 from matplotlib import pyplot
 from scipy import stats
@@ -86,8 +86,8 @@ def main():
 		else:
 			profileMatrix = nucChIP.getProfile(halfwinwidth,regions,bamFiles[0],fragLength[0],lowerSize[0],upperSize[0],0)
 		# Cap extreme cases
-		upp_percen		= numpy.percentile( profileMatrix, (100.00-float(perc)/2), axis=0 )
-		low_percen		= numpy.percentile( profileMatrix, (float(perc)/2)       , axis=0 )
+		upp_percen		= numpy.nanpercentile( profileMatrix, (100.00-float(perc)/2), axis=0 )
+		low_percen		= numpy.nanpercentile( profileMatrix, (float(perc)/2)       , axis=0 )
 		profileMatrixConf = profileMatrix
 		for row in range( profileMatrix.shape[0] ):
 			cols_upp = (profileMatrix[row,:] > upp_percen )
@@ -96,8 +96,8 @@ def main():
 			profileMatrixConf[ row, cols_low ] = low_percen[cols_low]
 		nRows, nCols	  = numpy.shape(profileMatrixConf)
 		# Average coverage
-		profile = numpy.mean( profileMatrixConf, axis=0)
-		sem	 = stats.sem(  profileMatrixConf, axis=0)
+		profile = numpy.nanmean( profileMatrixConf, axis=0)
+		sem	 = stats.sem(  pandas.DataFrame(profileMatrixConf).dropna(), axis=0)
 		c	   = next(color)
 		#pyplot.figure(1) # Average coverage plot
 		avAx.plot(window, profile, lw=0.9, label=label, color=c)

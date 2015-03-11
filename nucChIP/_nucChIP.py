@@ -515,7 +515,9 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper,pcount):
 			nRegions = len( regionsList )
 			profileMatrix = numpy.zeros( ( nRegions, 2*halfwinwidth ), dtype="d" )
 			for row,region in enumerate(regionsList):
-				if bamFile.gettid(region.chrom)==-1: continue
+				if bamFile.gettid(region.chrom)==-1: 
+					profileMatrix[ row, : ] += nan
+					continue
 				for almnt in bamFile.fetch( region.chrom,max(region.start-200,0),region.end+200 ):
 #					if almnt.is_unmapped or almnt.pos < 0: continue
 					if fragLength==0: # If lib is paried-end
@@ -557,7 +559,9 @@ def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper,pcount):
 		nRegions = len( regions )
 		profileMatrix = numpy.zeros( ( nRegions, 2*halfwinwidth ), dtype="d" )
 		for row,region in enumerate(regions):
-			if bamFile.gettid(region.chrom)==-1: continue
+			if bamFile.gettid(region.chrom)==-1: 
+				profileMatrix[ row, : ] += nan
+				continue
 			for almnt in bamFile.fetch( region.chrom,max(region.start-200,0),region.end+200 ):
 #				if almnt.is_unmapped or almnt.pos < 0: continue
 				# If library is PAIRED-END
@@ -1161,3 +1165,14 @@ def getNucCoverage(halfwinwidth,regions,signalFile,controlFile,pvalue,expValues)
 			profileMatrix[ row, start_in_window : end_in_window ] += numpy.mean(signal_total)
 		
 	return profileMatrix
+########################################################################
+# getCanonicalNucProfile3
+########################################################################
+def bootstrap(data, num_samples, statistic):
+	"""Returns bootstrap distribution."""
+	n = len(data)
+	idx = numpy.random.randint(0, n, (num_samples, n))
+	samples = data[idx]
+	stat = statistic(samples, 1)
+	return stat
+

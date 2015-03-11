@@ -37,7 +37,8 @@ def main():
 
 	# Regions on where to produce coverage plots
 	regions	   = nucChIP.getRegions(geneList,database,halfwinwidth)
-	profileMatrix = nucChIP.getSizeProfile(halfwinwidth,regions,bamName,lower,upper)
+	normalize="false"
+	profileMatrix = nucChIP.getSizeProfile(halfwinwidth,regions,bamName,lower,upper,normalize)
 	#mu = numpy.mean(profileMatrix+1)
 	#profileMatrix = numpy.log( (profileMatrix+1)/mu)
 	#profileMatrix = numpy.log(profileMatrix+1)
