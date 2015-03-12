@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+import argparse, sys, itertools
+############################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Produces normalized signals of enrichment in bigWig format.')
+	parser.add_argument('-signal'   , type=str,   dest="signalFile",help="STR. Name of BED file with the counts of the signal.")
+	parser.add_argument('-control'   , type=str,   dest="controlFile",help="STR. Name of BED file with the counts of the control (IgG or MNase).")
+	parser.add_argument('-expV'   , type=str,   dest="expVfile",help="STR. Name of TXT file with the expected values per count of control: control_counts TAB expected_value.")
+	parser.add_argument('-color'   , type=str,   dest="color",help="STR. Color of track coded as R,G.B, for instance '200,0,0'.")
+	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix to be used on the output figures. The figures will be called: [prefix].avrRatios.svg")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args     = getParser().parse_args()
+	signalFile = args.signalFile
+	controlFile = args.controlFile
+	expVfile  = args.expVfile # expected values file
+	color  = args.color # expected values file
+	prefix  = args.prefix
+
+    # Read expected values file, and save it as dict
+	expValues={}
+	nLine=0
+	for line in open( expVfile,"r"):
+	    if nLine==0: # skips header line
+	        nLine += 1
+	        continue
+	    line = line.strip().split("\t")
+	    n,mu = float(line[0]), float(line[1])
+	    expValues[ n ] = mu
+	# Read signal and control files
+	out=open(prefix+".bedGraph","w")
+	print >> out, "track type=bedGraph name="+prefix+" color="+color
+	with open(signalFile,"r") as signal, open(controlFile,"r") as control:
+		for signalLine,controlLine in itertools.izip(signal,control):
+			signalLine  = signalLine.strip().split("\t")
+			controlLine = controlLine.strip().split("\t")
+			
+			if signalLine[10]=="count": continue # skip header line
+			if not float(controlLine[10]) in expValues: continue # skip outliers
+
+			chrom, start, end = signalLine[0:3]	
+			enrichment = float(signalLine[10])/expValues[float(controlLine[10])]
+
+			output=[chrom,start,end,enrichment]
+			print >> out, "\t".join(map(str,output))
+
+	out.close()
+			
+################################################################
+if __name__ == '__main__':
+	main()	

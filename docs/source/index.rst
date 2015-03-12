@@ -13,13 +13,13 @@ Contents:
 
    overview
 
-   nucChIP
-
    installation
   
    exampleCase
 
-   AS_exons
+   genomeWide_fragDist
+   
+   normalization
 
    countsPerNuc
 
@@ -31,7 +31,6 @@ Contents:
 
    fragmentDist_exons
 
-   methods
 
    commandLineTools
 

@@ -18,23 +18,26 @@ We generated single-nucleosome ChIP-seq libraries of four histone marks (H4K4me3
    `Data summary of mouse fibroblast-like libraries <https://docs.google.com/spreadsheet/ccc?key=0Aueh7dagaPEZdENBUUR1Qk8tS3hhbnZFZ2NyU29CbEE#gid=4>`_
 
 .. csv-table:: Table 1: Mouse E14 libraries.
-   :header: "Library (type)","Replicate ID","# Reads","Alignment rate (%)","# Fragments", "# Fragment MAPQ>=20"
+   :header: "Library (type)","Replicate ID","# Reads","Alignment rate (%)","# Fragments", "# Fragment MAPQ>=20, Avr frag length"
 
-   H3K27me3 (MNase),`12_H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/12_H3K27me3.pairend_rmdup.sort.bam>`_,41727332,16.17,3390346,2519561
-   H3K27me3 (MNase),`5_H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/5_H3K27me3.pairend_rmdup.sort.bam>`_,84379845,82.77,35072483,30405555
-   H3K9me3 (MNase),`4_H3K9me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/4_H3K9me3.pairend_rmdup.sort.bam>`_,91197916,84.16,38617758,33180391
-   H3K9me3 (MNase),`9_H3K9me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/9_H3K9me3.pairend_rmdup.sort.bam>`_,63153628,75.31,23932067,19637520
-   H3K27Ac (MNase),`14_H3K27Ac <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/14_H3K27Ac.pairend_rmdup.sort.bam>`_,72746990,65.41,23886474,20931875
-   H3K27Ac (MNase),`6_H3K27Ac <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/6_H3K27Ac.pairend_rmdup.sort.bam>`_,36822734,75.74,13953975,11805574
-   H3K4me3 (MNase),`17_H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/17_H3K4me3.pairend_rmdup.sort.bam>`_,16206340,10.72,796542,401970
-   H3K4me3 (MNase),`n1_H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n1_H3K4me3.pairend_rmdup.sort.bam>`_,23451320,95.5,11277740,9703381
-   H3K4me3 (MNase),`n2_H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n2_H3K4me3.pairend_rmdup.sort.bam>`_,14765216,94.03,6819315,5267592
-   H3K27me3 (MNase),`n3_H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n3_H3K27me3.pairend_rmdup.sort.bam>`_,16024783,95.44,7572511,6084379
-   MNase (MNase),`8_mnase <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/8_mnase.sort_rmdup.bam>`_ ,203367131,96.06,120922096,44912058*
-   H3K27Ac (Sonicated),`H3K27Ac <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K27Ac.singend_rmdup.sort.bam>`_,18739298,71.04,13312397,NA
-   H3K27me3 (Sonicated),`H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K27me3.singend_rmdup.sort.bam>`_,13680637,70.16,9598335,NA
-   H3K4me3 (Sonicated),`H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K4me3.singend_rmdup.sort.bam>`_,6687568,63.93,4275362,NA
-   H3K9me3 (Sonicated),`H3K9me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K9me3.singend_rmdup.sort.bam>`_,18851693,21.43,4039918,NA
+   H3K27me3 (MNase),`12_H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/12_H3K27me3.pairend_rmdup.sort.bam>`_,41727332,16.17,3390346,2519561,181
+   H3K27me3 (MNase),`5_H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/5_H3K27me3.pairend_rmdup.sort.bam>`_,84379845,82.77,35072483,30405555,167
+   H3K9me3 (MNase),`4_H3K9me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/4_H3K9me3.pairend_rmdup.sort.bam>`_,91197916,84.16,38617758,33180391,166
+   H3K9me3 (MNase),`9_H3K9me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/9_H3K9me3.pairend_rmdup.sort.bam>`_,63153628,75.31,23932067,19637520,173
+   H3K27Ac (MNase),`14_H3K27Ac <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/14_H3K27Ac.pairend_rmdup.sort.bam>`_,72746990,65.41,23886474,20931875,159
+   H3K27Ac (MNase),`6_H3K27Ac <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/6_H3K27Ac.pairend_rmdup.sort.bam>`_,36822734,75.74,13953975,11805574,168
+   H3K4me3 (MNase),`17_H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/17_H3K4me3.pairend_rmdup.sort.bam>`_,16206340,10.72,796542,401970,138
+   H3K4me3 (MNase),`n1_H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n1_H3K4me3.pairend_rmdup.sort.bam>`_,23451320,95.5,11277740,9703381,142
+   H3K4me3 (MNase),`n2_H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n2_H3K4me3.pairend_rmdup.sort.bam>`_,14765216,94.03,6819315,5267592,168
+   H3K27me3 (MNase),`n3_H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/n3_H3K27me3.pairend_rmdup.sort.bam>`_,16024783,95.44,7572511,6084379,164
+   MNase (MNase),`8_mnase <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/8_mnase.sort_rmdup.bam>`_ ,203367131,96.06,120922096,44912058*,118
+   H3K27Ac (Sonicated),`H3K27Ac <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K27Ac.singend_rmdup.sort.bam>`_,18739298,71.04,13312397,NA,NA
+   H3K27me3 (Sonicated),`H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K27me3.singend_rmdup.sort.bam>`_,13680637,70.16,9598335,NA,NA
+   H3K4me3 (Sonicated),`H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K4me3.singend_rmdup.sort.bam>`_,6687568,63.93,4275362,NA,NA
+   H3K9me3 (Sonicated),`H3K9me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/H3K9me3.singend_rmdup.sort.bam>`_,18851693,21.43,4039918,NA,NA
+   H3K4me3 (MNase),`m1_H3K4me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/m1_H3K4me3.singend_rmdup.sort.bam>`_,83781551,90.98,38053580,33465859,144
+   H3K27me3 (MNase),`m1_H3K27me3 <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/m1_H3K4me3.singend_rmdup.sort.bam>`_,59027364,88.77,26066484,22866698,149
+   H3K27Ac (MNase),`m1_H3K27Ac <https://132.239.135.28/public/nucChIP/files/bam_rmdup_day0/m1_H3K4me3.singend_rmdup.sort.bam>`_,67427750,93.43,31542701,28133932,150
 
 .. 
    MNase data to be added to the table

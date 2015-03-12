@@ -23,12 +23,25 @@ We found that:
 Results
 -------
 
-Libraries: MNase (public), H3K4me3, H3K27Ac, H3K9me3, RNA-seq(public)
+Data summary
+************
+
+In our protocol, we used micrococcal nuclease (MNase) digestion rather than sonication to produce ChIP-seq (MNChIP-seq) libraries of H4K4me3, H3K27Ac, and H3K9me3 at single-nucleosome resolution. The libraries were extracted from mouse E14 embryonic stem cells. These libraries were used along a publicly available dataset of MNase (un-spunned library from :cite:`Carone2014`) to compute signal enrichment at single-nucleosome level. A summary of all data is presented in Table 1. 
 
 Fragment sizes
+**************
 
-Nucleosome locations
+Enrichment on exon 
+******************
 
+On TSS
+
+On exons
+
+
+
+Discussion
+----------
 
 H3K4me3 and H3K9me3 both enriched at nuc 1, but whereas H3K4me3 is enriched at nuc 2 on high expression genes, H3K9me3 is the opossite.
 
@@ -49,8 +62,6 @@ Procedure
 5. Plot coverage per nucleosome,
 6. Plot fragment size distribution, vPlot2
 
-Discussion
-----------
 
 Materials and Methods
 ---------------------
