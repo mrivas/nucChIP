@@ -23,9 +23,13 @@ Contents:
 
    countsPerNuc
 
-   internalExons
+   coverage_tss
 
-   fragmentDist
+   coverage_exons
+
+   fragmentDist_tss
+
+   fragmentDist_exons
 
    methods
 

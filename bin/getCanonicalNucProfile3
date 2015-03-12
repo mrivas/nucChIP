@@ -86,8 +86,8 @@ def main():
 	cmap   = matplotlib.colors.LinearSegmentedColormap.from_list('my_colormap',['white','red'],256)
 	# Plot canonical nucleosome positions
 	for pos in nucPos:
-		lower=max(-halfWin,pos-74)
-		upper=min(halfWin,pos+74)
+		lower=pos-74
+		upper=pos+74
 		ax.axvspan(lower,upper,alpha=0.7,color="grey")
 	# Plot boxplots, each centered on avr distance	
 	legendBars, legendNames = [],[]
@@ -103,12 +103,12 @@ def main():
 		
 		widths=46
 		positions = numpy.array(nucPos) + (idx-1)*(widths + 6)
-		bp=ax.boxplot(data,positions=positions, sym="",patch_artist=True,widths=widths,notch=True,showmeans=True)
+		bp=ax.boxplot(data,positions=positions, sym="",patch_artist=True,widths=widths,notch=True)#,showmeans=True)
 		
 		pyplot.setp(bp['boxes'], facecolor=c)
 		pyplot.setp(bp['whiskers'], color=c)
 		pyplot.setp(bp['medians'], color=c)
-		pyplot.setp(bp['means'], color=c)
+		#pyplot.setp(bp['means'], color=c)
 		pyplot.setp(bp['caps'], color=c)
 
 
@@ -119,9 +119,11 @@ def main():
 	ax.set_xticks(nucPos)
 	xtickNames = pyplot.setp(ax, xticklabels= [ '%.1f' % elem for elem in nucPos ] ) 
 	pyplot.setp(xtickNames, rotation=45)
-	ax.set_title(prefix)
-	ax.legend(legendBars, legendNames,loc='upper left')
-	pyplot.gcf().subplots_adjust(bottom=0.15)
+	#ax.set_title(prefix)
+	pyplot.text(0.5, 1.2,prefix,horizontalalignment='center',transform = ax.transAxes)
+	ax.legend(legendBars, legendNames,loc='upper center', bbox_to_anchor=(0.5,1.2),
+	          fancybox=True,ncol=3)
+	pyplot.gcf().subplots_adjust(top=0.8,bottom=0.15)
 	ax.set_xlabel("Average distance (b) to exons "+exon_position+" end")
 	ax.set_ylabel("Bootstrap distribution of \n normalized read count per nucleosomes (mean)")
 	ax.yaxis.grid(True)
@@ -164,7 +166,7 @@ def main():
 	ax2.set_title(prefix)	
 
 	ax2.set_xlabel("Nucleosomes around "+exon_position+" end of exons")
-	ax2.set_ylabel("Pair-wise comparisons among exon types")
+	#ax2.set_ylabel("Pair-wise comparisons among exon types")
 	pyplot.gcf().subplots_adjust(left=0.3)
 	ax2.yaxis.grid(True)
 	print "Creating pvalues figure"

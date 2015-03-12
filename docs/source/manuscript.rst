@@ -29,6 +29,9 @@ Fragment sizes
 
 Nucleosome locations
 
+
+H3K4me3 and H3K9me3 both enriched at nuc 1, but whereas H3K4me3 is enriched at nuc 2 on high expression genes, H3K9me3 is the opossite.
+
 MNase digested ChIP-seq improves resolution over sonicated ChIP-seq
 MNase digested ChIP-seq are coherent with sonicated ChIP-seq
 
