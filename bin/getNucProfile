@@ -7,6 +7,7 @@ from scipy import signal
 from scipy.signal import argrelmax
 from scipy.cluster.vq import kmeans2
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.ticker import MultipleLocator
 ###########################################################
 def getParser():
 	parser = argparse.ArgumentParser(description='Generate normalized enrichment per nucleosome (signal counts per nucleosome divided by expected counts given a control).')
@@ -96,12 +97,12 @@ def main():
 		if plotHM=="true":
 
 			nRows,nCols=coverageMatrix.shape
-			cols = range(0,nCols,nCols/20)
+			cols = range(0,nCols,nCols/100)
 			kclusters=8
-			centroids, clusters = kmeans2(coverageMatrix[:,cols],kclusters,iter=30,thresh=1e-06)
+			centroids, clusters = kmeans2(coverageMatrix[:,cols],kclusters,iter=100,thresh=1e-06)
 			clustersSorted = numpy.argsort(clusters)
 			upp_percen  = numpy.max( numpy.nanpercentile( coverageMatrix, 99, axis=0 ) )
-			hmAx[idx].imshow(coverageMatrix[clustersSorted,:],interpolation='gaussian', vmax=upp_percen,extent=[-halfwinwidth,halfwinwidth,8000,0])
+			hm = hmAx[idx].imshow(coverageMatrix[clustersSorted,:],interpolation='gaussian', vmax=upp_percen,extent=[-halfwinwidth,halfwinwidth,8000,0])
 			hmAx[idx].set_title(label)
 			if idx==0: hmAx[idx].set_ylabel('Genes',fontsize=5)
 			hmAx[idx].set_xlabel('Distance to TSS (5\' $\mapsto$ 3\')',fontsize=5)

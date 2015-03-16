@@ -1,7 +1,7 @@
-.. coverage_exons::
+.. _coverage_exons:
 
-Coverage on exons
-=================
+Figures: Coverage on exons
+==========================
 
 Here we computed the coverage of MNase and histone marks only on internal exons. By avoiding the first and last exons of each transcript, we eliminated artifacts due to position-specific regulatory functions.
 

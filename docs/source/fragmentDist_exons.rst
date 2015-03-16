@@ -1,5 +1,7 @@
-Fragment distribution around exons
-==================================
+.. _fragmentDist_exons:
+
+Figures: Fragment distribution around exons
+===========================================
 
 .. toctree::
 

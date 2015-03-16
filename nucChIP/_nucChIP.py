@@ -211,6 +211,25 @@ def getMaxRegion(nucl,iv):
 			maxRegion=nucl_id
 	return maxRegion
 #########################################################################
+def getMaxRegion2(nuc,iv):
+	# Gets the nuceosome ID with the closest distance to the middle point of the current read (iv)
+
+	# Dictionary, keys: nuceosome iv; values: length of nucleosome iv
+	minDistance=1000000 # dummy initialization
+	maxRegion=None
+	read_midpoint=numpy.mean([iv.start,iv.end])
+	for nuc_iv, nuc_ids in nuc[iv].steps():
+		length=abs(nuc_iv.end - nuc_iv.start)
+		for nuc_id in nuc_ids:
+			if nuc_id == None: continue
+			nuc_chrom, nuc_start, nuc_end = nuc_id.split("_")
+			nuc_midpoint = numpy.mean([int(nuc_start),int(nuc_end)])
+			distance = abs(read_midpoint-nuc_midpoint)
+			if distance < minDistance:
+				maxRegion=nuc_id
+				minDistance = distance
+	return maxRegion
+#########################################################################
 def getCounts(avrLength,nucl,bamName,extension,lower,upper):
 	# Counts the number of reads overlapping each nucleosome 
 	bamFile = pysam.Samfile( bamName, 'rb')
@@ -238,7 +257,9 @@ def getCounts(avrLength,nucl,bamName,extension,lower,upper):
 		end = midpoint + extension
 		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
 		# Get ID of the largest region overlapping iv	
-		maxRegion=getMaxRegion(nucl,iv)
+		#maxRegion=getMaxRegion(nucl,iv)
+		## consider using getMaxRegion2 instead
+		maxRegion=getMaxRegion2(nucl,iv)
 		# Count the read only in the nucleosome with the largest overlap
 		if maxRegion!=None and maxRegion in counts:
 			counts[maxRegion] += 1

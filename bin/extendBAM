@@ -1,0 +1,40 @@
+#!/usr/bin/env python
+import argparse, sys, pysam
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Extend fragment length of a given BAM file.')
+	parser.add_argument('-extension'   , type=int,   dest="extension",help="INT. The amoung of bases to be added to the fragment lengths.")
+	parser.add_argument('-bam'   , type=str,   dest="bam",help="BAM file. Name of input BAM file.")
+	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix for the oput file which is names PREFIX.extended.bam")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args	  = getParser().parse_args()
+	bamName   = args.bam
+	extension = args.extension
+	prefix    = args.prefix
+
+	bamFile = pysam.Samfile(bamName,'rb')
+	out = pysam.Samfile(prefix+".extended.bam",'wb',template=bamFile)
+	
+	for almnt in bamFile.fetch():
+		if almnt.is_unmapped or not(almnt.is_proper_pair) : continue
+
+		if almnt.is_reverse:
+			almnt.pos = almnt.pos + extension/2
+		else:	
+			almnt.pos = almnt.pos - extension/2
+		almnt.cigar = [( 0, abs(almnt.qend-almnt.qstart) + extension/2 )]
+		almnt.tlen = almnt.tlen + extension
+
+		out.write(almnt)
+	
+	out.close()
+	bamFile.close()
+################################################################
+if __name__ == '__main__':
+	main()

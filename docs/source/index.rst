@@ -17,11 +17,12 @@ Contents:
   
    exampleCase
 
-   genomeWide_fragDist
-   
-   normalization
 
-   countsPerNuc
+   fragmentSizes
+
+   nucPositions
+
+   normalization
 
    coverage_tss
 
@@ -31,6 +32,11 @@ Contents:
 
    fragmentDist_exons
 
+   countsPerNuc
+   
+   manuscript
+
+   figures
 
    commandLineTools
 

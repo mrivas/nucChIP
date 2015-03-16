@@ -1,5 +1,7 @@
-Fragment distribution around TSS
-================================
+.. _fragmentDist_tss:
+
+Figures: Fragment distribution around TSS
+=========================================
 
 .. toctree::
 

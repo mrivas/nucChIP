@@ -1,7 +1,7 @@
-.. countsPerNuc::
+.. _countsPerNuc:
 
-Counts per nucleosome on canonical nucleosomes around AS exons
-==============================================================
+Figures: Counts per nucleosome on canonical nucleosomes around AS exons
+=======================================================================
 
 We counted the number of MNase ChIP-seq reads overlapping nucleosomes on three classes of exons: spliced-in, spliced-out, and constitutively expressed. For each set we look for nucleosomes overlapping 2000 bp windows center on either the 5 or 3 prime end of each exon.
 

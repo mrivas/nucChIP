@@ -75,16 +75,10 @@ As shown in Figure :num:`#fig-width`, the nucleosome's widths peaks at ~75 nt, w
 .. _fig-width:
 
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/hist_width.svg
-   :width: 50%
-
-   Distribution of nucleosomes' 'widths'. In read, subset of high quality nucleosome (p-values <= 0.05).
-
-.. _fig-dist:
-
+   :width: 45%
 .. figure:: https://132.239.135.28/public/nucChIP/files/exampleCase/hist_dist.svg
-   :width: 50%
-
-   Distribution of distances between adjacent nucleosomes.
+   :width: 45%
+Figure 1: Distribution of nucleosomes' 'widths' and distances between adjacent nucleosomes.
 
 
 Reproducibility
