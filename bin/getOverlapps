@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+import argparse, sys, numpy, itertools
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Compute the number of enriched regions between two files.')
+	parser.add_argument('-conf',type=str,dest="conf",help="TXT file. Configuration file.")
+	parser.add_argument('-control',type=str,dest="control",help="BED file. Control counts.")
+	parser.add_argument('-prefix',type=str,dest="prefix",help="STR. Prefix of output file.")
+	
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+##########################################################
+def getUpper( upperFile ):
+	upper = {}
+	for row,line in enumerate(open(upperFile,"r")):
+		if row==0: continue #skip header
+		n,mu,upper_value = line.strip().split("\t")[0:3]
+		upper[int(n)] = int(upper_value)
+	return upper
+###########################################################
+def main():
+	args = getParser().parse_args()
+	confFile    = args.conf
+	controlFile = args.control
+	prefix  = args.prefix
+	####################################################
+	# Excecution
+	nCols=0
+	for line in open(confFile,"r"): nCols+=1
+	
+	control_counts, coords = [], []
+	for nRows,line in enumerate(open(controlFile,"r")): 
+		line = line.strip().split("\t")
+		if nRows==0: continue # skip header line
+		control_count=int( line[-1] )
+		control_counts.append(control_count)
+		
+		coord = "_".join(map( str,line[0:3] ))
+		coords.append(coord)
+    
+	enrichmentMatrix=numpy.zeros((nRows,nCols))
+
+	names = []
+	for col, line in enumerate(open(confFile,"r")):
+		line = line.strip().split("\t")
+		signalFile = line[0]
+		upperFile   = line[1]
+		names.append( line[2] )
+		
+		upper = getUpper(upperFile)
+		
+		for row,sLine in enumerate(open(signalFile,"r")):
+			if row==0: continue # skip header line
+			s=sLine.strip().split("\t")[-1]
+			if not control_counts[row-1] in upper: continue # skip outlier
+			if int(s) >= upper[control_counts[row-1]]:
+				enrichmentMatrix[row-1,col]=1
+
+	#################################################3
+	# Compute overlaps
+	cases = list(itertools.product([0, 1], repeat=nCols))	
+	tmp=[]
+	for case in cases:
+		tmp.append( [x for x in case] )
+	cases = tmp
+	sequence = []
+	for i in range(nCols):
+		sequence.append( pow(2,i+1) )
+	sequence = numpy.array(sequence)
+	# Save cases explanation
+	out=open(prefix+".flags_summary.bed","w")
+	names += ["flag"]
+	print >>out, "\t".join(map(str,names))
+	for case in cases:
+		flag   = sum( pow( sequence, numpy.array(case) ) )
+		case += [flag]
+		print >>out, "\t".join(map(str,case))
+	out.close()
+	# Save results to file
+	out=open(prefix+".enrichment_flags.bed","w")
+	for row in range(nRows):
+		flag   = sum( pow( sequence, enrichmentMatrix[row,:] ) )
+		output = coords[row].split("_")
+		output += [ flag ]
+		print >>out, "\t".join(map(str,output))
+	out.close()
+################################################################
+if __name__ == '__main__':
+	main()

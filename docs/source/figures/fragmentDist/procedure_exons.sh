@@ -52,7 +52,7 @@ for file in $( ls /data2/rivasas2/singleNucleosome/secondBatch/v-plots/AS_exons/
 	
 	ln -s $file .
 	file_name=$(echo $file | awk '{n=split($0,a,"/");print a[n]}')
-	echo ".. image:: https://132.239.135.28/public/nucChIP/files/fragmentDist/${file_name}" >> ${hist}_fragmentDist_exons.rst
+	echo ".. image:: https://132.239.135.28/public/nucChIP/files/fragmentDist/exons/${file_name}" >> ${hist}_fragmentDist_exons.rst
 	echo "   :width: 45%" >> ${hist}_fragmentDist_exons.rst
 
 done; done

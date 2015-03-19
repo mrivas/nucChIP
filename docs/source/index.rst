@@ -15,28 +15,13 @@ Contents:
 
    installation
   
-   exampleCase
-
-
-   fragmentSizes
-
-   nucPositions
-
-   normalization
-
-   coverage_tss
-
-   coverage_exons
-
-   fragmentDist_tss
-
-   fragmentDist_exons
-
-   countsPerNuc
-   
    manuscript
 
    figures
+
+   supplementaryData
+
+   exampleCase
 
    commandLineTools
 

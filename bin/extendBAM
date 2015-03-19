@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-import argparse, sys, pysam
+import argparse, sys, pysam, numpy
+numpy.random.seed(seed=1)
 ###########################################################
 def getParser():
-	parser = argparse.ArgumentParser(description='Extend fragment length of a given BAM file.')
-	parser.add_argument('-extension'   , type=int,   dest="extension",help="INT. The amoung of bases to be added to the fragment lengths.")
+	parser = argparse.ArgumentParser(description="Extend fragment length of a given BAM file. The amount of bases to be added to the fragment lengths. If none provided it uses a normal distribution with mean 400 and sd 150 to draw fragments length.")
 	parser.add_argument('-bam'   , type=str,   dest="bam",help="BAM file. Name of input BAM file.")
 	parser.add_argument('-prefix'   , type=str,   dest="prefix",help="STR. Prefix for the oput file which is names PREFIX.extended.bam")
 
@@ -15,23 +15,34 @@ def getParser():
 def main():
 	args	  = getParser().parse_args()
 	bamName   = args.bam
-	extension = args.extension
 	prefix    = args.prefix
 
 	bamFile = pysam.Samfile(bamName,'rb')
 	out = pysam.Samfile(prefix+".extended.bam",'wb',template=bamFile)
 	
 	for almnt in bamFile.fetch():
-		if almnt.is_unmapped or not(almnt.is_proper_pair) : continue
+		if almnt.is_unmapped or not(almnt.is_proper_pair) or not(almnt.is_read1) or almnt.mapq<20: continue
 
-		if almnt.is_reverse:
-			almnt.pos = almnt.pos + extension/2
-		else:	
-			almnt.pos = almnt.pos - extension/2
-		almnt.cigar = [( 0, abs(almnt.qend-almnt.qstart) + extension/2 )]
-		almnt.tlen = almnt.tlen + extension
+		a = pysam.AlignedRead()
+		
+		extension = numpy.max([numpy.random.normal(400,150),150])
+		if numpy.random.rand()>=0.5:
+			a.pos = max(0, almnt.pos - round( (extension - almnt.tlen )/2 ) )
+		else:
+			a.pos = max(0, almnt.pos + round( (extension + almnt.tlen )/2 -150 ) )
+		
+		a.qname = almnt.qname
+		a.flag  = 0
+		a.rname = almnt.rname
+		a.mapq  = 254
+		a.cigar = [(0,150)]
+		a.mrnm  = -1
+		a.mpos  = -1
+		a.tlen  = 150
+		a.setTag('AL', 150, value_type='i', replace=True)
+		
+		out.write(a)
 
-		out.write(almnt)
 	
 	out.close()
 	bamFile.close()

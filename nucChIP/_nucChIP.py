@@ -198,6 +198,7 @@ def getMaxRegion(nucl,iv):
 		length=abs(nucl_iv.end - nucl_iv.start)
 		for nucl_id in nucl_ids:
 			if nucl_id == None: continue
+			# WARNING, previous line may be redundant
 			if nucl_id in regionLength:
 				regionLength[nucl_id] += length
 			else:
@@ -219,9 +220,7 @@ def getMaxRegion2(nuc,iv):
 	maxRegion=None
 	read_midpoint=numpy.mean([iv.start,iv.end])
 	for nuc_iv, nuc_ids in nuc[iv].steps():
-		length=abs(nuc_iv.end - nuc_iv.start)
 		for nuc_id in nuc_ids:
-			if nuc_id == None: continue
 			nuc_chrom, nuc_start, nuc_end = nuc_id.split("_")
 			nuc_midpoint = numpy.mean([int(nuc_start),int(nuc_end)])
 			distance = abs(read_midpoint-nuc_midpoint)
