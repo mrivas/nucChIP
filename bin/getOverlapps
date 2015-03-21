@@ -19,6 +19,20 @@ def getUpper( upperFile ):
 		n,mu,upper_value = line.strip().split("\t")[0:3]
 		upper[int(n)] = int(upper_value)
 	return upper
+#################################################################
+def getNetProb(casesMatrix,case,probs):
+	nCols=probs.shape[1]
+	rows=( numpy.sum(casesMatrix*case==case,axis=1 )==nCols )	
+	subMatrix = casesMatrix[rows,:]
+	
+	signs = pow(-1,numpy.sum( subMatrix, axis=1)%2)
+	net_probs = []
+	for i in range(subMatrix.shape[0]):
+		row=subMatrix[i,:]
+		net_prob = numpy.product( (row*probs)[0][row!=0]  )
+		net_probs.append( net_prob )
+	net_prob = numpy.sum(net_probs*signs)
+	return abs(net_prob)
 ###########################################################
 def main():
 	args = getParser().parse_args()
@@ -61,31 +75,49 @@ def main():
 	#################################################3
 	# Compute overlaps
 	cases = list(itertools.product([0, 1], repeat=nCols))	
-	tmp=[]
-	for case in cases:
-		tmp.append( [x for x in case] )
-	cases = tmp
+	casesMatrix=numpy.zeros( (pow(2,nCols),nCols) )
+	for row,case in enumerate(cases):
+		tmp =  [x for x in case]
+		casesMatrix[row,:] = tmp
 	sequence = []
 	for i in range(nCols):
 		sequence.append( pow(2,i+1) )
 	sequence = numpy.array(sequence)
-	# Save cases explanation
-	out=open(prefix+".flags_summary.bed","w")
-	names += ["flag"]
-	print >>out, "\t".join(map(str,names))
-	for case in cases:
-		flag   = sum( pow( sequence, numpy.array(case) ) )
-		case += [flag]
-		print >>out, "\t".join(map(str,case))
-	out.close()
 	# Save results to file
+	flag_counts={}
 	out=open(prefix+".enrichment_flags.bed","w")
 	for row in range(nRows):
 		flag   = sum( pow( sequence, enrichmentMatrix[row,:] ) )
+		if flag in flag_counts:
+			flag_counts[ flag ] += 1
+		else:
+			flag_counts[ flag ] = 1
 		output = coords[row].split("_")
 		output += [ flag ]
 		print >>out, "\t".join(map(str,output))
 	out.close()
+	# Get probabilities and total counts
+	all_counts=[]
+	for row in range( pow(2,nCols) ):
+		flag   = sum( pow( sequence, casesMatrix[row,:] ) )
+		all_counts.append(flag_counts[flag])
+	probs = numpy.array( numpy.matrix(all_counts) * casesMatrix )
+	total_counts = sum(all_counts)
+	probs = probs/ total_counts
+	# Save cases explanation an summary
+	out=open(prefix+".flags_summary.bed","w")
+	names += ["flag","Counts","Random_counts"]
+	print >>out, "\t".join(map(str,names))
+	for row in range( pow(2,nCols) ):
+		case = casesMatrix[row,:]
+		flag   = sum( pow( sequence, case ) )
+		net_prob = getNetProb(casesMatrix,case,probs)
+		random_count = total_counts*net_prob
+		output = list(case)
+		output += [flag, flag_counts[flag],random_count]
+		print >>out, "\t".join(map(str,output))
+	out.close()
+
 ################################################################
 if __name__ == '__main__':
 	main()

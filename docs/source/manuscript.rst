@@ -4,6 +4,36 @@ Manuscript
 Introduction
 ------------
 
+Explain alternative splicing, why is important
+
+How it's control -> we need to learn more about the genome
+
+What are we doing here, high resolution epigenome
+
+What have we found?
+
+Alternative splicing is a mechanism that produces diverse readouts of a gene. This happens during the translation of the genetics information into messenger RNA, where portions of the RNA sequence are removed, and the remaining sub-sequences are spliced. Variations in the selection of spliced sequences result in alternative versions of the mature messenger RNAs. More than 90% of human genes are subject to this process, and its misregulation is linked to several diseases, including cystic fibrosis, Parkinsonism, and cancer. 
+
+The most common form of alternative splicing is differential inclusion of exons. In eukaryotes, the structure of a typical protein-coding gene is a chain of exons, each flanked by large intronic sequences. Whereas some of these exons are constitutively included in the mature messenger RNA, other are skipped along intronic regions in a tissue or developmental stage-specific manner. The removal of intronic regions and alternatively skipped exons is controlled by the spliceosome, an assembly of five snRNAs and ~300 proteins. The formation of the spliceosome is seeded by trans-acting RNA-binding proteins that recongnize cis-acting elements on the messenger RNA. Still, the assembly of the spliceosome into a catalytic form is also affected by the elongation rate of the nascent RNA (Luco), which in turn are affected by chromatin and epigenetic landscape (Zhou). The role   
+
+
+regulate dby heterogeneous nuclear ribonucleoproteins (hnRNPs) which selectively bind sequences on the nascent RNA (Barash et al. 2010). However, 
+
+
+A mechanism of splicing control based only on RNA sequence features would require extensive regulatory networks to explain the bast repertoire of gene expression patterns observed across time and tissues. DNA methylation and histone marks, on the other hand, are tissue-specific and known to play a role on splicing regulation not only by controlling chromatin accessibility, but also by directly mediating the process of binding of splicing regulators. For instance, Luco et al., (2010)⁠ showed that histone marks H3K36me3 and H3K4me3, promotes and preclude, respectively, the binding of polypyrimidine tract-binding protein (PTB), a splicing silencer, to its exon target. Whereas H3K36me3 helps PTB binding by recruiting the MRG15 intermediary, a chromatin adaptor, H3K4me3 repels MRG15, promoting exon inclusion (Figure 1). Therefore, it is plausible to assume that a model for alternative splicing control should include epigenetic marks (Luco et al. 2011)⁠. An splicing mechanism based on epigenetic marks has the advantage to reduce the complexity of the splicing regulatory  network by limiting the pool of exons that are actually under spliceosome regulation, additionally providing, an orthogonal layer of control for damping of noise signals. Consequently, we hypothesized that the epigenetic patterns set upon exon sequences form a code that regulate the binding of the spliceosome regulators, being this epigenetic splicing code the main mechanism used by the genome to deliver alternative splicing specificity. Assuming that spliceosome components are express ubiquitously, the epigenetic splicing code can be learned at one set of tissues and use to predict alternative splicing on new tissues. 
+
+
+
+
+
+
+
+
+
+
+
+
+
 We have used MNase digested ChIP-seq libraries to produce high definition histone maps to discover the function of H3K4me3 and H3K9me3 on alterntive splicing
 Unlike sonicated ChIP-seq libraries our libraries avoid the overshadow that TSS produces on internal exonic regions.
 This allow us to see for the first time histone modifications at the nucleosome level.
@@ -28,9 +58,10 @@ Nucleosome positions
 
 Unlike our libraries, the MNase data produced by Carone group (:cite:`Carone2014`, 8_mnase ) was not purified against sub-nucleosomal size fragments. After mapping the reads against mouse genome, the MNase data exhibited strong protection of mononucleosome and subnucleosomal size fragments. Its fragments' distribution had several peaks (Figure :num:`#mnase-fragments`), being the highest on the mononucleosomal range (144 bp). 
 
-As we were interested on histone tail marks, we only used reads to the mono-nucleosome range (135-155 bp) to call nucleosome locations. Filtering out reads with mapping qualities below 20, we found 10,468,598 nucleosome locations genome-wide. This amount is coherent with the expected value for the mouse genome. The total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; :cite:`Jiang2009` ) covered approximately 77% of the mouse genome length (2.5 Gb; :cite:`Waterston2002`).
+As we were interested on histone tail marks, we only used reads on the mono-nucleosome range (135-155 bp) to call nucleosome locations. Filtering out reads with mapping qualities below 20, we found 10,468,598 nucleosome locations genome-wide. This amount is coherent with the expected value for the mouse genome: the total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; :cite:`Jiang2009` ) covered approximately 77% of the mouse genome length (2.5 Gb; :cite:`Waterston2002`).
 
 As shown in Figure :num:`#nuc-widths`, the nucleosome's widths peaks at ~75 nt, which is coherent the length used by iNPS to represent the enrichment signals (to improve the signal over background ratio, iNPS reduces each fragment length to 75 (nt) around their midpoint). The sharp peaks is signal that most nucleosomes are well positioned and isolated --not overlapping flanking nucleosomes. On the other hand, the distance between adjacent nucleosomes (Figure :num:`#nuc-dists`) peaks at ~ 180 (nt), being this coherent with the typical combined length of nucleosomal (~147 nt) and linker DNA segments (~38 nt; :cite:`Jiang2009`).
+
 
 Histone mapping at nucleosome resolution
 ****************************************
