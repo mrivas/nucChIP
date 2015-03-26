@@ -482,8 +482,8 @@ using the expectation-maximization algorithm.
    
    Mixture model of n1_H3K4me3.
 
-Bibliography
-============
-
-.. bibliography:: Mendeley.bib
-   :style: plain
+.. Bibliography
+.. ============
+.. 
+.. .. bibliography:: Mendeley.bib
+..    :style: plain

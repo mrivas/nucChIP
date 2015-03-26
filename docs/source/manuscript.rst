@@ -4,48 +4,67 @@ Manuscript
 Introduction
 ------------
 
-Explain alternative splicing, why is important
+Alternative splicing is a mechanism that produces diverse transcripts of a gene, being exon skipping its most common form. In eukaryotes, the structure of a typical protein-coding gene is a chain of exons, each flanked by large intronic sequences. Whereas some of these exons are constitutively included in the mature messenger RNAs, other are removed along intronic regions in a temporal and spatial-specific manner by the spliceosome: an arrange of five snRNAs and ~300 proteins :cite:`Hoskins2012`. Alternative splicing affects more than 90% of human genes :cite:`Pan2008`, and its misregulation is linked to several diseases :cite:`Wang2007` :cite:`Xiong2014`.
 
-How it's control -> we need to learn more about the genome
+The spliceosome delivers specificity by trans-acting RNA-binding proteins that recognize cis-acting elements on the messenger RNA :cite:`Chen2009` :cite:`Barash2010`. However, in recent years researchers have started to paint a picture where local histone modifications constitute an additional regulatory layer :cite:`Luco2011` :cite:`Zhou2014`. One mechanism involves modulation of mRNA elongation rate by local chromatin state. Since most eukaryotes genes are spliced cotranscriptionally :cite:`CarrilloOesterreich2010`, faster elongation rates hurdle the formation of the spliceosome by inducing secondary structures on the nascent RNA :cite:`Buratti2004` and reducing the time-window for the recognition of splicing signals :cite:`DelaMata2003`. Interestingly,  nucleosomes positioning correlates well with exon boundaries :cite:`Schwartz2009` :cite:`Tilgner2009`, and acetylation of their histones tails (which ease Poll II passage by destabilized DNA-histone interactions) improves inclusion of alternatively spliced exons :cite:`Li2007`. A more direct involvement of histone marks, on the other hand, have come from gene-specific studies showing that the recruitment of core spliceosome components and splicing regulators is mediated by chromatin remodeling proteins that bind to specific histone marks :cite:`Sims2007` :cite:`Batsche2006` :cite:`Saint-Andre2011` :cite:`Luco2010`.
 
-What are we doing here, high resolution epigenome
-
-What have we found?
-
-Alternative splicing is a mechanism that produces diverse transcripts of a gene. This happens during the translation of the genetics information into messenger RNA, where portions of the RNA sequence are removed, and the remaining sub-sequences are spliced. Variations in this process result in alternative readouts of the gene. More than 90% of human genes are subject to alternative splicing, and its misregulation is linked to several diseases, including cystic fibrosis, Parkinsonism, and cancer. 
-
-The most common form of alternative splicing is differential inclusion of exons. In eukaryotes, the structure of a typical protein-coding gene is a chain of exons, each flanked by large intronic sequences. Whereas some of these exons are constitutively included in the mature messenger RNA, other are skipped along intronic regions in a tissue or developmental stage-specific manner. The removal of intronic regions and alternatively skipped exons is controlled by the spliceosome, an arrange of five snRNAs and ~300 proteins. The formation of the spliceosome is seeded by trans-acting RNA-binding proteins that recognize cis-acting elements on the messenger RNA. From there, the spliceosome outgrow into a catalytic assembly through a process that is influenced by the local epigenetic landscape in two ways. On one hand, during transcription post-trancriptional histone modifications, such as acetylation, can ease Poll II passage over nucleosomes by destabilizing DNA-histone interactions. Since most eukaryotes genes are spliced cotranscriptionally, faster elongation rates hurdle the formation of the spliceosome by inducing secondary structures on the nascent RNA (Luco) and providing less time for the splicing machinery to recognize splicing signals. On the other hand, core spliceosome components and splicing regulators are recruited by chromatin remodeling proteins that bind specific histone marks cotranscriptionally.
-
-Several studies have consistently showed how alternative splicing is affected by sequences features, such as cis-acting RNA sequence motifs, exon/intron length, propensity to form secondary, and mutations on the DNA sequence. Efforts to bring into the picture the role of chromatin and histone modifications include 
-
-equences to atract the splicing machinery has been well studied. As for the epigenome there is clear evidence relation histone landscape and exon definition, but not of the role of each histone mark. The main gun to explore the effect of epignome on alternative splicing is ChIP-seq. However, association studies are dampened by low resoultion of the data. For instance, the high coverage of H3K4me3 at TSS of expressed genes overshadows it study on downstream exons, even when discarding exon 1. Here, we used a protocol to produce high resoulution ChIP-seq maps of the epigenome. 
-
-
-We have used MNase digested ChIP-seq libraries to produce high definition histone maps to discover the function of H3K4me3 and H3K9me3 on alterntive splicing
-Unlike sonicated ChIP-seq libraries our libraries avoid the overshadow that TSS produces on internal exonic regions.
-This allow us to see for the first time histone modifications at the nucleosome level.
-
-There is evidence for the involvement of H3K4me3 and H3K9me3 as regulators of alternative splicing. However, until now there isn't a genome-wide study of this effect. Here, we are doing so.
-
-There is evidence of a sequence code for alternative splicing. However, unlike sequence, alternative splicing is tissue specific. On the other hand, the epigenome is reversible and tissue specific, being a natural candidate for splicing code.
+Using ChIP-seq data to correlate chromatin states to splicing outputs, several studies (:cite:`Ernst2010` :cite:`Ernst2011` :cite:`Dhami2010` :cite:`Enroth2012` :cite:`Pan2008` :cite:`Shindo2013` :cite:`Zhou2012` :cite:`Podlaha2014`) have reflected the role of histone marks on alternative splicing at genome-wide level. However, a main limiting factor of these studies has been the resolution of the ChIP-seq libraries. Typically, ChIP-seq protocols produces DNA fragments sizes ranging from ~200 to ~700 bp :cite:`Zhang2011`. This allows the characterization histone marks over regions spanning several nucleosomes, but it's not suitable for the mapping of chromatin state at individual nucleosomes. This is important, since, on average, exons not only overlap nucleosomes :cite:`Schwartz2009` :cite:`Tilgner2009`, but their typical length is similar to the number of DNA base pairs (147) needed to wrap a single nucleosome :cite:`Luco2011`. To overcome this problem, here, we used a high resolution paired-end ChIP-seq protocol to produced histone mark maps at single nucleosome resolution. Along with gene expression data and newly developed computational methods, we found clear correlations between enrichment of H3K4me3 and H3K27Ac on spliced-in over spliced-out exons, and weaker correlations between H3K9me3 enrichment and exon inclusion of alternatively skipped exons. Using a publicly available MNase-seq library we found no important difference in nucleosome enrichment between spliced-in, spliced-out and constitutively expressed exons.
 
 We found that:
+1. Nucleosomes are not differentially distributed between spliced-in and spliced-out exons.
 1. H3K4me3 is enriched on included exons, being its enrichment decrecing from constitutively expressed, to spliced-in, and to spliced-out.
 2. H3K9me3 differentiate aternatively spliced exons from constitutive exons. Using constitytive exons as reference we found that on alternative spliced-exons, enrichment and depletion of H3K9me3 produces exon inclussion and exclusion, respectively.
 3. MNase data shows that there is extra-spacing before and after exons, must likely to give splice for the splicing machinery to bind the DNA sequence
 4. Compared to constitutive exons, nucleosomes on alternatively spliced exons are weakly bound to the genome. This is coherent with the kinetic theory of alternative splicing.
 5. There isn't evidence of proteins binding intron-exons junctions. The splicesosome must likely binds the mRNA, not the DNA.
 
-
 Results
 -------
+
+Histone maps at single-nucleosome resolution
+********************************************
+
+.. figure::
+.. image:: https://132.239.135.28/public/nucChIP/files/cartoon/cartoon.svg
+   :width: 65%
+Figure 1: Mapping of chromatin states at single nucleosome resolution. (A) Chromatin was digested by MNase to produce footprints in the nucleosomal range (~147 bp). The digested chromatin was then follow one of two paths. On the first (B), immunoprecipitation is used to filter histones having the marks: H3K4me3, H3K27Ac, or H3K9me3. The filtered fragments, are then (D) mapped against mouse genome to reveal the histone footprints. On the other path, (C) the digested chromatin fragments are directly mapped against the genome to detect the nucleosomes' footprints, which are eventually used (E) to detect the nucleosome positions (iNPs). At the final step (F), we counted the number of histone and nucleosome footprints over each nucleosome location, defined as +/-75 bp area around a nucleosome position. The histone counts are normalized (see Methods) over the nucleosome counts to correct for possible position-specific biases in the sampling process.
+
 
 Nucleosome positions
 ********************
 
-Unlike our libraries, the MNase data produced by Carone group (:cite:`Carone2014`, 8_mnase ) was not purified against sub-nucleosomal size fragments. After mapping the reads against mouse genome, the MNase data exhibited strong protection of mononucleosome and subnucleosomal size fragments. Its fragments' distribution had several peaks (Figure :num:`#mnase-fragments`), being the highest on the mononucleosomal range (144 bp). 
+We compute histone enrichment at single nucleosomes
+1. Map MNase-seq and MNChIP-seq against mm9
+1. We call nucleosomes positions from nucleosome footprints
+2. We counted histone and nucleosome footprints per nucleosome
+3. We corrected MNase cofounding effect
+4. We used RNA-seq to classify exons as spliced-in, spliced-out and constitutive. On each class we computed histone enrichment.
+4. We found differential enrichment between spliced-in, spliced, out and constitutive among H3K4me3 and H3K27Ac. H3K9me3 didn't show strong differences
 
-As we were interested on histone tail marks, we only used reads on the mono-nucleosome range (135-155 bp) to call nucleosome locations. Filtering out reads with mapping qualities below 20, we found 10,468,598 nucleosome locations genome-wide. This amount is coherent with the expected value for the mouse genome: the total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; :cite:`Jiang2009` ) covered approximately 77% of the mouse genome length (2.5 Gb; :cite:`Waterston2002`).
+Figures:
+Cartoon
+Fragment size distributions
+Nucleosomes locations
+Fragment sizes on exons (good distribution of sizes)
+Expected values
+Enrichment on exons
+Genome browser example to validate our results on TSS and exons
+Bootstrap distributions of test-statistics
+P-values among distributions
+
+Supplemental figures:
+Overlapp analysis among H3K4me3 and H3K27Ac (Venn diagrams)
+
+We surveyed the chromatin structure of constitutively and alternatively spliced exon on mouse embryonic stem cells. Using MNase-seq and MNChIP-seq, we generated single-nucleosome resolution maps of three histone marks: H3K3me3 (two replicates), H3K27Ac (two replicates), and H3K9me3. 
+To determine nucleosomes' footprints, we analyzed MNase-seq data from Carone et al :cite:`Carone2014` (un-spooned data). After mapping the reads against the mouse genome, all MNase-seq and MNChIP-seq libraries exhibited strong protection of mononucleosome size fragments, with main fragment value ranging from 144 to 167 bp (supplementary Figure 1). The MNase-seq data also showed protection of sub-nucleosomal size fragments as in Carone's et al protocol :cite:`Carone2014` there wasn't filtration against sub-nucleosomal fragments. In concordance, we only used MNase-seq reads on the mono-nucleosome range (135-155 bp) as nucleosome's footprints.
+
+We used iNPs over the mono-nucleosomal MNase-seq reads to determine the staring and ending coordenates of each nucleosome position. We found 10,468,598 nucleosome locations genome-wide. This amount is coherent with the expected value given the size of mouse genome (Figure 2): the total number of nucleosomes times the combined length of each nucleosomal DNA (147 nt) and its linker sequence (38 nt as the typical distance between neighbors nucleosomes; :cite:`Jiang2009` ) covered approximately 77% of the mouse genome length (2.5 Gb; :cite:`Waterston2002`).
+
+Since position-specific properties of the genome, such as chromatin compactness or GC content, can produce sampling biases of the histone fragments (see Methods), we developed a normalization method. It starts with the MNase-seq and  MNChIP-seq fragments aligned against the mouse genome to reveal the nucleosome (:math:`n`) and histone (:math:`x`) footprints, respectively. Nucleosomes's footprints, then, are used to determine the starting and ending coordinates of each nucleosome (:math:`j`; see Methods). Then, the histone footprints are counted over each nucleosome interval they happen to overlap (:math:`x_j`), likewise are counted the nucleosome footprints (:math:`n_j`). The normalized count of histone footprints per nucleosome (math:`r_j`)  is then computed as the ratio of :math:`x:j` over the expected value of histone footprints (:math:`X`) given :math:`n_j`: 
+
+.. math::
+   
+   r_j = \frac{ x_j } { E(X|n_j) } 
 
 As shown in Figure :num:`#nuc-widths`, the nucleosome's widths peaks at ~75 nt, which is coherent the length used by iNPS to represent the enrichment signals (to improve the signal over background ratio, iNPS reduces each fragment length to 75 (nt) around their midpoint). The sharp peaks is signal that most nucleosomes are well positioned and isolated --not overlapping flanking nucleosomes. On the other hand, the distance between adjacent nucleosomes (Figure :num:`#nuc-dists`) peaks at ~ 180 (nt), being this coherent with the typical combined length of nucleosomal (~147 nt) and linker DNA segments (~38 nt; :cite:`Jiang2009`).
 
@@ -54,8 +73,6 @@ Histone mapping at nucleosome resolution
 ****************************************
 
 We generated high resolution genome-wide histone maps. In our protocol, we used micrococcal nuclease (MNase) digestion to produce ChIP-seq (MNChIP-seq) insert fragments at mono-nucleosome size. To benchmark our results, we focused our analyzes on histone marks with biological functions well characterized. We choose  H3K4me3 (2-replicates), H3K27Ac, and H3K9me3 as their role as activator and represor of gene expression has being well established.
-
-All our libraries resulted in strong protection of mono-nucleosome size fragments (Figures :num:`#n1-h3k4me3-frag`, :num:`#m1-h3k4me3-frag`, :num:`#m1-h3k27ac-frag`, :num:`f9-h3k9me3-frag`). Whereas H3K9me3 fragment sized peaked at 173 nt, the other libraies peaked at around 147 nt. 
 
 Position-specific properties of the genome, such as chromatin compactness or GC content, affect the sampling efficiency of MNase ChIP-seq fragments. This may introduced spurious signals of enrichment as, for instance, some region may appear enriched compared with --otherwise equal-- under-sampled regions. A widely used correction method is to normalized the counts of histone reads by the count of a control library (for instance IgG or MNase). That's, on any given nucleosome, :math:`j`, the number of histone reads, :math:`x_j`, is normalized as the ratio:
 
@@ -196,4 +213,5 @@ Bibliography
 ============
 
 .. bibliography:: Mendeley.bib
+   :cited:
    :style: plain
