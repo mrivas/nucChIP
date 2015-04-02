@@ -89,82 +89,127 @@ def printBED(avrLength,bamName,extension,oFile,lower,upper):
 	out.close()
 	return 1
 #########################################################################
-def printBAM(avrLength,bamName,extension,oFile):
+def printBAM(avrLength,bamName,extension,oFile,lower,upper):
 	# Take reads in BAM format and print them in BED format: chrom start end 
 
-	bamFileRef = pysam.Samfile(bamName,'rb')
-	out = pysam.Samfile(oFile,'wbu',header=bamFileRef.header)
+	bamFile = pysam.Samfile(bamName,'rb')
+	out = pysam.Samfile(oFile,'wb',template=bamFile)
 	
-	bamFile = HTSeq.BAM_Reader(bamName)
-	first,second = None,None
-
 	for almnt in bamFile:
-		# Discard not aligned reads
-		if not almnt.aligned: continue
-		# Pair end reads
-		if almnt.paired_end and almnt.proper_pair and almnt.mate_aligned:
-			if first == None:	
-				first = almnt
-			else: 
-				second = almnt
-				# Check that first and second have same read name
-				if first.read.name != second.read.name:
-					print "Pair names are different"
-					print first.read.name, second.read.name
-					first, second = None, None
-					continue
-				# Define coordenates of new interval
-				start = min(first.iv.start,second.iv.start)
-				end = max(first.iv.end,second.iv.end)
-				midpoint = round((end+start)/2.0)
-				start = max(0,midpoint -  extension)
-				a = pysam.AlignedRead()
-				a.qname = almnt.read.name
-				a.flag  = 0
-				a.rname = bamFileRef.gettid(iv.chrom)
-				a.pos   = start
-				a.mapq  = 254
-				a.cigar = [(0,2*extension)]
-				a.mrnm  = -1
-				a.mpos  = -1
-#				a.tlen = avrLength
-#				a.seq   = "*"
-#				a.qual  = "*"
-				a.setTag('AL', avrLength, value_type='i', replace=True)
-				out.write(a)
+		# Red filter
+		if avrLength==0: # Paired-end
+			if almnt.is_unmapped or not(almnt.is_read1) or not(almnt.is_proper_pair) or abs(almnt.isize)>upper or abs(almnt.isize)<lower or almnt.mapq<20: continue
+		else: # single-end
+			if almnt.is_unmapped or almnt.mapq<20: continue
 
-				# Reset first and second as None
-				first = None
-				second = None
-		# Orphan reads (only one read in a pair is aligned), or single-end reads
-		elif not almnt.mate_aligned:
-			# Define coordenates of new interval
-			iv = almnt.iv
-			if iv.strand == "+":
-				start = iv.start
-				end   = iv.start + avrLength
-			elif iv.strand == "-":
-				end = iv.end
-				start = iv.end - avrLength
-			midpoint=round((end+start)/2.0)
-			start = max(0,midpoint - extension)
-			a = pysam.AlignedRead()
-			a.qname = almnt.read.name
-			a.flag  = 0
-			a.rname = bamFileRef.gettid(iv.chrom)
-			a.pos   = start
-			a.mapq  = 254
-			a.cigar = [(0,2*extension)]
-			a.mrnm  = -1
-			a.mpos  = -1
-#			a.tlen = avrLength
-#			a.seq   = "*"
-#			a.qual  = "*"
-			a.setTag('AL', avrLength, value_type='i', replace=True)
-			out.write(a)
-	bamFileRef.close()
+		if avrLength==0: # Paired-end
+			fragLength = abs(almnt.isize)
+		else:           # if Single-end
+			fragLength = avrLength
+		if not(almnt.is_reverse):
+			almntStart = almnt.pos
+			almntEnd   = almnt.pos + fragLength
+		else:
+			almntStart = almnt.aend - fragLength
+			almntEnd   = almnt.aend
+		
+		midpoint=numpy.mean([almntStart,almntEnd])
+		start = int( max(midpoint - extension,0) )
+				
+		a = pysam.AlignedRead()
+		a.qname = almnt.qname
+		a.pos   = start
+		a.flag  = 0
+		a.rname = almnt.rname
+		a.mapq  = 254
+		a.cigar = [(0,2*extension)]
+		a.mrnm  = -1
+		a.mpos  = -1
+		a.tlen  = 2*extension
+		a.setTag('AL', 2*extension, value_type='i', replace=True)
+
+		out.write(a)
+
+	bamFile.close()
 	out.close()
 	return 1
+#############################################################################
+####def printBAM(avrLength,bamName,extension,oFile):
+####	# Take reads in BAM format and print them in BED format: chrom start end 
+####
+####	bamFileRef = pysam.Samfile(bamName,'rb')
+####	out = pysam.Samfile(oFile,'wbu',header=bamFileRef.header)
+####	
+####	bamFile = HTSeq.BAM_Reader(bamName)
+####	first,second = None,None
+####
+####	for almnt in bamFile:
+####		# Discard not aligned reads
+####		if not almnt.aligned: continue
+####		# Pair end reads
+####		if almnt.paired_end and almnt.proper_pair and almnt.mate_aligned:
+####			if first == None:	
+####				first = almnt
+####			else: 
+####				second = almnt
+####				# Check that first and second have same read name
+####				if first.read.name != second.read.name:
+####					print "Pair names are different"
+####					print first.read.name, second.read.name
+####					first, second = None, None
+####					continue
+####				# Define coordenates of new interval
+####				start = min(first.iv.start,second.iv.start)
+####				end = max(first.iv.end,second.iv.end)
+####				midpoint = round((end+start)/2.0)
+####				start = max(0,midpoint -  extension)
+####				a = pysam.AlignedRead()
+####				a.qname = almnt.read.name
+####				a.flag  = 0
+####				a.rname = bamFileRef.gettid(iv.chrom)
+####				a.pos   = start
+####				a.mapq  = 254
+####				a.cigar = [(0,2*extension)]
+####				a.mrnm  = -1
+####				a.mpos  = -1
+#####				a.tlen = avrLength
+#####				a.seq   = "*"
+#####				a.qual  = "*"
+####				a.setTag('AL', avrLength, value_type='i', replace=True)
+####				out.write(a)
+####
+####				# Reset first and second as None
+####				first = None
+####				second = None
+####		# Orphan reads (only one read in a pair is aligned), or single-end reads
+####		elif not almnt.mate_aligned:
+####			# Define coordenates of new interval
+####			iv = almnt.iv
+####			if iv.strand == "+":
+####				start = iv.start
+####				end   = iv.start + avrLength
+####			elif iv.strand == "-":
+####				end = iv.end
+####				start = iv.end - avrLength
+####			midpoint=round((end+start)/2.0)
+####			start = max(0,midpoint - extension)
+####			a = pysam.AlignedRead()
+####			a.qname = almnt.read.name
+####			a.flag  = 0
+####			a.rname = bamFileRef.gettid(iv.chrom)
+####			a.pos   = start
+####			a.mapq  = 254
+####			a.cigar = [(0,2*extension)]
+####			a.mrnm  = -1
+####			a.mpos  = -1
+#####			a.tlen = avrLength
+#####			a.seq   = "*"
+#####			a.qual  = "*"
+####			a.setTag('AL', avrLength, value_type='i', replace=True)
+####			out.write(a)
+####	bamFileRef.close()
+####	out.close()
+####	return 1
 #########################################################################
 # getCounts.py
 #########################################################################
@@ -1087,38 +1132,17 @@ def getRatiosPerCanonicalNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,n
 			distances.append(distance)
 			ratios.append(float(ratio))
 		# Fetch nucleosome by canonical positions
-		#ratiosSort, distancesSort  = sortNucs(ratios,distances) 
-		ratiosSort, distancesSort  = sortNucs2(ratios,distances,nucPos,nucLabelsDict) 
+		ratiosSort, distancesSort  = sortNucs(ratios,distances,nucPos,nucLabelsDict) 
 		#for nucleosome in nucPos:
 		for nuc_label in nucLabels:
 			if not( nuc_label in ratiosSort): 
 				exonRatios[nuc_label] += [0]
 			else:
-				exonPositions[nuc_label] += distancesSort[nuc_label]
-				exonRatios[nuc_label] += ratiosSort[nuc_label]
+				exonPositions[nuc_label] += [ numpy.mean( distancesSort[nuc_label] ) ]
+				exonRatios[nuc_label]    += [ numpy.mean( ratiosSort[nuc_label]    ) ]
 	return exonRatios, exonPositions
-################################################################	
-##def sortNucs(counts,distances):
-##	# Sort nucleosomes names by their distances to exon start
-##	counts=[y for (x,y) in sorted(zip(distances,counts))]
-##	distances.sort()
-##	counts=numpy.array(counts)
-##	distances=numpy.array(distances)
-##	# Assign nucl position labels
-##	n=len(distances) # number of elements 
-##	n_neg=sum(distances<0) # number of negative elements
-##	nucLabels=numpy.array( range(-n_neg,n-n_neg) )
-##	nucLabels[nucLabels>=0] += 1
-##	
-##	countsSort = {}
-##	distancesSort = {}
-##	for idx,label in enumerate(nucLabels):	
-##		countsSort[label]    =  counts[idx]
-##		distancesSort[label] =  distances[idx]
-##	# Output results
-##	return countsSort, distancesSort
 ##############################################################	
-def sortNucs2(ratios,distances,nucPos,nucLabelsDict):
+def sortNucs(ratios,distances,nucPos,nucLabelsDict):
 	# Sort nucleosomes names by their distances to exon start
 	ratios=[y for (x,y) in sorted(zip(distances,ratios))]
 	distances.sort()

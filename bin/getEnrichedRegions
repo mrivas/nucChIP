@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+import argparse, sys, numpy, itertools
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Creates bedGraph file with the enriched regions given a signal and control, and expected counts files.')
+	parser.add_argument('-signal',type=str,dest="signal",help="BED file. Signal counts.")
+	parser.add_argument('-control',type=str,dest="control",help="BED file. Control counts.")
+	parser.add_argument('-expV',type=str,dest="expV",help="TXT file. Expected counts.")
+	parser.add_argument('-prefix',type=str,dest="prefix",help="STR. Prefix of output file.")
+	
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+##########################################################
+def getUpper( upperFile ):
+	upper = {}
+	for row,line in enumerate(open(upperFile,"r")):
+		if row==0: continue #skip header
+		n,mu,upper_value = line.strip().split("\t")[0:3]
+		upper[int(n)] = int(upper_value)
+	return upper
+###########################################################
+def main():
+	args = getParser().parse_args()
+	signalFile = args.signal
+	controlFile = args.control
+	expVfile = args.expV
+	prefix  = args.prefix
+	####################################################
+	# Excecution
+	
+	out=open(prefix+".enriched.bedGraph","w")
+	upper = getUpper(expVfile)	
+	nLine = 0
+	with open(controlFile,"r") as control, open(signalFile,"r") as signal:
+		for sLine,cLine in itertools.izip(signal,control):
+			if nLine==0: # skip header line
+				nLine += 1
+				continue
+			sLine = sLine.strip().split("\t")
+			cLine = cLine.strip().split("\t")
+			
+			chrom, start, end = sLine[0:3]
+
+			signal_count=int( sLine[-1] )
+			control_count=int( cLine[-1] )
+			if not control_count in upper: # skip outlier
+				continue
+			if int(signal_count) >= upper[ control_count ]:
+				output=[chrom,start,end,"1000"]
+				print >> out, "\t".join( map(str,output) )
+		
+	out.close()		
+
+################################################################
+if __name__ == '__main__':
+	main()
