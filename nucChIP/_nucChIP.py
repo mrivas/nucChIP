@@ -1100,9 +1100,8 @@ def getRatiosPerCanonicalNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,n
 	for idx,position in enumerate(nucPos):
 		nucLabelsDict[position]=nucLabels[idx]
 	# Initialized nucPositions
-	exonPositions, exonRatios = {}, {}
+	exonRatios = {}
 	for nuc_label in nucLabels: 
-		exonPositions[nuc_label]=[]
 		exonRatios[nuc_label]=[]
 	# Find nuc list per exon
 	for line in open(exonList,"r"):
@@ -1132,15 +1131,14 @@ def getRatiosPerCanonicalNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,n
 			distances.append(distance)
 			ratios.append(float(ratio))
 		# Fetch nucleosome by canonical positions
-		ratiosSort, distancesSort  = sortNucs(ratios,distances,nucPos,nucLabelsDict) 
+		ratiosSort  = sortNucs(ratios,distances,nucPos,nucLabelsDict) 
 		#for nucleosome in nucPos:
 		for nuc_label in nucLabels:
 			if not( nuc_label in ratiosSort): 
 				exonRatios[nuc_label] += [0]
 			else:
-				exonPositions[nuc_label] += [ numpy.mean( distancesSort[nuc_label] ) ]
-				exonRatios[nuc_label]    += [ numpy.mean( ratiosSort[nuc_label]    ) ]
-	return exonRatios, exonPositions
+				exonRatios[nuc_label] += [ ratiosSort[nuc_label] ]
+	return exonRatios
 ##############################################################	
 def sortNucs(ratios,distances,nucPos,nucLabelsDict):
 	# Sort nucleosomes names by their distances to exon start
@@ -1153,16 +1151,18 @@ def sortNucs(ratios,distances,nucPos,nucLabelsDict):
 	distancesSort = {}
 	# Start from the positive distances
 	for idx,distance in enumerate(distances):
+		delta   = numpy.min( abs(nucPos - distance ) )
 		min_idx = numpy.argmin( abs(nucPos - distance) )
 		min_dist = nucPos[min_idx]
 		label = nucLabelsDict[min_dist]
 		if label in distancesSort:
-			distancesSort[ label ] += [ distance ]
-			ratiosSort[ label ]    += [ ratios[idx] ]
+			if delta < distancesSort[label]:
+				distancesSort[ label ] = delta
+				ratiosSort[ label ]    = ratios[idx]
 		else:
-			distancesSort[ label ] = [ distance ]
-			ratiosSort[ label ] = [ ratios[idx] ]
-	return ratiosSort, distancesSort	
+			distancesSort[ label ] = delta
+			ratiosSort[ label ] = ratios[idx]
+	return ratiosSort	
 
 ########################################################################
 # getNucProfile
