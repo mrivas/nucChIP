@@ -52,7 +52,7 @@ def main():
 	nucLabels=numpy.array( range(-n_neg,n-n_neg) )
 	nucLabels[nucLabels>=0] += 1 # [-3,-2,-1,1,2,3,4]
 	# Iterate over lines of confFile
-	resultsPositions, resultsRatios , resultsNames = {},{},[]
+	resultsRatios , resultsNames = {},[]
 	for idx,line in enumerate(open(confFile,"r")):
 		line    = line.strip().split("\t")
 		signalFile = line[0] # counts per nucleosome in BED format
@@ -61,20 +61,15 @@ def main():
 		print "Get nucleosomes of library ", idx
 		nucleosomes_r = nucChIP.getNucRatios(signalFile,controlFile,pvalue,expValues)
 		print "Get list of positions and counts on included exons of library ", idx
-		nucRatios,nucPositions = nucChIP.getRatiosPerCanonicalNuc(exonList,nucleosomes_r,nucPos,halfWin,exon_position,nucLabels)
+		nucRatios = nucChIP.getRatiosPerCanonicalNuc(exonList,nucleosomes_r,nucPos,halfWin,exon_position,nucLabels)
 		# Iterate over nucleosomes: -1, +1, +2, etc	
 		for nuc_label in nucLabels:
-			# nucleosome position
-			positions   = nucPositions[nuc_label]
-			avrPosition = numpy.nanmean(positions)
 			# ratios
 			ratios   = nucRatios[nuc_label]
 			# Store results
 			if nuc_label == nucLabels[0]:
-				resultsPositions[idx]=[avrPosition]
 				resultsRatios[idx]=[ratios]
 			else:
-				resultsPositions[idx].append(avrPosition)
 				resultsRatios[idx].append(ratios)
 
 	# Prepare figure for visualization
@@ -125,18 +120,18 @@ def main():
 	          fancybox=True,ncol=3)
 	pyplot.gcf().subplots_adjust(top=0.8,bottom=0.15)
 	ax.set_xlabel("Average distance (b) to exons "+exon_position+" end")
-	ax.set_ylabel("Bootstrap distribution of \n normalized signal (mean)")
+	ax.set_ylabel("Enrichment signal (mean)")
 	ax.yaxis.grid(True)
 	print "Creating figure"
 	fig.savefig(prefix+"_"+exon_position+".boxplot.svg")
 	######################################################################################
 	# Perform Kolmogorov-Smirnov statistic between any 2 samples
-	fig2, ax2 = pyplot.subplots(1)
+	fig2, ax2 = pyplot.subplots(1,figsize=(6,3))
 	pvalues=numpy.zeros((scipy.misc.comb(3,2),len(nucPos)))
 	# header line
 	row_names=[]
 	for i,j in zip([0,0,1],[1,2,2]):
-		row_names.append( resultsNames[i]+" - "+resultsNames[j] )
+		row_names.append( resultsNames[i]+" vs\n"+resultsNames[j] )
 	col_names=nucLabels
 	# filling
 	row_idx=0
@@ -149,7 +144,7 @@ def main():
 		row_idx += 1
 	# Plot heatmap of pvalues
 	pvalues=-numpy.log(pvalues)
-	hm=ax2.pcolor(pvalues,vmin=0,vmax=290)
+	hm=ax2.pcolor(pvalues,vmin=0,vmax=300)
 
 	out=open(prefix+"_"+exon_position+".pvalues.txt","w")
 	for y in range(pvalues.shape[0])[::-1]: # inverted order to match pcolor upside-down arrangment
@@ -171,7 +166,7 @@ def main():
 
 	ax2.set_xlabel("Nucleosomes around "+exon_position+" end of exons")
 	#ax2.set_ylabel("Pair-wise comparisons among exon types")
-	pyplot.gcf().subplots_adjust(left=0.3)
+	pyplot.gcf().subplots_adjust(left=0.25,bottom=0.15)
 	ax2.yaxis.grid(True)
 	print "Creating pvalues figure"
 	fig2.savefig(prefix+"_"+exon_position+".pvalues.svg")

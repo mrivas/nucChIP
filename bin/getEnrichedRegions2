@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+import argparse, sys, numpy, matplotlib
+matplotlib.use('Agg')
+from matplotlib import pyplot
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Computes the ratios of signal over background at each nucleosome, and outputs the enriched regions (rations >= 95% percentile) as a bedGraph file and svg histogram.')
+	parser.add_argument('-conf',type=str,dest="conf",help="TXT file. First line correspond to the signal counts, remaining lines to the background files. Second column of each line correspond to the library name")
+	parser.add_argument('-prefix',type=str,dest="prefix",help="STR. Prefix of output file.")
+	
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args = getParser().parse_args()
+	conf = args.conf
+	prefix  = args.prefix
+	####################################################
+	# Excecution
+	
+	######################################
+	print "Save counts in a matrix"
+	for nCols,line in enumerate(open(conf,"r")): 
+		File,FileName=line.strip().split("\t")[0:2]
+		if nCols==0:
+			signalFile=File
+			name=FileName
+			nRows=-1 #substracts header line
+			for lineFile in open(signalFile,"r"): nRows+=1
+	nCols+=1
+
+	counts = numpy.zeros((nRows,nCols))
+	ratios = []
+	for col,lineConf in enumerate(open(conf,"r")):
+		lineConf = lineConf.strip().split("\t")
+		File=lineConf[0]
+		
+		for row,line in enumerate(open(File,"r")):
+			if row==0: continue #skip header line
+			line = line.strip().split("\t")
+			count = float(line[-1])
+			counts[row-1,col]=count
+			# If last file, compute ratios
+			if col==(nCols-1):
+				ratios.append( counts[row-1,0] /numpy.sum(counts[row-1,:])) 
+	
+	alpha = numpy.percentile(ratios,95)			
+	########################################################################
+	print "Saving enriched region in bedGraph file"
+	out=open(prefix+".enriched.bedGraph","w")
+	for row,line in enumerate(open(signalFile,"r")):
+		if row==0: continue # skip header line
+		if ratios[row-1]>=alpha:
+			chrom,start,end=line.strip().split("\t")[0:3]
+			print >>out, "\t".join(map(str,[chrom,start,end,"1000"]))
+	out.close()
+	#####################################
+	print "Saving histogram of ratios"
+	upper = numpy.percentile(ratios,99)
+	pyplot.hist(ratios,normed=True,range=(0,upper),alpha=0.5,histtype='stepfilled')
+	pyplot.axvline(alpha,color="red")
+	pyplot.xlabel("Ratios")
+	pyplot.ylabel("Fraction")
+	pyplot.title(name)
+	pyplot.savefig(prefix+".ratios.svg")
+
+################################################################
+if __name__ == '__main__':
+	main()

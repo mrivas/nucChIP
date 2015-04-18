@@ -28,11 +28,13 @@ def main():
 	mu = numpy.mean(lengths)
 	upper = mu + 3*sd 
 	lower = mu - 3*sd
-	pyplot.hist(lengths,normed=True,bins=bins,range=(lower,upper))
-	if title!="none": pyplot.title(title)
-	pyplot.xlabel("Fragment size (nt)")
-	pyplot.ylabel("Fraction of Library")
+	pyplot.hist(lengths,normed=True,bins=bins,range=(lower,upper),alpha=0.5,histtype='stepfilled')
+	fs=17
+	if title!="none": pyplot.title(title,fontsize=fs)
+	pyplot.xlabel("Fragment size (bp)",fontsize=fs)
+	pyplot.ylabel("Fraction",fontsize=fs)
 	pyplot.savefig(prefix+".fragDist.svg")
+	pyplot.tick_params(axis='both', which='both', labelsize=15)
 	pyplot.close()
 
 ################################################################

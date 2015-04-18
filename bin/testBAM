@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+import argparse, sys, pysam
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Extend fragment length of a given BAM file.')
+	parser.add_argument('-bam'   , type=str,   dest="bam",help="BAM file. Name of input BAM file.")
+
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args	  = getParser().parse_args()
+	bamName   = args.bam
+
+	bamFile = pysam.Samfile(bamName,'rb')
+	
+	for almnt in bamFile.fetch():
+		if almnt.is_unmapped or not(almnt.is_proper_pair) : continue
+
+		print almnt.pos, almnt.aend,almnt.qstart, almnt.qend, almnt.isize, almnt.tlen
+	bamFile.close()
+################################################################
+if __name__ == '__main__':
+	main()

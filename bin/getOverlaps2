@@ -1,0 +1,167 @@
+#!/usr/bin/env python
+import argparse, sys, numpy, itertools, matplotlib, HTSeq, pybedtools
+matplotlib.use('Agg')
+from matplotlib_venn import venn3_unweighted
+from matplotlib_venn import venn2_unweighted
+import matplotlib as mpl
+import matplotlib.cm as cm
+from matplotlib import pyplot
+###########################################################
+def getParser():
+	parser = argparse.ArgumentParser(description='Compute the number of enriched regions between two files.')
+	parser.add_argument('-conf',type=str,dest="conf",help="TXT file. Configuration file.")
+	parser.add_argument('-prefix',type=str,dest="prefix",help="STR. Prefix of output file.")
+	
+	if len(sys.argv) == 1:
+		print >> sys.stderr,parser.print_help()
+		exit(0)
+	return parser
+###########################################################
+def main():
+	args = getParser().parse_args()
+	confFile = args.conf
+	prefix   = args.prefix
+	####################################################
+	# Excecution
+	
+	bedFiles,names=[],[]
+	for col, line in enumerate(open(confFile,"r")):
+		line = line.strip().split("\t")
+		bed = pybedtools.BedTool(line[0])
+		bedFiles.append(bed)
+		names.append(line[1])
+	if len(bedFiles)==2:
+		a,b = bedFiles
+		combination = (a-b)
+		counts_10,pvalues_10 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (b-a)
+		counts_01,pvalues_01 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = a.intersect(b,u=True)
+		counts_a11,pvalues_a11 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = b.intersect(a,u=True)
+		counts_b11,pvalues_b11 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+	elif len(bedFiles)==3:
+		a,b,c = bedFiles
+		combination = (a-b-c)
+		counts_100,pvalues_100 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (b-a-c)
+		counts_010,pvalues_010 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (c-a-b)
+		counts_001,pvalues_001 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (a.intersect(b,u=True)-c)
+		counts_a110,pvalues_a110 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (b.intersect(a,u=True)-c)
+		counts_b110,pvalues_b110 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (a.intersect(c,u=True)-b)
+		counts_a101,pvalues_a101 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (c.intersect(a,u=True)-b)
+		counts_c101,pvalues_c101 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (b.intersect(c,u=True)-a)
+		counts_b011,pvalues_b011 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = (c.intersect(b,u=True)-a)
+		counts_c011,pvalues_c011 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = a.intersect(b,u=True).intersect(c,u=True)
+		counts_a111,pvalues_a111 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = b.intersect(a,u=True).intersect(c,u=True)
+		counts_b111,pvalues_b111 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )
+		combination = c.intersect(b,u=True).intersect(a,u=True)
+		counts_c111,pvalues_c111 = combination.count(), numpy.mean( [float(x[6]) for x in combination]  )	
+	
+	#################################################
+	# Print results
+	out = open(prefix+".pvalues.txt","w")
+	output=["index"]
+	for i in range(len(names)): output += [ names[i]+"_counts"]
+	for i in range(len(names)): output += [ names[i]+"_pvalues"]
+	print >> out, "\t".join(map(str,output))
+	
+	if len(bedFiles)==2:
+		output1=[ "10", counts_10 , 0          , pvalues_10 , 0           ]
+		output2=[ "01", 0         , counts_01  , 0          , pvalues_01  ]
+		output3=[ "11", counts_a11, counts_b11, pvalues_a11, pvalues_b11 ]
+		print >>out, "\t".join(map(str,output1))
+		print >>out, "\t".join(map(str,output2))
+		print >>out, "\t".join(map(str,output3))
+	elif len(bedFiles)==3:
+		output1=[ "100", counts_100 , 0          , 0          , pvalues_100  , 0           , 0            ]
+		output2=[ "010", 0          , counts_010 , 0          , 0            , pvalues_010 , 0            ]
+		output3=[ "001", 0          , 0          , counts_001  , 0            , 0           , pvalues_001  ]
+		output4=[ "110", counts_a110, counts_b110, 0          , pvalues_a110 , pvalues_b110, 0            ]
+		output5=[ "101", counts_a101, 0          , counts_c101, pvalues_a101 , 0           , pvalues_c101 ]
+		output6=[ "011", 0          , counts_b011, counts_c011, 0            , pvalues_b011, pvalues_c011 ]
+		output7=[ "111", counts_a111, counts_b111, counts_c111, pvalues_a111 , pvalues_b111, pvalues_c111 ]
+		print >>out, "\t".join(map(str,output1))
+		print >>out, "\t".join(map(str,output2))
+		print >>out, "\t".join(map(str,output3))
+		print >>out, "\t".join(map(str,output4))
+		print >>out, "\t".join(map(str,output5))
+		print >>out, "\t".join(map(str,output6))
+		print >>out, "\t".join(map(str,output7))
+	out.close()
+	
+#	#################################################
+	matplotlib.rcParams.update({'font.size': 11})
+#	# Plot venn diagram for 3 sets
+	if len(bedFiles)==2:	
+		figure, axes = pyplot.subplots(3,1,figsize=(5,8))
+		subsets={\
+		"10":counts_10,\
+		"01":counts_01,\
+		"11":str(counts_a11)+"\n"+str(counts_b11)}
+		v = venn2_unweighted(subsets=subsets, set_labels = names, ax=axes[0])
+		axes[0].set_title("Peaks")
+		
+		subsets={\
+		"10":round(float(counts_10)/a.count()*100,1),\
+		"01":round(float(counts_01)/b.count()*100,1),\
+		"11":str(round(float(counts_a11)/a.count()*100,1))+"\n"+str(round(float(counts_b11)/b.count()*100,1))}
+		v = venn2_unweighted(subsets=subsets, set_labels = names, ax=axes[1])
+		axes[1].set_title("Peaks (%)")
+		
+		subsets={\
+		"10":round(pvalues_10,1),\
+		"01":round(pvalues_01,1),\
+		"11":str(round(pvalues_a11,1))+"\n"+str(round(pvalues_b11,1))}
+		v = venn2_unweighted(subsets=subsets, set_labels = names, ax=axes[2])
+		axes[2].set_title("-log10(p-values)")
+
+		figure.savefig(prefix+".venn.svg")
+	elif len(bedFiles)==3:
+		figure, axes = pyplot.subplots(3,1,figsize=(5,9))
+		subsets={\
+		"100":counts_100,\
+		"010":counts_010,\
+		"001":counts_001,\
+		"110":str(counts_a110)+"\n"+str(counts_b110),\
+		"101":str(counts_a101)+"\n"+str(counts_c101),\
+		"011":str(counts_b011)+"\n"+str(counts_c011),\
+		"111":str(counts_a111)+"\n"+str(counts_b111)+"\n"+str(counts_c111)}
+		v = venn3_unweighted(subsets=subsets, set_labels = names, ax=axes[0])
+		axes[0].set_title("Peaks")
+		
+		subsets={\
+		"100":round(float(counts_100)/a.count()*100,1),\
+		"010":round(float(counts_010)/b.count()*100,1),\
+		"001":round(float(counts_001)/c.count()*100,1),\
+		"110":str(round(float(counts_a110)/a.count()*100,1))+"\n"+str(round(float(counts_b110)/b.count()*100,1)),\
+		"101":str(round(float(counts_a101)/a.count()*100,1))+"\n"+str(round(float(counts_c101)/c.count()*100,1)),\
+		"011":str(round(float(counts_b011)/b.count()*100,1))+"\n"+str(round(float(counts_c011)/c.count()*100,1)),\
+		"111":str(round(float(counts_a111)/a.count()*100,1))+"\n"+str(round(float(counts_b111)/b.count()*100,1))+"\n"+str(round(float(counts_c111)/c.count()*100,1))}
+		v = venn3_unweighted(subsets=subsets, set_labels = names, ax=axes[1])
+		axes[1].set_title("Peaks (%)")
+
+		subsets={\
+		"100":round(pvalues_100,1),\
+		"010":round(pvalues_010,1),\
+		"001":round(pvalues_001,1),\
+		"110":str(round(pvalues_a110,1))+"\n"+str(round(pvalues_b110,1)),\
+		"101":str(round(pvalues_a101,1))+"\n"+str(round(pvalues_c101,1)),\
+		"011":str(round(pvalues_b011,1))+"\n"+str(round(pvalues_c011,1)),\
+		"111":str(round(pvalues_a111,1))+"\n"+str(round(pvalues_b111,1))+"\n"+str(round(pvalues_c111,1))}
+		v = venn3_unweighted(subsets=subsets, set_labels = names, ax=axes[2])
+		axes[2].set_title("-log10(p-values)")
+
+		figure.savefig(prefix+".venn.svg")
+################################################################
+if __name__ == '__main__':
+	main()
