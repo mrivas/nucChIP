@@ -15,15 +15,15 @@ Contents:
 
    installation
   
-   manuscript
-
-   figures
-
-   supplementaryData
-
    exampleCase
 
    commandLineTools
+
+..
+   manuscript
+   figures
+   supplementaryData
+
 
 .. automodule:: _nucChIP
    :members:

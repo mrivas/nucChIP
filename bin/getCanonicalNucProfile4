@@ -110,6 +110,7 @@ def main():
 		legendBars.append( mpatch.Rectangle((0, 0), 1, 1, fc=c) )
 		legendNames.append(name)
 	# Set figure parameters
+	ax.set_ylim(0.7,3.0)
 	ax.set_xlim(-halfWin-75,halfWin+75)
 	ax.set_xticks(nucPos)
 	xtickNames = pyplot.setp(ax, xticklabels= [ '%.1f' % elem for elem in nucPos ] ) 

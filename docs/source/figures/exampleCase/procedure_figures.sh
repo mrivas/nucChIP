@@ -172,3 +172,7 @@
 #for file in /data2/rivasas2/singleNucleosome/secondBatch/nucLocation/8_mnase/*svg; do
 #	ln -s $file .
 #done
+
+#############################################################################
+# R script used to determined the expected counts
+#ln -s /data2/rivasas2/singleNucleosome/secondBatch/combineLib/allData/analysis.R expectedCounts.R

@@ -29,7 +29,7 @@
 
   
     <link rel="top" title="nucChIP 1 documentation" href="index.html"/>
-        <link rel="prev" title="Expected number of histone reads using high quality nucleosomes" href="highQual_nuc.html"/> 
+        <link rel="prev" title="Example case" href="exampleCase.html"/> 
 
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
@@ -64,22 +64,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="exampleCase.html">Example case</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#data-summary">1. Data summary</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#nucleosome-positions">Nucleosome positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#reproducibility">Reproducibility</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions">H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#position-specific-nucleosomes-control-gene-expression">Position-specific nucleosomes control gene expression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">There isn&#8217;t genome-wide MNase enrichment bias towards isolated nucleosomes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">Inclusion of alternatively spliced exons is signaled by histone marks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#mnase-normalization-of-nucleosomal-chip-seq">MNase normalization of nucleosomal ChIP-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#bibliography">Bibliography</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="AS_exons.html">Alternatively spliced exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="countsPerNuc.html">Counts per nucleosome on canonical nucleosomes around AS exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="internalExons.html">Coverage on internal exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="methods.html">Methods</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="methods.html#enrichment-of-histone-marks">Enrichment of histone marks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#preprocessing">1. Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#determining-nucleosome-positions">Determining nucleosome positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#assigning-histone-marks-to-individual-nucleosomes">Assigning histone marks to individual nucleosomes</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Command Line Utilites</a><ul>
@@ -90,6 +77,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#produces-coverage-figures">Produces coverage figures</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#id1">Generate coverage over nucleosomes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#meges-the-rows-of-two-bed-files">Meges the rows of two BED files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#creates-bedgraph-file-with-the-enriched-regions-given-a-signal-and-control-and-expected-counts-files">Creates bedGraph file with the enriched regions given a signal and control, and expected counts files</a></li>
 </ul>
 </li>
 </ul>
@@ -186,23 +174,29 @@ optional arguments:
 <div class="section" id="count-reads-per-nucleosome">
 <h2>Count reads per nucleosome<a class="headerlink" href="#count-reads-per-nucleosome" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-text"><div class="highlight"><pre>None
-usage: getCounts [-h] [-b BFILE] [-n NFILE] [-pValue PVALUE] [-upper UPPER]
-                 [-lower LOWER] [-l LTYPE] [-e EXTEN] [-o OFILE]
+usage: getCounts [-h] [-b BFILE] [-t FILETYPE] [-n NFILE] [-pValue PVALUE]
+                 [-upper UPPER] [-lower LOWER] [-l LTYPE] [-e EXTEN]
+                 [-o OFILE]
 
 Count reads per nucleosome.
 
 optional arguments:
   -h, --help      show this help message and exit
-  -b BFILE        BAM file. ChIP-seq reads.
+  -b BFILE        BAM or BED file. ChIP-seq reads.
+  -t FILETYPE     STR. File type: bed or bam. Default: bam.
   -n NFILE        BED file. Nucleosome position data, output of Danpos or
                   iNPS.
-  -pValue PVALUE  FLOAT file. pValue cut-off of nucleosomes on BED file.
-  -upper UPPER    INT. Upper threshold for insert size. Default: 200
-  -lower LOWER    INT. Lower threshold for insert size. Default: 0
+  -pValue PVALUE  FLOAT file. -log of pValue cut-off of nucleosomes on BED
+                  file.
+  -upper UPPER    INT. Upper threshold for insert size. Default: 200. Not used
+                  if fileType is bed
+  -lower LOWER    INT. Lower threshold for insert size. Default: 0. Not used
+                  if fileType is bed
   -l LTYPE        INT. Library type: if equal to 0, data is assumed to be
                   paired-end and read lengths are estimated from data itself;
                   if different from 0, data is assumed to be single-end and
-                  read lengths use this value extend every read.
+                  read lengths use this value extend every read. Not used if
+                  fileType is bed
   -e EXTEN        INT. Half length of reads extended at their midpoint.
   -o OFILE        STR. Name of output file.
 </pre></div>
@@ -282,6 +276,30 @@ optional arguments:
 </pre></div>
 </div>
 </div>
+<div class="section" id="creates-bedgraph-file-with-the-enriched-regions-given-a-signal-and-control-and-expected-counts-files">
+<h2>Creates bedGraph file with the enriched regions given a signal and control, and expected counts files<a class="headerlink" href="#creates-bedgraph-file-with-the-enriched-regions-given-a-signal-and-control-and-expected-counts-files" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text"><div class="highlight"><pre>None
+usage: getEnrichedRegions [-h] [-signal SIGNAL] [-control CONTROL]
+                          [-expV EXPV] [-marker MARKER] [-writeAll WRITEALL]
+                          [-prefix PREFIX]
+
+Creates bedGraph file with the enriched regions given a signal and control,
+and expected counts files.
+
+optional arguments:
+  -h, --help          show this help message and exit
+  -signal SIGNAL      BED file. Signal counts.
+  -control CONTROL    BED file. Control counts.
+  -expV EXPV          TXT file. Expected counts.
+  -marker MARKER      INT. Value to put next to enriched nucleosomes. Default
+                      1000.
+  -writeAll WRITEALL  Bool. If &#39;true&#39; write all nucleosomes with a 1 for
+                      enriched nucleosomes and 0 otherwise. If &#39;false&#39; only
+                      print enriched nucleosomes. Default &#39;false&#39;
+  -prefix PREFIX      STR. Prefix of output file.
+</pre></div>
+</div>
+</div>
 </div>
 
 
@@ -291,7 +309,7 @@ optional arguments:
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
       
-        <a href="highQual_nuc.html" class="btn btn-neutral" title="Expected number of histone reads using high quality nucleosomes"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="exampleCase.html" class="btn btn-neutral" title="Example case"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

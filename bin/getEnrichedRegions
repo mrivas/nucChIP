@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 import argparse, sys, numpy, itertools
+import nucChIP
 ###########################################################
 def getParser():
 	parser = argparse.ArgumentParser(description='Creates bedGraph file with the enriched regions given a signal and control, and expected counts files.')
 	parser.add_argument('-signal',type=str,dest="signal",help="BED file. Signal counts.")
 	parser.add_argument('-control',type=str,dest="control",help="BED file. Control counts.")
 	parser.add_argument('-expV',type=str,dest="expV",help="TXT file. Expected counts.")
+	parser.add_argument('-marker',type=str,dest="marker",help="INT. Value to put next to enriched nucleosomes. Default 1000.",default="1000")
+	parser.add_argument('-writeAll',type=str,dest="writeAll",help="Bool. If 'true' write all nucleosomes with a 1 for enriched nucleosomes and 0 otherwise. If 'false' only print enriched nucleosomes. Default 'false'",default="false")
 	parser.add_argument('-prefix',type=str,dest="prefix",help="STR. Prefix of output file.")
 	
 	if len(sys.argv) == 1:
@@ -26,6 +29,8 @@ def main():
 	signalFile = args.signal
 	controlFile = args.control
 	expVfile = args.expV
+	marker = args.marker
+	writeAll = args.writeAll
 	prefix  = args.prefix
 	####################################################
 	# Excecution
@@ -48,7 +53,10 @@ def main():
 			if not control_count in upper: # skip outlier
 				continue
 			if int(signal_count) >= upper[ control_count ]:
-				output=[chrom,start,end,"1000"]
+				output=[chrom,start,end,marker]
+				print >> out, "\t".join( map(str,output) )
+			elif writeAll=="true":
+				output=[chrom,start,end,"0"]
 				print >> out, "\t".join( map(str,output) )
 		
 	out.close()		

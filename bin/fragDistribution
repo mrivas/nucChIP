@@ -26,9 +26,12 @@ def main():
 	lengths = nucChIP.getFragDistribution(bamName)
 	sd = numpy.std(lengths)
 	mu = numpy.mean(lengths)
-	upper = mu + 3*sd 
-	lower = mu - 3*sd
+	upper = 300 #mu + 3*sd 
+	lower = 0 #mu - 3*sd
 	pyplot.hist(lengths,normed=True,bins=bins,range=(lower,upper),alpha=0.5,histtype='stepfilled')
+	pyplot.axvline(x=135,alpha=1,color="red")
+	pyplot.axvline(x=155,alpha=1,color="red")
+	#pyplot.vlines(x=147,ymin=0,ymax=0.1,colors="red")
 	fs=17
 	if title!="none": pyplot.title(title,fontsize=fs)
 	pyplot.xlabel("Fragment size (bp)",fontsize=fs)

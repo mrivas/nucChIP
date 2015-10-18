@@ -37,3 +37,8 @@ Meges the rows of two BED files
 ===============================
 
 .. program-output:: merged
+
+Creates bedGraph file with the enriched regions given a signal and control, and expected counts files
+=====================================================================================================
+
+.. program-output:: getEnrichedRegions

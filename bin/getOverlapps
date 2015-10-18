@@ -6,6 +6,7 @@ import matplotlib as mpl
 import matplotlib.cm as cm
 from matplotlib import pyplot
 from matplotlib import gridspec
+from scipy.stats import binom_test
 ###########################################################
 def getParser():
 	parser = argparse.ArgumentParser(description='Compute the number of enriched regions between two files.')
@@ -186,7 +187,7 @@ def main():
 	# Save cases explanation and summary
 	out=open(prefix+".pvalue_"+str(pvalue)+".flags_summary.bed","w")
 	header = names
-	header += ["flag","Counts","Random_counts","Avr_pvalues"]
+	header += ["flag","Counts","Random_counts","Avr_pvalues","-log10_enrich_pvalue"]
 	print >>out, "\t".join(map(str,header))
 	counts,ratios=[],[]
 	for row in range( pow(2,nCols) ):
@@ -194,8 +195,11 @@ def main():
 		flag   = sum( pow( sequence, case ) )
 		net_prob = getNetProb(casesMatrix,case,probs)
 		random_count = total_counts*net_prob
+		#pvalues
+		pvalueBin=-numpy.log10(binom_test(flag_counts[flag],total_counts,net_prob))
+		
 		output = list(case)
-		output += [flag, flag_counts[flag],random_count,numpy.mean(pvalues_counts[flag]) ]
+		output += [flag, flag_counts[flag],random_count,numpy.mean(pvalues_counts[flag]) ,pvalueBin]
 		print >>out, "\t".join(map(str,output))
 		counts.append(flag_counts[flag])
 		ratios.append(numpy.log(flag_counts[flag]/random_count))
@@ -208,15 +212,14 @@ def main():
 	gs = gridspec.GridSpec(2, 1, height_ratios=[3,1])
 	
 	# barplot
-	fractions=numpy.array(counts)/float(numpy.sum(counts))
 	ax = pyplot.subplot(gs[0])
 	#ax = fig.add_subplot(211)
-	ax.bar( numpy.array(range(len(fractions[1:])))+0.5, fractions[1:],align="center")
-	ax.set_xlim(0, len(fractions[1:]))
+	ax.bar( numpy.array(range(len(counts[1:])))+0.5, counts[1:],align="center")
+	ax.set_xlim(0, len(counts[1:]))
 	ax.grid(True)
 	ax.tick_params( axis='x', which='both',	bottom='off', top='off', labelbottom='off')
-	ax.set_ylabel("Fraction of co-localized histone marks") 
-	ax.text(0.5,0.9,"Fraction of empty nucleosomes = "+str('%.2E' % fractions[0]),horizontalalignment='center',verticalalignment='center',transform=ax.transAxes) 
+	ax.set_ylabel("Count of co-localized histone marks") 
+	ax.text(0.5,0.9,"Number of empty nucleosomes = "+str('%.2E' % counts[0]),horizontalalignment='center',verticalalignment='center',transform=ax.transAxes) 
 	# Axes for the heatmap triangle.
 	ax = pyplot.subplot(gs[1])
 	#ax = fig.add_subplot(212,frame_on=True)
@@ -227,8 +230,8 @@ def main():
 	ax.pcolor(numpy.transpose(casesMatrix)[:,1:],cmap="Greys",edgecolors='black',linewidths=1,alpha=0.7)	
 	ax.set_xlabel("Combinatorial patterns") 
 	
-	fig.subplots_adjust( wspace=1,hspace=0, left=0.17, right=0.975)	
-	fig.savefig(prefix+".pvalue_"+str(pvalue)+".fractions_bar.svg")
+	fig.subplots_adjust( wspace=1,hspace=0, left=0.3, right=0.975)	
+	fig.savefig(prefix+".pvalue_"+str(pvalue)+".counts_bar.pdf")
 	#################################################
 	# Plot ratios bar plot
 	# Create a figure.
@@ -245,7 +248,7 @@ def main():
 	ax.set_ylabel("Enrichment of co-localized histone marks") 
 	ax.text(0.5,0.9,"Enrichment of empty nucleosomes = "+str('%.2E' % ratios[0]),horizontalalignment='center',verticalalignment='center',transform=ax.transAxes) 
 
-	# Axes for the heatmap triangle.
+	# Axes for the heatmap lines.
 	ax = pyplot.subplot(gs[1])
 	#ax = fig.add_subplot(212,frame_on=True)
 	ax.set_xticks([])
@@ -255,8 +258,8 @@ def main():
 	ax.pcolor(numpy.transpose(casesMatrix)[:,1:],cmap="Greys",edgecolors='black',linewidths=1,alpha=0.7)	
 	ax.set_xlabel("Combinatorial patterns") 
 	
-	fig.subplots_adjust( wspace=1,hspace=0, left=0.17, right=0.975)	
-	fig.savefig(prefix+".pvalue_"+str(pvalue)+".ratios_bar.svg")
+	fig.subplots_adjust( wspace=1,hspace=0, left=0.3, right=0.975)	
+	fig.savefig(prefix+".pvalue_"+str(pvalue)+".ratios_bar.pdf")
 	#################################################
 	# Plot venn diagram for 2 sets
 	if nFiles==2:

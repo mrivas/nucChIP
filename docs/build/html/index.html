@@ -64,22 +64,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="exampleCase.html">Example case</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#data-summary">1. Data summary</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#nucleosome-positions">Nucleosome positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#reproducibility">Reproducibility</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions">H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#position-specific-nucleosomes-control-gene-expression">Position-specific nucleosomes control gene expression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">There isn&#8217;t genome-wide MNase enrichment bias towards isolated nucleosomes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">Inclusion of alternatively spliced exons is signaled by histone marks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#mnase-normalization-of-nucleosomal-chip-seq">MNase normalization of nucleosomal ChIP-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#bibliography">Bibliography</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="AS_exons.html">Alternatively spliced exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="countsPerNuc.html">Counts per nucleosome on canonical nucleosomes around AS exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="internalExons.html">Coverage on internal exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="methods.html">Methods</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="methods.html#enrichment-of-histone-marks">Enrichment of histone marks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#preprocessing">1. Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#determining-nucleosome-positions">Determining nucleosome positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#assigning-histone-marks-to-individual-nucleosomes">Assigning histone marks to individual nucleosomes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
@@ -90,6 +77,7 @@
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#produces-coverage-figures">Produces coverage figures</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#id1">Generate coverage over nucleosomes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#meges-the-rows-of-two-bed-files">Meges the rows of two BED files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#creates-bedgraph-file-with-the-enriched-regions-given-a-signal-and-control-and-expected-counts-files">Creates bedGraph file with the enriched regions given a signal and control, and expected counts files</a></li>
 </ul>
 </li>
 </ul>
@@ -138,22 +126,9 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="exampleCase.html">Example case</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#data-summary">1. Data summary</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#nucleosome-positions">Nucleosome positions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#reproducibility">Reproducibility</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#h3k4me3-and-h3k27ac-footprints-are-coherent-with-known-epigenetic-functions">H3K4me3 and H3K27Ac footprints are coherent with known epigenetic functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#position-specific-nucleosomes-control-gene-expression">Position-specific nucleosomes control gene expression</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#there-isn-t-genome-wide-mnase-enrichment-bias-towards-isolated-nucleosomes">There isn&#8217;t genome-wide MNase enrichment bias towards isolated nucleosomes</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#inclusion-of-alternatively-spliced-exons-is-signaled-by-histone-marks">Inclusion of alternatively spliced exons is signaled by histone marks</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#mnase-normalization-of-nucleosomal-chip-seq">MNase normalization of nucleosomal ChIP-seq</a></li>
-<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#bibliography">Bibliography</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="AS_exons.html">Alternatively spliced exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="countsPerNuc.html">Counts per nucleosome on canonical nucleosomes around AS exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="internalExons.html">Coverage on internal exons</a></li>
-<li class="toctree-l1"><a class="reference internal" href="methods.html">Methods</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="methods.html#enrichment-of-histone-marks">Enrichment of histone marks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#preprocessing">1. Preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#determining-nucleosome-positions">Determining nucleosome positions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exampleCase.html#assigning-histone-marks-to-individual-nucleosomes">Assigning histone marks to individual nucleosomes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="commandLineTools.html">Command Line Utilites</a><ul>
@@ -164,11 +139,18 @@
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#produces-coverage-figures">Produces coverage figures</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#id1">Generate coverage over nucleosomes</a></li>
 <li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#meges-the-rows-of-two-bed-files">Meges the rows of two BED files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="commandLineTools.html#creates-bedgraph-file-with-the-enriched-regions-given-a-signal-and-control-and-expected-counts-files">Creates bedGraph file with the enriched regions given a signal and control, and expected counts files</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<span class="target" id="module-_nucChIP"></span></div>
+<span class="target" id="module-_nucChIP"></span><dl class="function">
+<dt id="_nucChIP.bootstrap">
+<tt class="descclassname">_nucChIP.</tt><tt class="descname">bootstrap</tt><big>(</big><em>data</em>, <em>num_samples</em>, <em>statistic</em><big>)</big><a class="headerlink" href="#_nucChIP.bootstrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns bootstrap distribution.</p>
+</dd></dl>
+
+</div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">

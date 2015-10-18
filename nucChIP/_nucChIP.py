@@ -310,7 +310,30 @@ def getCounts(avrLength,nucl,bamName,extension,lower,upper):
 		elif maxRegion!=None:
 			counts[maxRegion] = 1
 	return counts
+#########################################################################
+def getCountsBed(nucl,bedName,extension):
+	# Counts the number of reads overlapping each nucleosome 
+	counts = {}
 
+	for line in open(bedName,"r"):
+		line=line.strip().split("\t")
+
+		# Define coordenates of new interval
+		chrom,almntStart,almntEnd=line[0],int(line[1]),int(line[2])
+		midpoint = numpy.mean([almntEnd,almntStart])
+		start = max(midpoint -  extension,0)
+		end = midpoint + extension
+		iv = HTSeq.GenomicInterval(chrom,start,end,'.')
+		# Get ID of the largest region overlapping iv	
+		#maxRegion=getMaxRegion(nucl,iv)
+		## consider using getMaxRegion2 instead
+		maxRegion=getMaxRegion2(nucl,iv)
+		# Count the read only in the nucleosome with the largest overlap
+		if maxRegion!=None and maxRegion in counts:
+			counts[maxRegion] += 1
+		elif maxRegion!=None:
+			counts[maxRegion] = 1
+	return counts
 #########################################################################
 def lineToIv(line):
 	fields = line.split('\t')
@@ -559,7 +582,7 @@ def getRegions(geneList,database,halfwinwidth):
 		end   = int(midpoint+halfwinwidth)
 		window = HTSeq.GenomicInterval(chrom,start,end,strand)
 		regions.append( window )
-	print str(noPresent)+" genes not present on database of TSS"
+	print str(noPresent)+" genes not present on database"
 	return regions
 ################################################################
 def getProfile(halfwinwidth,regions,bamName,fragLength,lower,upper,pcount):
@@ -1114,7 +1137,7 @@ def getRatiosPerCanonicalNuc(exonList,nucleosomes,nucPos,halfWin,exon_position,n
 		else:
 			if exon_position=="5p": exon_ref = end
 			else:    				exon_ref = start
-		window = HTSeq.GenomicInterval( chrom,exon_ref-halfWin,exon_ref+halfWin)
+		window = HTSeq.GenomicInterval( chrom,max(0,exon_ref-halfWin),exon_ref+halfWin)
 		# Intersect nucleosomes with current exon
 		distances, ratios = [], []
 		for nuc_iv,nuc_name in nucleosomes[ window ].steps():
@@ -1220,3 +1243,16 @@ def bootstrap(data, num_samples, statistic):
 	stat = statistic(samples, 1)
 	return stat
 
+##############################################################
+# getHeatmap
+##############################################################
+def getAllRegions(database,halfwinwidth): 
+	regions = []
+	for line in open(database,'r'):
+		line = line.strip().split("\t")
+		chrom, start, end, strand = line[0],int(line[1]),int(line[2]),line[5]
+		midpoint=numpy.mean([start,end])
+		start,end=midpoint-halfwinwidth,midpoint+halfwinwidth
+		window = HTSeq.GenomicInterval(chrom,start,end,strand)
+		regions.append( window )
+	return regions
